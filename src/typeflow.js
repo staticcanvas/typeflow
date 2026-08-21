@@ -289,8 +289,24 @@ if (typeof module !== "undefined" && module.exports) {
    USAGE EXAMPLES
    ============================================
 
-// Basic usage
+// Basic usage - plain text
 TypeFlow.type('#output', 'Hello, World!', { speed: 100 });
+
+// HTML mode - preserves formatting
+TypeFlow.type('#output', 'Hello <strong>World</strong>!', {
+  speed: 50,
+  html: true
+});
+
+// Preserve existing HTML in element
+const element = document.querySelector('#title');
+const originalHTML = element.innerHTML; // e.g., "Search for: <mark>keyword</mark>"
+element.innerHTML = ''; // Clear it
+TypeFlow.type(element, originalHTML, {
+  speed: 30,
+  html: true,
+  cursor: ''
+});
 
 // With all options
 TypeFlow.type('#output', 'Hello, World!', {
@@ -298,6 +314,7 @@ TypeFlow.type('#output', 'Hello, World!', {
   delay: 500,
   cursor: '|',
   cursorBlink: true,
+  html: false,
   onComplete: () => console.log('Done!'),
   onInterrupt: () => console.log('Stopped!')
 });
@@ -311,8 +328,9 @@ searchInput.addEventListener('input', (e) => {
 
   if (value.length >= 3) {
     // Automatically interrupts previous typing
-    TypeFlow.type(output, `Searching for: ${value}...`, {
-      speed: 30
+    TypeFlow.type(output, `Searching for: <mark>${value}</mark>...`, {
+      speed: 30,
+      html: true
     });
   }
 });
