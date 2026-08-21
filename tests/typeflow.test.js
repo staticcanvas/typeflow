@@ -196,8 +196,8 @@ describe('TypeFlow Comprehensive Test Suite', () => {
     });
 
     it('preserves baseline prefix when typed with mode: append', async () => {
-      await TypeFlow.type(container, 'Prefix: ', { mode: 'replace', speed: 1, respectReducedMotion: false }).promise;
-      await TypeFlow.type(container, 'Dynamic part', { mode: 'append', speed: 1, respectReducedMotion: false }).promise;
+      await TypeFlow.type(container, 'Prefix: ', { mode: 'replace', speed: 1, respectReducedMotion: false, cursor: '' }).promise;
+      await TypeFlow.type(container, 'Dynamic part', { mode: 'append', speed: 1, respectReducedMotion: false, cursor: '' }).promise;
       expect(container.textContent).toBe('Prefix: Dynamic part');
 
       await TypeFlow.erase(container, { eraseStyle: 'instant', preserveBaseline: true }).promise;
@@ -223,9 +223,15 @@ describe('TypeFlow Comprehensive Test Suite', () => {
     });
 
     it('resolves seq.visible() step without error', async () => {
+      window.IntersectionObserver = vi.fn().mockImplementation((callback) => ({
+        observe: vi.fn(() => callback([{ isIntersecting: true }])),
+        disconnect: vi.fn(),
+        unobserve: vi.fn(),
+      }));
+
       const controller = TypeFlow.sequence([
         seq.visible(container),
-        seq.type(container, 'Visible content', { speed: 1, respectReducedMotion: false })
+        seq.type(container, 'Visible content', { speed: 1, respectReducedMotion: false, cursor: '' })
       ]);
       const result = await controller.promise;
       expect(result.completed).toBe(true);
@@ -351,6 +357,147 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       };
       const useTypeFlow = createTypeFlowVue(mockVue);
       expect(typeof useTypeFlow).toBe('function');
+    });
+  });
+
+  describe('Directional Reveal & Erase Engines', () => {
+    it('reveals text right-to-left (direction: right)', async () => {
+      const controller = TypeFlow.type(container, 'Directional Test', {
+        direction: 'right',
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Directional Test');
+    });
+
+    it('reveals text center-outward (direction: center)', async () => {
+      const controller = TypeFlow.type(container, 'Center Outward Test', {
+        direction: 'center',
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Center Outward Test');
+    });
+
+    it('erases text center-inward (eraseStyle: center)', async () => {
+      container.textContent = 'Center Inward Erase';
+      const controller = TypeFlow.erase(container, {
+        eraseStyle: 'center',
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('');
+    });
+
+    it('supports scramble charset presets', async () => {
+      const controller = TypeFlow.type(container, 'Matrix Decode', {
+        typeStyle: 'scramble',
+        scrambleCharset: 'matrix',
+        scrambleRounds: 1,
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Matrix Decode');
+    });
+  });
+
+  describe('Smart Morph Diff Typing', () => {
+    it('morphs text by computing common prefix and replacing changed suffix', async () => {
+      container.textContent = 'Hello World';
+      const controller = TypeFlow.morph(container, 'Hello Universe', {
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Hello Universe');
+    });
+  });
+
+  describe('Stream Ingestion Engine', () => {
+    it('queues and sequentially consumes token chunks', async () => {
+      const stream = TypeFlow.stream(container, {
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      stream.push('First ');
+      stream.push('Second ');
+      stream.push('Third');
+
+      // Wait a few ticks for processing to complete
+      await new Promise((r) => setTimeout(r, 120));
+      expect(container.textContent).toBe('First Second Third');
+    });
+  });
+
+  describe('Trailing Fade & Multi-Target Stagger', () => {
+    it('reveals text with trailing fade gradient without DOM corruption', async () => {
+      const controller = TypeFlow.type(container, 'Soft Trailing Glow', {
+        typeStyle: 'fade-trail',
+        trailFade: 4,
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Soft Trailing Glow');
+    });
+
+    it('erases text with trailing fade gradient', async () => {
+      container.textContent = 'Dissolve Me';
+      const controller = TypeFlow.erase(container, {
+        eraseStyle: 'fade-trail',
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('');
+    });
+
+    it('executes staggered multi-target typing', async () => {
+      const el1 = document.createElement('div');
+      const el2 = document.createElement('div');
+      document.body.append(el1, el2);
+
+      const controller = TypeFlow.stagger([el1, el2], ['Line 1', 'Line 2'], {
+        speed: 1,
+        stagger: 5,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(el1.textContent).toBe('Line 1');
+      expect(el2.textContent).toBe('Line 2');
+    });
+  });
+
+  describe('Animation Presets', () => {
+    it('returns valid configurations for preset profiles', () => {
+      const cp = TypeFlow.preset('cyberpunk', { speed: 20 });
+      expect(cp.typeStyle).toBe('scramble');
+      expect(cp.scrambleCharset).toBe('matrix');
+      expect(cp.speed).toBe(20);
+
+      const writer = TypeFlow.preset('writer');
+      expect(writer.naturalCadence).toBe(true);
     });
   });
 });
