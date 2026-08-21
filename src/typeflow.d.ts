@@ -23,12 +23,20 @@ export interface TypeFlowConfig {
   html?: boolean;
   /** 'replace' clears the target first; 'append' types after existing content. Default: 'replace' */
   mode?: "replace" | "append";
-  /** Reveal style for typing: 'char' (standard), 'word', 'scramble' (matrix decrypt). Default: 'char' */
-  typeStyle?: "char" | "word" | "scramble";
+  /** Reveal direction for typing: 'left' (standard LTR), 'right' (RTL), 'center' (middle-outward expand). Default: 'left' */
+  direction?: "left" | "right" | "center";
+  /** Reveal style for typing: 'char' (standard), 'word', 'scramble' (matrix decrypt), 'fade-trail' (soft trailing opacity ramp). Default: 'char' */
+  typeStyle?: "char" | "word" | "scramble" | "fade-trail";
+  /** Soft trailing opacity gradient length in characters (e.g. 3) or boolean during reveal/erase. */
+  trailFade?: number | boolean;
+  /** Built-in scramble charset preset name. */
+  scrambleCharset?: "matrix" | "ascii" | "ascii-extended" | "blocks" | "binary" | "hex" | "braille" | "runic" | "cyber";
   /** Custom scramble glyph characters when typeStyle or eraseStyle is 'scramble'. */
   scrambleGlyphs?: string;
   /** Number of scramble iterations per unit before settling. Default: 2 */
   scrambleRounds?: number;
+  /** Zero-dependency Web Audio synthesizer sound effect or custom audio callback. */
+  audio?: "mechanical" | "beep" | "synth" | boolean | (() => void);
   /** Extra tags allowed in html mode, merged with the safe default list. */
   allowedTags?: string[];
   /** Extra attributes allowed per tag, merged with the safe default map. */
@@ -41,13 +49,15 @@ export interface TypeFlowConfig {
   ariaLive?: "off" | "polite" | "assertive";
   /**
    * Erase-only: which direction/technique to erase with. Default: 'end'
-   * - 'end'      backspace-style, removes from the right
-   * - 'start'    removes from the left, tail stays until the end
-   * - 'scramble' scrambles characters into glyphs before clearing
-   * - 'instant'  clears immediately, no animation
-   * - 'fade'     CSS opacity fade-out, then clears
+   * - 'end'        backspace-style, removes from the right
+   * - 'start'      removes from the left, tail stays until the end
+   * - 'center'     shrinks inward toward center
+   * - 'scramble'   scrambles characters into glyphs before clearing
+   * - 'fade-trail' dissolves trailing characters with a soft opacity ramp
+   * - 'instant'    clears immediately, no animation
+   * - 'fade'       CSS opacity fade-out, then clears
    */
-  eraseStyle?: "end" | "start" | "scramble" | "instant" | "fade";
+  eraseStyle?: "end" | "start" | "center" | "scramble" | "fade-trail" | "instant" | "fade";
   /** Erase-only: duration in ms for eraseStyle 'fade'. Default: 250 */
   duration?: number;
   /**
@@ -71,6 +81,15 @@ export interface TypeFlowController {
   stop: () => void;
   /** Always resolves — check `completed` to distinguish finish vs. interruption. Never rejects on interrupt. */
   promise: Promise<TypeFlowResult>;
+}
+
+export interface TypeFlowStreamController {
+  /** Pushes a new chunk / token into the sequential typing buffer. */
+  push: (chunk: string) => void;
+  /** Halts streaming and active typing immediately. */
+  stop: () => void;
+  /** Halts streaming and clears element text content. */
+  clear: () => void;
 }
 
 export type TypeFlowStep =
@@ -107,16 +126,36 @@ export declare class TypeFlowEngine {
   type(target: HTMLElement | string, text: string, config?: TypeFlowConfig): TypeFlowController;
   /** Erases the target's current content. */
   erase(target: HTMLElement | string, config?: TypeFlowConfig): TypeFlowController;
+  /** Smart Diff Morphing: calculates common prefix, erases mismatched suffix, and types new text. */
+  morph(target: HTMLElement | string, nextText: string, options?: TypeFlowConfig): TypeFlowController;
+  /** Creates a real-time streaming chunk ingestion controller for LLM/SSE token streams. */
+  stream(
+    target: HTMLElement | string,
+    options?: TypeFlowConfig & { onChunk?: (chunk: string, fullText: string) => void }
+  ): TypeFlowStreamController;
+  /** Returns a complete configuration object for an animation preset profile. */
+  preset(
+    name: "cyberpunk" | "terminal" | "writer" | "matrix" | "blocks" | "subtle",
+    overrides?: TypeFlowConfig
+  ): TypeFlowConfig;
   /** Runs type / erase / pause / visible / call steps in order. */
   sequence(steps: TypeFlowStep[], seqConfig?: TypeFlowSequenceConfig): TypeFlowController;
   /** QoL shortcut for the rotating text pattern. */
   rotate(target: HTMLElement | string, words: string[], config?: TypeFlowRotateConfig): TypeFlowController;
+  /** Staggers typing across multiple DOM elements with an offset delay between each item. */
+  stagger(
+    targets: HTMLElement[] | NodeList | string,
+    textOrTexts?: string | string[] | ((el: HTMLElement, index: number) => string),
+    config?: TypeFlowConfig & { stagger?: number }
+  ): TypeFlowController;
   /** Observes dynamically added DOM elements matching childSelector. */
   watch(
     container: HTMLElement | string,
     childSelector: string,
     callback: (el: HTMLElement) => void
   ): { disconnect: () => void };
+  /** Measures candidate phrases and locks target dimensions to prevent layout shift. */
+  fit(target: HTMLElement | string, candidates: string[]): void;
   /** Stops the active animation for target element. */
   stop(target: HTMLElement | string): void;
   /** Stops all active TypeFlow animations. */

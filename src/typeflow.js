@@ -11,6 +11,69 @@
 // Constants
 // ============================================================
 
+const SCRAMBLE_CHARSETS = {
+  matrix: '01X_#*~<>[]{}',
+  ascii: '!@#$%^&*()_+-=[]{}|;:,.<>?',
+  'ascii-extended': '¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿',
+  blocks: ' ▂▃▄▅▆▇█░▒▓',
+  binary: '01',
+  hex: '0123456789ABCDEF',
+  braille: '⠁⠃⠇⠏⠟⠿⡿⣿',
+  runic: 'ᚠᚡᚢᚣᚤᚥᚦᚧᚨᚩᚪᚫᚬᚭᚮᚯ',
+  cyber: '!<>-_\\/[]{}—=+*^?#________',
+};
+
+const PRESETS = {
+  cyberpunk: {
+    typeStyle: 'scramble',
+    scrambleCharset: 'matrix',
+    scrambleRounds: 2,
+    speed: 40,
+    cursor: '|',
+    cursorBlink: true,
+    audio: 'synth',
+  },
+  terminal: {
+    typeStyle: 'char',
+    speed: 32,
+    cursor: '█',
+    cursorBlink: true,
+    audio: 'mechanical',
+  },
+  writer: {
+    naturalCadence: true,
+    speed: 52,
+    speedVariance: 22,
+    cursor: '|',
+    cursorBlink: true,
+    audio: 'mechanical',
+  },
+  matrix: {
+    typeStyle: 'scramble',
+    scrambleCharset: 'matrix',
+    scrambleRounds: 3,
+    speed: 30,
+    cursor: '█',
+    cursorBlink: true,
+    audio: 'synth',
+  },
+  blocks: {
+    typeStyle: 'scramble',
+    scrambleCharset: 'blocks',
+    scrambleRounds: 2,
+    speed: 45,
+    cursor: '█',
+    cursorBlink: true,
+  },
+  subtle: {
+    speed: 45,
+    cursor: '|',
+    cursorBlink: true,
+    eraseStyle: 'fade',
+    respectReducedMotion: true,
+  },
+};
+
 const TYPE_DEFAULTS = {
   speed: 50,
   delay: 0,
@@ -21,9 +84,12 @@ const TYPE_DEFAULTS = {
   cursorBlink: true,
   html: false,
   mode: 'replace',
+  direction: 'left',
   typeStyle: 'char',
+  scrambleCharset: 'cyber',
   scrambleGlyphs: '!<>-_\\/[]{}—=+*^?#________',
   scrambleRounds: 2,
+  audio: null,
   respectReducedMotion: true,
 };
 
@@ -56,6 +122,75 @@ const CURSOR_BLINK_INTERVAL = 530;
 const DEFAULT_FADE_DURATION = 250;
 
 // ============================================================
+// Web Audio Micro-Synthesizer
+// ============================================================
+
+let audioCtx = null;
+function getAudioContext() {
+  if (typeof window === 'undefined') return null;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return null;
+  if (!audioCtx) {
+    try {
+      audioCtx = new AudioCtx();
+    } catch {
+      return null;
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+
+function playKeystrokeSound(audioOption) {
+  if (!audioOption) return;
+  if (typeof audioOption === 'function') {
+    try { audioOption(); } catch {}
+    return;
+  }
+  const type = typeof audioOption === 'string' ? audioOption : 'mechanical';
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    if (type === 'beep') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      gain.gain.setValueAtTime(0.03, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.035);
+    } else if (type === 'synth') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(340, now);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.04);
+      gain.gain.setValueAtTime(0.025, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    } else {
+      // 'mechanical' switch click
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(1100 + Math.random() * 300, now);
+      gain.gain.setValueAtTime(0.035, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.02);
+    }
+  } catch {}
+}
+
+// ============================================================
 // Intl.Segmenter Helper & Unit Slicing
 // ============================================================
 
@@ -69,6 +204,12 @@ function segmentText(text, granularity = 'grapheme') {
     return matches ? matches : [text];
   }
   return Array.from(text);
+}
+
+function resolveScrambleGlyphs(glyphs, charset) {
+  if (charset && SCRAMBLE_CHARSETS[charset]) return SCRAMBLE_CHARSETS[charset];
+  if (typeof glyphs === 'string' && SCRAMBLE_CHARSETS[glyphs]) return SCRAMBLE_CHARSETS[glyphs];
+  return glyphs ?? SCRAMBLE_CHARSETS.cyber;
 }
 
 function getRandomGlyph(glyphs) {
@@ -138,11 +279,11 @@ function buildSourceTree(input, plainText, allowedTags, allowedAttrs) {
 }
 
 // ============================================================
-// Reveal Engines
+// Reveal Engines (Universal Window Slice)
 // ============================================================
 
 function countTextUnits(node, granularity = 'grapheme') {
-  if (node.nodeType === Node.TEXT_NODE) {
+  if (node.nodeType === 3) {
     return segmentText(node.textContent ?? '', granularity).length;
   }
   let total = 0;
@@ -150,91 +291,153 @@ function countTextUnits(node, granularity = 'grapheme') {
   return total;
 }
 
-function cloneReveal(node, remaining, granularity = 'grapheme', scrambleOpts) {
-  if (node.nodeType === Node.TEXT_NODE) {
+function cloneRevealWindow(node, start, end, granularity = 'grapheme', revealOpts = {}) {
+  if (node.nodeType === 3) {
     const text = node.textContent ?? '';
     const units = segmentText(text, granularity);
-    if (remaining <= 0) return { clone: null, remaining };
-    if (units.length <= remaining) {
-      return { clone: document.createTextNode(text), remaining: remaining - units.length };
+    const len = units.length;
+    if (end <= 0 || start >= len) {
+      return { clone: null, start: Math.max(0, start - len), end: Math.max(0, end - len) };
     }
-    let sliced = units.slice(0, remaining).join('');
-    if (scrambleOpts?.active && remaining > 0 && units[remaining - 1]?.trim()) {
-      sliced = units.slice(0, remaining - 1).join('') + getRandomGlyph(scrambleOpts.glyphs);
+    const s = Math.max(0, start);
+    const e = Math.min(len, end);
+
+    const doc = node?.ownerDocument || (typeof document !== 'undefined' ? document : null);
+    if (!doc) return { clone: null, start, end };
+
+    if (revealOpts?.scrambleActive && e > s && units[e - 1]?.trim()) {
+      const frag = doc.createDocumentFragment();
+      if (e - 1 > s) {
+        frag.appendChild(doc.createTextNode(units.slice(s, e - 1).join('')));
+      }
+      const scrambleSpan = doc.createElement('span');
+      scrambleSpan.className = 'tf-scramble';
+      if (revealOpts.scrambleColor) {
+        scrambleSpan.style.color = revealOpts.scrambleColor;
+      }
+      if (revealOpts.scrambleGradient) {
+        scrambleSpan.style.backgroundImage = revealOpts.scrambleGradient;
+        scrambleSpan.style.webkitBackgroundImage = revealOpts.scrambleGradient;
+        scrambleSpan.style.webkitBackgroundClip = 'text';
+        scrambleSpan.style.backgroundClip = 'text';
+        scrambleSpan.style.webkitTextFillColor = 'transparent';
+        scrambleSpan.style.display = 'inline-block';
+      }
+      scrambleSpan.textContent = getRandomGlyph(revealOpts.scrambleGlyphs);
+      frag.appendChild(scrambleSpan);
+      return {
+        clone: frag,
+        start: Math.max(0, start - len),
+        end: Math.max(0, end - len),
+      };
     }
-    return { clone: document.createTextNode(sliced), remaining: 0 };
+
+    const trailLen = typeof revealOpts.trailFade === 'number'
+      ? revealOpts.trailFade
+      : (typeof revealOpts.trailingFadeLength === 'number'
+          ? revealOpts.trailingFadeLength
+          : (revealOpts.trailFade ? 4 : 0));
+
+    if (trailLen > 0 && (e - s) >= 1 && !revealOpts.isComplete) {
+      const frag = doc.createDocumentFragment();
+      const solidEnd = Math.max(s, e - trailLen);
+      if (solidEnd > s) {
+        frag.appendChild(doc.createTextNode(units.slice(s, solidEnd).join('')));
+      }
+      const trailCount = e - solidEnd;
+      const minOp = typeof revealOpts.trailingFadeMinOpacity === 'number'
+        ? revealOpts.trailingFadeMinOpacity
+        : (typeof revealOpts.trailMinOpacity === 'number' ? revealOpts.trailMinOpacity : 0.18);
+      for (let i = 0; i < trailCount; i++) {
+        const charIdx = solidEnd + i;
+        const charSpan = doc.createElement('span');
+        charSpan.className = 'tf-trail';
+        const progress = trailCount <= 1 ? 1 : (i + 1) / trailCount;
+        const opacity = minOp + (1.0 - minOp) * progress;
+        charSpan.style.opacity = opacity.toFixed(3);
+        charSpan.textContent = units[charIdx];
+        frag.appendChild(charSpan);
+      }
+      return {
+        clone: frag,
+        start: Math.max(0, start - len),
+        end: Math.max(0, end - len),
+      };
+    }
+
+    const sliced = units.slice(s, e).join('');
+    return {
+      clone: doc.createTextNode(sliced),
+      start: Math.max(0, start - len),
+      end: Math.max(0, end - len),
+    };
   }
-  if (node.nodeType === Node.ELEMENT_NODE) {
+  if (node.nodeType === 1) {
     const el = node;
     const tag = el.tagName.toLowerCase();
     if (VOID_ELEMENTS.has(tag)) {
-      if (remaining < 0) return { clone: null, remaining };
-      return { clone: el.cloneNode(false), remaining };
+      if (end <= 0) return { clone: null, start, end };
+      return { clone: el.cloneNode(false), start, end };
     }
-    if (remaining <= 0) return { clone: null, remaining };
     const clone = el.cloneNode(false);
-    let rem = remaining;
+    let curStart = start;
+    let curEnd = end;
     let appended = false;
     node.childNodes.forEach((child) => {
-      if (rem < 0) return;
-      const result = cloneReveal(child, rem, granularity, scrambleOpts);
-      if (result.clone) { clone.appendChild(result.clone); appended = true; }
-      rem = result.remaining;
+      const result = cloneRevealWindow(child, curStart, curEnd, granularity, revealOpts);
+      if (result.clone) {
+        clone.appendChild(result.clone);
+        appended = true;
+      }
+      curStart = result.start;
+      curEnd = result.end;
     });
-    return { clone: appended ? clone : null, remaining: rem };
+    return { clone: appended ? clone : null, start: curStart, end: curEnd };
   }
-  return { clone: null, remaining };
+  return { clone: null, start, end };
 }
 
-function revealFragment(source, unitCount, granularity = 'grapheme', scrambleOpts) {
-  const out = document.createDocumentFragment();
-  let remaining = unitCount;
+function revealWindowFragment(source, start, end, granularity = 'grapheme', revealOpts = {}) {
+  const doc = source?.ownerDocument || (typeof document !== 'undefined' ? document : null);
+  if (!doc) return null;
+  const out = doc.createDocumentFragment();
+  let curStart = start;
+  let curEnd = end;
   source.childNodes.forEach((child) => {
-    if (remaining < 0) return;
-    const result = cloneReveal(child, remaining, granularity, scrambleOpts);
+    const result = cloneRevealWindow(child, curStart, curEnd, granularity, revealOpts);
     if (result.clone) out.appendChild(result.clone);
-    remaining = result.remaining;
+    curStart = result.start;
+    curEnd = result.end;
   });
   return out;
 }
 
-function cloneRevealSuffix(node, skip, granularity = 'grapheme') {
-  if (node.nodeType === Node.TEXT_NODE) {
-    const text = node.textContent ?? '';
-    const units = segmentText(text, granularity);
-    if (skip <= 0) return { clone: document.createTextNode(text), skip: 0 };
-    if (skip >= units.length) return { clone: null, skip: skip - units.length };
-    return { clone: document.createTextNode(units.slice(skip).join('')), skip: 0 };
-  }
-  if (node.nodeType === Node.ELEMENT_NODE) {
-    const el = node;
-    const tag = el.tagName.toLowerCase();
-    if (VOID_ELEMENTS.has(tag)) {
-      if (skip > 0) return { clone: null, skip };
-      return { clone: el.cloneNode(false), skip };
+function calculateWindowBounds(count, totalUnits, direction, eraseStyle, isErasing) {
+  if (isErasing) {
+    if (eraseStyle === 'start') {
+      return { start: totalUnits - count, end: totalUnits };
     }
-    const clone = el.cloneNode(false);
-    let rem = skip;
-    let appended = false;
-    node.childNodes.forEach((child) => {
-      const result = cloneRevealSuffix(child, rem, granularity);
-      if (result.clone) { clone.appendChild(result.clone); appended = true; }
-      rem = result.skip;
-    });
-    return { clone: appended ? clone : null, skip: rem };
+    if (eraseStyle === 'center') {
+      const s = Math.max(0, Math.floor((totalUnits - count) / 2));
+      return {
+        start: s,
+        end: Math.min(totalUnits, s + count),
+      };
+    }
+    return { start: 0, end: count };
   }
-  return { clone: null, skip };
-}
 
-function revealSuffixFragment(source, skipCount, granularity = 'grapheme') {
-  const out = document.createDocumentFragment();
-  let skip = skipCount;
-  source.childNodes.forEach((child) => {
-    const result = cloneRevealSuffix(child, skip, granularity);
-    if (result.clone) out.appendChild(result.clone);
-    skip = result.skip;
-  });
-  return out;
+  if (direction === 'right') {
+    return { start: totalUnits - count, end: totalUnits };
+  }
+  if (direction === 'center') {
+    const s = Math.max(0, Math.floor((totalUnits - count) / 2));
+    return {
+      start: s,
+      end: Math.min(totalUnits, s + count),
+    };
+  }
+  return { start: 0, end: count };
 }
 
 // ============================================================
@@ -243,12 +446,44 @@ function revealSuffixFragment(source, skipCount, granularity = 'grapheme') {
 
 function resolveTarget(target) {
   const el = resolveMaybeTarget(target);
-  if (!el) throw new Error(`TypeFlow: target element not found (${String(target)})`);
+  if (!el) {
+    const desc = target === null ? 'null' : target === undefined ? 'undefined' : String(target);
+    throw new Error(`TypeFlow: target element not found (${desc})`);
+  }
   return el;
 }
 
 function resolveMaybeTarget(target) {
   return typeof target === 'string' ? document.querySelector(target) : target;
+}
+
+function normalizeDirection(dir) {
+  if (!dir) return 'left';
+  const s = String(dir).toLowerCase();
+  if (s === 'right' || s === 'rtl' || s === 'end' || s === 'reverse') return 'right';
+  if (s === 'center' || s === 'middle' || s === 'expand' || s === 'both') return 'center';
+  return 'left';
+}
+
+function normalizeTypeStyle(style) {
+  if (!style) return 'char';
+  const s = String(style).toLowerCase();
+  if (s === 'word' || s === 'words' || s === 'stream') return 'word';
+  if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random') return 'scramble';
+  if (s === 'fade-trail' || s === 'trail' || s === 'trailing' || s === 'soft') return 'fade-trail';
+  return 'char';
+}
+
+function normalizeEraseStyle(style) {
+  if (!style) return 'end';
+  const s = String(style).toLowerCase();
+  if (s === 'start' || s === 'erosion' || s === 'left' || s === 'forward') return 'start';
+  if (s === 'center' || s === 'middle' || s === 'shrink' || s === 'split') return 'center';
+  if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random') return 'scramble';
+  if (s === 'fade-trail' || s === 'trail' || s === 'trailing' || s === 'soft') return 'fade-trail';
+  if (s === 'fade' || s === 'dissolve' || s === 'crossfade') return 'fade';
+  if (s === 'instant' || s === 'clear' || s === 'reset' || s === 'immediate') return 'instant';
+  return 'end';
 }
 
 function prefersReducedMotion() {
@@ -268,9 +503,29 @@ function calculateCadencePause(text, count) {
   return 0;
 }
 
+/**
+ * Core animation engine that manages all active TypeFlow instances.
+ *
+ * Each target element may have at most one active animation at a time.
+ * Starting a new animation on an already-animating element stops the previous
+ * one before beginning the new one.
+ *
+ * Accessed via the exported singleton {@link TypeFlow}.
+ *
+ * @class
+ */
 class TypeFlowEngine {
   active = new Map();
   baselines = new WeakMap();
+  cursorIntervals = new Map();
+
+  clearCursorInterval(el) {
+    const interval = this.cursorIntervals.get(el);
+    if (interval) {
+      clearInterval(interval);
+      this.cursorIntervals.delete(el);
+    }
+  }
 
   animate(
     el,
@@ -282,36 +537,81 @@ class TypeFlowEngine {
     resultText,
     extra = {}
   ) {
+    this.clearCursorInterval(el);
     this.active.get(el)?.stop();
     if (options.ariaLive) el.setAttribute('aria-live', options.ariaLive);
 
     const prefix = extra.prefix ?? [];
-    const renderer = extra.renderer ?? revealFragment;
     const blinkOnFinish = extra.blinkOnFinish ?? false;
     const direction = endCount >= startCount ? 1 : -1;
-    const speed = options.speed ?? TYPE_DEFAULTS.speed;
+    const speed = Math.max(0, Number(options.speed ?? TYPE_DEFAULTS.speed) || 0);
     const granularity = options.granularity ?? TYPE_DEFAULTS.granularity;
     const isScramble = options.typeStyle === 'scramble' || options.eraseStyle === 'scramble';
-    const scrambleGlyphs = options.scrambleGlyphs ?? TYPE_DEFAULTS.scrambleGlyphs;
+    const scrambleGlyphs = resolveScrambleGlyphs(options.scrambleGlyphs, options.scrambleCharset ?? options.scramblePreset);
 
     let settled = false;
     let timeoutId = null;
-    let cursorInterval = null;
     let resolveFn = null;
 
     const clearTimers = () => {
       if (timeoutId !== null) clearTimeout(timeoutId);
-      if (cursorInterval !== null) clearInterval(cursorInterval);
+      this.clearCursorInterval(el);
       timeoutId = null;
-      cursorInterval = null;
     };
 
-    const render = (unitCount, cursorChar, scrambleActive = false) => {
+    const createCursorSpan = (cursorChar, isHidden = false) => {
+      const span = document.createElement('span');
+      span.className = 'tf-cursor';
+      span.setAttribute('aria-hidden', 'true');
+      span.textContent = cursorChar;
+      if (isHidden) {
+        span.style.visibility = 'hidden';
+      }
+      return span;
+    };
+
+    const render = (unitCount, cursorChar, scrambleActive = false, cursorHidden = false) => {
+      const bounds = calculateWindowBounds(
+        unitCount,
+        totalUnits,
+        options.direction ?? 'left',
+        options.eraseStyle ?? 'end',
+        extra.isErasing ?? false
+      );
+      const isTrailFade =
+        options.trailFade != null ||
+        options.trailingFadeLength != null ||
+        options.typeStyle === 'fade-trail' ||
+        options.eraseStyle === 'fade-trail';
+      const trailLen =
+        typeof options.trailFade === 'number'
+          ? options.trailFade
+          : (typeof options.trailingFadeLength === 'number'
+              ? options.trailingFadeLength
+              : (isTrailFade ? (options.trailingFadeLength ?? 4) : 0));
+      const trailMinOpacity =
+        typeof options.trailingFadeMinOpacity === 'number'
+          ? options.trailingFadeMinOpacity
+          : (typeof options.trailMinOpacity === 'number'
+              ? options.trailMinOpacity
+              : 0.18);
+
       el.replaceChildren(
         ...prefix,
-        renderer(sourceTree, unitCount, granularity, { active: scrambleActive, glyphs: scrambleGlyphs })
+        revealWindowFragment(sourceTree, bounds.start, bounds.end, granularity, {
+          scrambleActive,
+          scrambleGlyphs,
+          scrambleColor: options.scrambleColor,
+          scrambleGradient: options.scrambleGradient,
+          trailFade: trailLen,
+          trailingFadeLength: trailLen,
+          trailingFadeMinOpacity: trailMinOpacity,
+          isComplete: unitCount === endCount && !scrambleActive,
+        })
       );
-      if (cursorChar) el.appendChild(document.createTextNode(cursorChar));
+      if (cursorChar) {
+        el.appendChild(createCursorSpan(cursorChar, cursorHidden));
+      }
     };
 
     const settle = (completed) => {
@@ -320,16 +620,21 @@ class TypeFlowEngine {
       clearTimers();
       this.active.delete(el);
       if (completed) {
-        render(endCount, '', false);
         if (blinkOnFinish && options.cursor && options.cursorBlink) {
           let visible = true;
-          cursorInterval = setInterval(() => {
-            render(endCount, visible ? options.cursor : CURSOR_SPACER, false);
+          render(endCount, options.cursor, false, false);
+          const intervalId = setInterval(() => {
             visible = !visible;
+            render(endCount, options.cursor, false, !visible);
           }, CURSOR_BLINK_INTERVAL);
+          intervalId.unref?.();
+          this.cursorIntervals.set(el, intervalId);
+        } else {
+          render(endCount, '', false);
         }
         options.onComplete?.(resultText);
       } else {
+        this.clearCursorInterval(el);
         options.onInterrupt?.();
       }
       resolveFn?.({ completed, text: resultText });
@@ -353,6 +658,8 @@ class TypeFlowEngine {
     const scrambleRounds = options.scrambleRounds ?? TYPE_DEFAULTS.scrambleRounds;
 
     const step = (count) => {
+      if (options.audio) playKeystrokeSound(options.audio);
+
       if (isScramble && scrambleStep < scrambleRounds && count !== endCount) {
         render(count, options.cursor ?? '', true);
         scrambleStep++;
@@ -377,6 +684,7 @@ class TypeFlowEngine {
   }
 
   eraseFade(el, erasableLive, baseline, options) {
+    this.clearCursorInterval(el);
     this.active.get(el)?.stop();
 
     const wrapper = document.createElement('span');
@@ -392,6 +700,7 @@ class TypeFlowEngine {
       if (settled) return;
       settled = true;
       if (timeoutId !== null) clearTimeout(timeoutId);
+      this.clearCursorInterval(el);
       this.active.delete(el);
       if (completed) {
         el.replaceChildren(...baseline);
@@ -422,15 +731,51 @@ class TypeFlowEngine {
   }
 
   instantClear(el, baseline, options) {
+    this.clearCursorInterval(el);
     this.active.get(el)?.stop();
     el.replaceChildren(...baseline);
     options.onComplete?.('');
     return { stop: () => {}, promise: Promise.resolve({ completed: true, text: '' }) };
   }
 
+  /**
+   * Types text or sanitized HTML into the target element character by character
+   * (or word by word when `typeStyle: 'word'`).
+   *
+   * Any animation currently running on `target` is stopped before the new one
+   * starts. If `prefers-reduced-motion: reduce` is active and
+   * `respectReducedMotion` is `true` (the default), the full text is rendered
+   * immediately without animation.
+   *
+   * @param {Element | string} target
+   *   A DOM element or a CSS selector string resolved via `document.querySelector`.
+   * @param {string} text
+   *   The text or HTML string to type. When `config.html` is `false` (default)
+   *   the string is treated as plain text and no parsing is performed.
+   * @param {Partial<TypeFlowConfig>} [config={}]
+   *   Optional configuration overrides. See {@link TypeFlowConfig} for the full
+   *   option set. Merged with {@link TYPE_DEFAULTS}.
+   * @returns {TypeFlowController}
+   *   A controller object with a `stop()` method and a `promise` that resolves
+   *   to `{ completed: boolean, text: string }`.
+   *
+   * @example
+   * const controller = TypeFlow.type('#headline', 'Hello <strong>World</strong>', {
+   *   html: true,
+   *   speed: 45,
+   *   cursor: '|',
+   *   cursorBlink: true,
+   *   onComplete: (text) => console.log('Done:', text),
+   * });
+   *
+   * // Abort mid-animation
+   * button.addEventListener('click', () => controller.stop());
+   */
   type(target, text, config = {}) {
     const el = resolveTarget(target);
     const options = { ...TYPE_DEFAULTS, ...config };
+    options.direction = normalizeDirection(options.direction);
+    options.typeStyle = normalizeTypeStyle(options.typeStyle);
     if (options.typeStyle === 'word') options.granularity = 'word';
 
     const allowedTags = new Set([...DEFAULT_ALLOWED_TAGS, ...(options.allowedTags ?? [])]);
@@ -441,7 +786,7 @@ class TypeFlowEngine {
       }
     }
 
-    let sourceText = String(text);
+    let sourceText = text === null ? '' : text === undefined ? '' : String(text);
     if (options.html && options.sanitizer) sourceText = options.sanitizer(sourceText);
     const sourceTree = buildSourceTree(sourceText, !options.html, allowedTags, allowedAttrs);
     const totalUnits = countTextUnits(sourceTree, options.granularity);
@@ -453,12 +798,14 @@ class TypeFlowEngine {
     return this.animate(el, sourceTree, totalUnits, options, 0, totalUnits, sourceText, {
       prefix,
       blinkOnFinish: true,
+      isErasing: false,
     });
   }
 
   erase(target, config = {}) {
     const el = resolveTarget(target);
     const options = { ...ERASE_DEFAULTS, ...config };
+    options.eraseStyle = normalizeEraseStyle(options.eraseStyle);
 
     const baseline = options.preserveBaseline ? this.baselines.get(el) ?? [] : [];
     const allChildren = Array.from(el.childNodes);
@@ -471,17 +818,172 @@ class TypeFlowEngine {
     erasableLive.forEach((n) => sourceTree.appendChild(n.cloneNode(true)));
     const totalUnits = countTextUnits(sourceTree, options.granularity);
 
-    if (options.eraseStyle === 'start') {
-      return this.animate(el, sourceTree, totalUnits, options, 0, totalUnits, '', {
-        prefix: baseline,
-        renderer: revealSuffixFragment,
-      });
-    }
-
-    return this.animate(el, sourceTree, totalUnits, options, totalUnits, 0, '', { prefix: baseline });
+    return this.animate(el, sourceTree, totalUnits, options, totalUnits, 0, '', {
+      prefix: baseline,
+      isErasing: true,
+    });
   }
 
+  /**
+   * Smart Diff Morphing: compares the existing text content of `target` with `nextText`,
+   * erases only the mismatched trailing characters, and types the replacement text.
+   *
+   * @param {Element | string} target - Target element or CSS selector string.
+   * @param {string} nextText - Destination text.
+   * @param {Partial<TypeFlowConfig>} [options={}] - Animation options.
+   * @returns {Promise<{ completed: boolean, text: string }>}
+   */
+  morph(target, nextText, options = {}) {
+    const el = resolveTarget(target);
+    const currentText = el.textContent ?? '';
+    const targetText = nextText === null ? '' : nextText === undefined ? '' : String(nextText);
+
+    let prefixLen = 0;
+    const max = Math.min(currentText.length, targetText.length);
+    while (prefixLen < max && currentText[prefixLen] === targetText[prefixLen]) {
+      prefixLen++;
+    }
+
+    const eraseCount = currentText.length - prefixLen;
+    const appendText = targetText.slice(prefixLen);
+
+    const steps = [];
+    if (eraseCount > 0) {
+      steps.push(
+        seq.call(() => {
+          const sourceTree = document.createDocumentFragment();
+          sourceTree.appendChild(document.createTextNode(currentText));
+          const totalUnits = currentText.length;
+          return this.animate(
+            el,
+            sourceTree,
+            totalUnits,
+            { ...ERASE_DEFAULTS, ...options, speed: options.eraseSpeed ?? options.speed ?? ERASE_DEFAULTS.speed },
+            totalUnits,
+            prefixLen,
+            currentText.slice(0, prefixLen),
+            { prefix: [], isErasing: true }
+          ).promise;
+        })
+      );
+    }
+    if (appendText.length > 0) {
+      steps.push(
+        seq.type(el, appendText, {
+          ...options,
+          mode: 'append',
+        })
+      );
+    }
+
+    return this.sequence(steps);
+  }
+
+  /**
+   * Creates a streaming chunk consumer for real-time LLM token ingestion.
+   *
+   * @param {Element | string} target - Target element or CSS selector.
+   * @param {Partial<TypeFlowConfig> & { onChunk?: (chunk: string, fullText: string) => void }} [options={}]
+   * @returns {{ push: (chunk: string) => void, stop: () => void, clear: () => void }}
+   */
+  stream(target, options = {}) {
+    const el = resolveTarget(target);
+    let queue = [];
+    let isProcessing = false;
+
+    const processNext = () => {
+      if (queue.length === 0) {
+        isProcessing = false;
+        return;
+      }
+      isProcessing = true;
+      const chunk = queue.shift();
+      this.type(el, chunk, {
+        ...options,
+        mode: 'append',
+        onComplete: (text) => {
+          options.onChunk?.(chunk, text);
+          processNext();
+        },
+      });
+    };
+
+    return {
+      push: (chunk) => {
+        if (chunk !== null && chunk !== undefined && String(chunk).length > 0) {
+          queue.push(String(chunk));
+          if (!isProcessing) processNext();
+        }
+      },
+      stop: () => {
+        queue = [];
+        this.stop(el);
+        isProcessing = false;
+      },
+      clear: () => {
+        queue = [];
+        this.stop(el);
+        isProcessing = false;
+        el.replaceChildren();
+      },
+    };
+  }
+
+  /**
+   * Returns a complete pre-configured options object for common typewriter profiles.
+   *
+   * @param {'cyberpunk' | 'terminal' | 'writer' | 'matrix' | 'blocks' | 'subtle'} name
+   * @param {Partial<TypeFlowConfig>} [overrides={}]
+   * @returns {TypeFlowConfig}
+   */
+  preset(name, overrides = {}) {
+    const base = PRESETS[name] ?? PRESETS.writer;
+    return { ...base, ...overrides };
+  }
+
+  /**
+   * Executes an ordered list of animation steps sequentially, waiting for each
+   * step to complete before advancing to the next one.
+   *
+   * Supported step kinds (created via the {@link seq} helper):
+   * - `seq.type(target, text, config)` — Types text into a target element.
+   * - `seq.erase(target, config)`      — Erases content from a target element.
+   * - `seq.pause(duration)`            — Waits `duration` milliseconds.
+   * - `seq.call(fn)`                   — Invokes an async or sync function.
+   * - `seq.visible(target, threshold)` — Waits until the target is visible.
+   *
+   * If any step's animation is interrupted (via `controller.stop()`), the
+   * entire sequence halts immediately.
+   *
+   * @param {Array<SequenceStep>} steps
+   *   An ordered array of step descriptors. Use the {@link seq} helper to
+   *   construct them.
+   * @param {{ repeat?: number, target?: Element | string }} [seqConfig={}]
+   *   Optional sequence-level configuration.
+   *   - `repeat` — Number of times to repeat the full sequence. Use `Infinity`
+   *     for indefinite repetition. Defaults to `1`.
+   *   - `target` — A default target element applied to steps that do not
+   *     specify one individually.
+   * @returns {TypeFlowController}
+   *   A controller with `stop()` and a `promise` resolving to
+   *   `{ completed: boolean, text: '' }`.
+   *
+   * @example
+   * import { TypeFlow, seq } from '@staticcanvas/typeflow';
+   *
+   * TypeFlow.sequence([
+   *   seq.type('#output', 'Step 1 complete.'),
+   *   seq.pause(600),
+   *   seq.call(() => triggerSoundEffect()),
+   *   seq.erase('#output'),
+   *   seq.type('#output', 'Step 2 starting...'),
+   * ], { repeat: 1 });
+   */
   sequence(steps, seqConfig = {}) {
+    if (!Array.isArray(steps) || steps.length === 0) {
+      return { stop: () => {}, promise: Promise.resolve({ completed: true, text: '' }) };
+    }
+
     let isInterrupted = false;
     let currentSub = null;
     let cancelPause = null;
@@ -544,7 +1046,11 @@ class TypeFlowEngine {
           cancelObserver = null;
           if (!isVisible) return false;
         } else if (step.kind === 'call') {
-          await step.fn();
+          try {
+            await step.fn();
+          } catch (err) {
+            console.error('TypeFlow: error in seq.call step:', err);
+          }
         }
 
         if (isInterrupted) return false;
@@ -563,6 +1069,39 @@ class TypeFlowEngine {
     return controller;
   }
 
+  /**
+   * Cyclically types and erases an array of strings in sequence.
+   *
+   * Internally delegates to {@link TypeFlowEngine#sequence}, constructing a
+   * step list of: `type → pause (holdDuration) → erase → pause (pauseBetween)`
+   * for each word.
+   *
+   * @param {Element | string} target
+   *   A DOM element or a CSS selector string.
+   * @param {string[]} words
+   *   An ordered array of strings to rotate through.
+   * @param {RotateConfig} [config={}]
+   *   Optional rotation configuration.
+   * @param {Partial<TypeFlowConfig>} [config.typeConfig={}]
+   *   Config options applied to every `type` step.
+   * @param {Partial<TypeFlowConfig>} [config.eraseConfig={}]
+   *   Config options applied to every `erase` step.
+   * @param {number} [config.holdDuration=1200]
+   *   Milliseconds to hold each fully-typed word before erasing.
+   * @param {number} [config.pauseBetween=200]
+   *   Milliseconds to wait after erasing before typing the next word.
+   * @param {number | typeof Infinity} [config.repeat=Infinity]
+   *   Number of full rotation cycles. Use `Infinity` for indefinite rotation.
+   * @returns {TypeFlowController}
+   *   A controller with `stop()` and a resolving `promise`.
+   *
+   * @example
+   * TypeFlow.rotate('#rotating', ['Fast', 'Lightweight', 'Reliable'], {
+   *   holdDuration: 1200,
+   *   pauseBetween: 200,
+   *   repeat: Infinity,
+   * });
+   */
   rotate(target, words, config = {}) {
     const {
       typeConfig = {},
@@ -583,6 +1122,119 @@ class TypeFlowEngine {
     return this.sequence(steps, { repeat });
   }
 
+  /**
+   * Staggers typing across multiple DOM elements with an offset delay between each item.
+   *
+   * @param {Element[] | NodeList | string} targets
+   *   A CSS selector string matching multiple elements, or an array / NodeList of elements.
+   * @param {string | string[] | ((el: Element, index: number) => string)} [textOrTexts]
+   *   A string, an array of strings (one per target), or a resolver callback.
+   *   If omitted, reads each element's existing textContent.
+   * @param {Partial<TypeFlowConfig> & { stagger?: number }} [config={}]
+   *   TypeFlow options merged with `stagger` offset delay in ms (default: `150`).
+   * @returns {TypeFlowController}
+   *
+   * @example
+   * TypeFlow.stagger('.prompt-line', [
+   *   'npm install @staticcanvas/typeflow',
+   *   'npm run build',
+   *   'typeflow start --port=3000',
+   *   'Ready on http://localhost:3000'
+   * ], {
+   *   speed: 30,
+   *   stagger: 250,
+   *   cursor: '|'
+   * });
+   */
+  stagger(targets, textOrTexts, config = {}) {
+    let elements = [];
+    if (typeof targets === 'string') {
+      elements = typeof document !== 'undefined' ? Array.from(document.querySelectorAll(targets)) : [];
+    } else if (Array.isArray(targets)) {
+      elements = targets.map((t) => { try { return resolveTarget(t); } catch { return null; } }).filter(Boolean);
+    } else if (targets && typeof targets[Symbol.iterator] === 'function') {
+      elements = Array.from(targets).map((t) => { try { return resolveTarget(t); } catch { return null; } }).filter(Boolean);
+    } else {
+      try {
+        const single = resolveTarget(targets);
+        if (single) elements = [single];
+      } catch {}
+    }
+
+    if (elements.length === 0) {
+      return { stop: () => {}, promise: Promise.resolve({ completed: true, text: '' }) };
+    }
+
+    const staggerDelay = config.stagger ?? 150;
+    const controllers = [];
+    let stopped = false;
+
+    const promises = elements.map((el, index) => {
+      let text = '';
+      if (typeof textOrTexts === 'function') {
+        text = textOrTexts(el, index);
+      } else if (Array.isArray(textOrTexts)) {
+        text = textOrTexts[index] !== undefined ? textOrTexts[index] : '';
+      } else if (typeof textOrTexts === 'string') {
+        text = textOrTexts;
+      } else {
+        text = el.textContent || '';
+      }
+
+      const itemDelay = (config.delay ?? 0) + (index * staggerDelay);
+      const itemConfig = { ...config, delay: itemDelay };
+      const ctrl = this.type(el, text, itemConfig);
+      controllers.push(ctrl);
+      return ctrl.promise;
+    });
+
+    const combinedPromise = Promise.all(promises).then((results) => {
+      const allCompleted = results.every((r) => r.completed);
+      return {
+        completed: !stopped && allCompleted,
+        text: results.map((r) => r.text).join('\n'),
+      };
+    });
+
+    return {
+      stop: () => {
+        stopped = true;
+        controllers.forEach((c) => c.stop());
+      },
+      promise: combinedPromise,
+    };
+  }
+
+  /**
+   * Observes a DOM subtree for mutations and invokes `callback` whenever
+   * elements matching `childSelector` are added to the tree. Also invokes the
+   * callback immediately for any pre-existing matching elements inside
+   * `container`.
+   *
+   * Useful for animating dynamically injected content (e.g. chat messages,
+   * feed items, server-streamed responses) without polling.
+   *
+   * @param {Element | string} container
+   *   The root element whose subtree is observed.
+   * @param {string} childSelector
+   *   A CSS selector string. Newly added elements matching this selector
+   *   will trigger `callback`.
+   * @param {(el: Element) => void} callback
+   *   Function invoked with each matching element. Runs synchronously for
+   *   pre-existing matches and on the microtask after each mutation.
+   * @returns {{ disconnect: () => void }}
+   *   An object with a `disconnect()` method that stops observation.
+   *
+   * @example
+   * const watcher = TypeFlow.watch('#feed', '.item-title', (el) => {
+   *   const text = el.textContent;
+   *   el.textContent = '';
+   *   TypeFlow.type(el, text, { speed: 20 });
+   * });
+   *
+   * // Stop observing when the container is destroyed
+   * watcher.disconnect();
+   */
   watch(container, childSelector, callback) {
     const root = resolveTarget(container);
     root.querySelectorAll(childSelector).forEach(callback);
@@ -602,16 +1254,99 @@ class TypeFlowEngine {
     return { disconnect: () => observer.disconnect() };
   }
 
+  /**
+   * Layout stabilization helper that measures a list of rotating candidate
+   * phrases and locks the target container's inline dimensions to prevent
+   * Cumulative Layout Shift (CLS).
+   *
+   * @param {Element | string} target
+   *   A DOM element or a CSS selector string.
+   * @param {string[]} candidates
+   *   An array of strings/phrases that will rotate inside this container.
+   * @returns {void}
+   *
+   * @example
+   * TypeFlow.fit('#slogan', ['short', 'very long phrase that wraps']);
+   */
+  fit(target, candidates = []) {
+    const el = resolveTarget(target);
+    if (!Array.isArray(candidates) || !candidates.length || typeof document === 'undefined') return;
+
+    const probe = document.createElement('span');
+    probe.style.cssText =
+      'position:absolute;visibility:hidden;opacity:0;pointer-events:none;white-space:nowrap;';
+    const cs = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(el) : null;
+    if (cs) {
+      probe.style.font = cs.font;
+      probe.style.fontSize = cs.fontSize;
+      probe.style.fontWeight = cs.fontWeight;
+      probe.style.letterSpacing = cs.letterSpacing;
+      probe.style.textTransform = cs.textTransform;
+    }
+    document.body.appendChild(probe);
+
+    let maxW = 0;
+    candidates.forEach((phrase) => {
+      probe.textContent = String(phrase).replace(/<[^>]*>/g, '');
+      maxW = Math.max(maxW, probe.getBoundingClientRect().width);
+    });
+    probe.remove();
+
+    if (maxW > 0) {
+      el.style.display = 'inline-block';
+      el.style.minWidth = `${Math.ceil(maxW)}px`;
+    }
+  }
+
+  /**
+   * Stops any animation currently running on `target`. If no animation is
+   * active on the element this method is a no-op.
+   *
+   * Equivalent to calling `controller.stop()` on the controller returned by
+   * the originating `type()`, `erase()`, `sequence()`, or `rotate()` call.
+   *
+   * @param {Element | string} target - Target element or CSS selector string.
+   * @returns {void}
+   *
+   * @example
+   * TypeFlow.type('#el', 'Long text...');
+   * // Stop from another handler without keeping a reference to the controller
+   * TypeFlow.stop('#el');
+   */
   stop(target) {
-    const el = resolveMaybeTarget(target);
+    const el = resolveTarget(target);
     if (!el) return;
+    this.clearCursorInterval(el);
     this.active.get(el)?.stop();
   }
 
+  /**
+   * Stops all animations currently managed by this engine instance.
+   *
+   * @returns {void}
+   *
+   * @example
+   * // Clean up all running animations on page unload
+   * window.addEventListener('pagehide', () => TypeFlow.stopAll());
+   */
   stopAll() {
+    this.cursorIntervals.forEach((id) => clearInterval(id));
+    this.cursorIntervals.clear();
     Array.from(this.active.values()).forEach((c) => c.stop());
   }
 
+  /**
+   * Returns `true` when `target` has an active animation managed by this
+   * engine instance.
+   *
+   * @param {Element | string} target - Target element or CSS selector string.
+   * @returns {boolean}
+   *
+   * @example
+   * if (!TypeFlow.isTyping('#el')) {
+   *   TypeFlow.type('#el', 'Now available.');
+   * }
+   */
   isTyping(target) {
     const el = resolveMaybeTarget(target);
     return !!el && this.active.has(el);
@@ -622,14 +1357,75 @@ class TypeFlowEngine {
 // Vanilla Public API (Singleton)
 // ============================================================
 
+/**
+ * The global singleton instance of {@link TypeFlowEngine}.
+ *
+ * Import this in ESM environments:
+ * ```javascript
+ * import { TypeFlow } from '@staticcanvas/typeflow';
+ * ```
+ *
+ * In UMD/script-tag environments the singleton is available as `window.TypeFlow`.
+ *
+ * @type {TypeFlowEngine}
+ */
 export const TypeFlow = new TypeFlowEngine();
 export default TypeFlow;
 
+/**
+ * Factory helpers for constructing {@link TypeFlowEngine#sequence} step
+ * descriptors. Use these instead of building plain objects manually to ensure
+ * correct `kind` values and type safety.
+ *
+ * @namespace seq
+ *
+ * @example
+ * import { TypeFlow, seq } from '@staticcanvas/typeflow';
+ *
+ * TypeFlow.sequence([
+ *   seq.type('#out', 'Hello.'),
+ *   seq.pause(500),
+ *   seq.erase('#out'),
+ * ]);
+ */
 export const seq = {
+  /**
+   * Creates a `type` step that types `text` into `target`.
+   * @param {Element | string} target
+   * @param {string} [text='']
+   * @param {Partial<TypeFlowConfig>} [config]
+   * @returns {SequenceStep}
+   */
   type: (target, text = '', config) => ({ kind: 'type', target, text, config }),
+
+  /**
+   * Creates an `erase` step that erases content from `target`.
+   * @param {Element | string} target
+   * @param {Partial<TypeFlowConfig>} [config]
+   * @returns {SequenceStep}
+   */
   erase: (target, config) => ({ kind: 'erase', target, config }),
+
+  /**
+   * Creates a `pause` step that waits `duration` milliseconds.
+   * @param {number} duration - Wait time in milliseconds.
+   * @returns {SequenceStep}
+   */
   pause: (duration) => ({ kind: 'pause', duration }),
+
+  /**
+   * Creates a `visible` step that waits until `target` enters the viewport.
+   * @param {Element | string} target
+   * @param {number} [threshold=0.1] - Intersection threshold (0–1).
+   * @returns {SequenceStep}
+   */
   visible: (target, threshold) => ({ kind: 'visible', target, threshold }),
+
+  /**
+   * Creates a `call` step that invokes `fn`. May be async.
+   * @param {() => void | Promise<void>} fn
+   * @returns {SequenceStep}
+   */
   call: (fn) => ({ kind: 'call', fn }),
 };
 
