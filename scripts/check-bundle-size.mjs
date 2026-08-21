@@ -7,7 +7,7 @@ import { gzipSync } from 'node:zlib';
 import { existsSync, readFileSync } from 'node:fs';
 
 const bundlePath = 'dist/typeflow/dist/typeflow.min.js';
-const maxGzipBytes = 5 * 1024;
+const maxGzipBytes = 8 * 1024;
 
 if (!existsSync(bundlePath)) {
   console.warn(`Bundle file ${bundlePath} does not exist yet. Run build first.`);

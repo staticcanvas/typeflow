@@ -6,12 +6,37 @@
   "main": "./dist/typeflow.cjs",
   "module": "./dist/typeflow.mjs",
   "browser": "./dist/typeflow.js",
-  "types": "./src/typeflow.d.ts",
   "exports": {
     ".": {
+      "types": "./src/typeflow.d.ts",
       "import": "./dist/typeflow.mjs",
       "require": "./dist/typeflow.cjs",
       "default": "./dist/typeflow.js"
+    },
+    "./metrics": {
+      "types": "./src/typeflow-metrics.d.ts",
+      "import": "./src/typeflow-metrics.js",
+      "default": "./src/typeflow-metrics.js"
+    },
+    "./debug": {
+      "types": "./src/typeflow-debug.d.ts",
+      "import": "./src/typeflow-debug.js",
+      "default": "./src/typeflow-debug.js"
+    },
+    "./webaudio": {
+      "types": "./src/typeflow-webaudio.d.ts",
+      "import": "./src/typeflow-webaudio.js",
+      "default": "./src/typeflow-webaudio.js"
+    },
+    "./keystroke": {
+      "types": "./src/typeflow-keystroke.d.ts",
+      "import": "./src/typeflow-keystroke.js",
+      "default": "./src/typeflow-keystroke.js"
+    },
+    "./extchars": {
+      "types": "./src/typeflow-extchars.d.ts",
+      "import": "./src/typeflow-extchars.js",
+      "default": "./src/typeflow-extchars.js"
     },
     "./package.json": "./package.json"
   },
@@ -34,9 +59,13 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "benchmark": "node scripts/run-benchmark.mjs",
+    "benchmark:md": "node scripts/run-benchmark.mjs --markdown",
+    "benchmark:markdown": "node scripts/run-benchmark.mjs --markdown",
+    "benchmark:json": "node scripts/run-benchmark.mjs --json",
     "check:size": "node scripts/check-bundle-size.mjs",
     "validate:release": "node scripts/validate-release.mjs",
-    "check:quality": "npm run build && npm run check:size && npm test"
+    "check:quality": "npm run build && npm run check:size && npm run benchmark && npm test"
   },
   "keywords": [
     "typewriter",

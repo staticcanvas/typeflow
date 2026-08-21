@@ -25,6 +25,18 @@ function stageWebUtilityAssets() {
       if (existsSync(resolve(bundleDist))) {
         cpSync(resolve(bundleDist), destination, { recursive: true });
       }
+      const srcDir = resolve('src');
+      [
+        'typeflow-metrics.js',
+        'typeflow-debug.js',
+        'typeflow-webaudio.js',
+        'typeflow-keystroke.js',
+        'typeflow-extchars.js',
+      ].forEach((file) => {
+        if (existsSync(resolve(srcDir, file))) {
+          cpSync(resolve(srcDir, file), resolve(destination, file));
+        }
+      });
       const brandingDestination = resolve('docs/static/webutil/assets/branding');
       mkdirSync(brandingDestination, { recursive: true });
       if (existsSync(resolve('branding/typeflow-logo.svg'))) {
