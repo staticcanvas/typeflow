@@ -544,6 +544,16 @@ class TypeFlowEngine {
     let currentSub: TypeFlowController | null = null;
     let cancelPause: (() => void) | null = null;
 
+    const resolveStepTarget = (step: { target?: HTMLElement | string }): HTMLElement | string => {
+      const target = step.target ?? seqConfig.target;
+      if (!target) {
+        throw new Error(
+          "TypeFlow: a sequence step is missing a target, and no default `target` was set on the sequence config."
+        );
+      }
+      return target;
+    };
+
     const controller: TypeFlowController = {
       stop: () => {
         if (isInterrupted) return;
@@ -559,10 +569,10 @@ class TypeFlowEngine {
         if (isInterrupted) return false;
 
         if (step.kind === "type") {
-          currentSub = this.type(step.target, step.text, step.config);
+          currentSub = this.type(resolveStepTarget(step), step.text, step.config);
           if (!(await currentSub.promise).completed) return false;
         } else if (step.kind === "erase") {
-          currentSub = this.erase(step.target, step.config);
+          currentSub = this.erase(resolveStepTarget(step), step.config);
           if (!(await currentSub.promise).completed) return false;
         } else if (step.kind === "pause") {
           const finishedNaturally = await new Promise<boolean>((resolve) => {
