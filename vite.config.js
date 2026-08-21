@@ -109,7 +109,7 @@ export default defineConfig({
   plugins: [
     copy({
       targets: [
-        { src: 'README.md', dest: packageDist },
+        { src: 'readme-npm.md', dest: packageDist, rename: 'README.md' },
         {
           src: 'package.json',
           dest: packageDist,

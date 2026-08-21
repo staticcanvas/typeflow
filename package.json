@@ -1,6 +1,6 @@
 {
   "name": "@staticcanvas/typeflow",
-  "version": "2.3.0",
+  "version": "0.14.0",
   "description": "A lightweight, interruptible, framework-agnostic typewriter animation library.",
   "type": "module",
   "main": "./dist/typeflow.cjs",
