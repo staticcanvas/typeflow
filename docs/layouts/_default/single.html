@@ -1,23 +1,33 @@
 {{ define "main" }}
-<article class="doc-page">
-  <header class="doc-header">
-    {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
-    <h1>{{ .Title }}</h1>
-    {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
-  </header>
+{{/*
+  single.html — Renders a documentation page with:
+    - doc-page grid (content | TOC)
+    - doc-header (eyebrow, h1, lead)
+    - doc-content (markdown body)
+    - doc-toc (sticky right rail, only when headings exist)
+*/}}
+<div class="doc-page{{ if or (eq (len .TableOfContents) 0) .Params.noToc }} doc-page--no-toc{{ end }}">
 
-  <div class="doc-body{{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }} doc-body--has-toc{{ end }}">
+  {{/* ── Left: article column ───────────────────────────────── */}}
+  <article class="doc-article">
+    <header class="doc-header">
+      {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+
     <div class="doc-content">
       {{ .Content }}
     </div>
-    {{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }}
-    <aside class="doc-toc" aria-label="On this page">
-      <div class="toc-inner">
-        <p class="toc-title">On this page</p>
-        {{ .TableOfContents }}
-      </div>
-    </aside>
-    {{ end }}
-  </div>
-</article>
+  </article>
+
+  {{/* ── Right: sticky table of contents ───────────────────── */}}
+  {{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }}
+  <aside class="doc-toc" aria-label="On this page">
+    <span class="toc-title">On this page</span>
+    {{ .TableOfContents }}
+  </aside>
+  {{ end }}
+
+</div>
 {{ end }}

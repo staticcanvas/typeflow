@@ -1,22 +1,30 @@
 {{ define "main" }}
-<div class="doc-page">
-  <header class="doc-header">
-    {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
-    <h1>{{ .Title }}</h1>
-    {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
-  </header>
-  
-  <div class="doc-content">
-    {{ .Content }}
-    
-    <div class="card-grid">
-      {{ range .Pages }}
-      <a class="guide-card" href="{{ .Permalink }}">
-        <h3>{{ .Title }}</h3>
-        <p>{{ .Description }}</p>
-      </a>
+{{/*
+  list.html — Renders a section index page (e.g. /guides/).
+  No TOC on list pages; uses full content width.
+*/}}
+<div class="doc-page doc-page--no-toc">
+  <article class="doc-article">
+    <header class="doc-header">
+      {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+
+    <div class="doc-content">
+      {{ .Content }}
+
+      {{ if .Pages }}
+      <div class="card-grid">
+        {{ range .Pages }}
+        <a class="guide-card" href="{{ .Permalink }}">
+          <h3>{{ .Title }}</h3>
+          {{ with .Description }}<p>{{ . }}</p>{{ end }}
+        </a>
+        {{ end }}
+      </div>
       {{ end }}
     </div>
-  </div>
+  </article>
 </div>
 {{ end }}

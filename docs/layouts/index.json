@@ -1,5 +1,10 @@
 {{- $pages := slice -}}
-{{- range site.RegularPages -}}
-  {{- $pages = $pages | append (dict "title" .Title "permalink" .Permalink "description" .Description "content" (.Plain | truncate 200) "section" .Section) -}}
+{{- range site.AllPages -}}
+  {{- if and .Title (not (in (slice "404" "index.json") .Title)) (ne .Kind "taxonomy") (ne .Kind "term") -}}
+    {{- $keywords := .Params.keywords | default slice -}}
+    {{- $category := .Params.category | default .Params.eyebrow | default .Section | default "General" -}}
+    {{- $pages = $pages | append (dict "title" .Title "permalink" .RelPermalink "description" (.Description | default "") "keywords" $keywords "category" $category "content" (.Plain | truncate 3500) "raw" (.RawContent | default "")) -}}
+  {{- end -}}
 {{- end -}}
 {{- $pages | jsonify -}}
+
