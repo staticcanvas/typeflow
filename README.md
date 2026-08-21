@@ -18,14 +18,18 @@ graph TD
 
 ## Features
 
-- **Zero Runtime Dependencies**: Pure ECMAScript with DOM integration.
+- **Zero Runtime Dependencies**: Pure ECMAScript with native DOM batching.
 - **Safe HTML Support**: Parses and types structured markup while keeping HTML tags balanced and sanitized against script injection.
-- **Bidirectional Erasing**: Erase animations via `end` (backspace), `start` (left erosion), `fade` (opacity transition), or `instant`.
-- **Sequence Orchestration**: Coordinate multi-step animations (`type`, `erase`, `pause`, `call`) across multiple DOM targets.
+- **`Intl.Segmenter` Powered**: Accurate grapheme and word segmentation for international character clusters and compound emojis (`🚀`, `👨‍👩‍👧‍👦`).
+- **Scramble & Matrix Decrypt Reveals**: Cyberpunk glyph scramble typing (`typeStyle: 'scramble'`) and erase decryption (`eraseStyle: 'scramble'`).
+- **Word-Level Granularity**: Type or erase atomic words rather than characters (`granularity: 'word'`).
+- **Natural Cadence Punctuation Pacing**: Micro-pauses at commas, colons, and sentence stops (`naturalCadence: true`).
+- **Bidirectional Erasing**: Erase animations via `end` (backspace), `start` (left erosion), `fade` (opacity transition), `scramble`, or `instant`.
+- **Sequence Orchestration & Viewport Triggers**: Coordinate multi-step animations (`type`, `erase`, `pause`, `visible`, `call`) with `seq.visible()` IntersectionObserver delays.
 - **Rotator Pattern**: Built-in helper for cyclic word replacements with customizable hold and pause durations.
 - **DOM Mutation Watcher**: Automatically animate elements injected into the DOM without manual `MutationObserver` code.
 - **Reduced Motion Compliance**: Respects `prefers-reduced-motion` settings automatically.
-- **Framework Adapters**: First-class adapters for React (`createTypeFlowReact`, `createTypeFlowSequenceReact`) and Vue (`createTypeFlowVue`, `createTypeFlowSequenceVue`).
+- **Framework Adapters**: First-class adapters for React (`createTypeFlowReact`), Vue (`createTypeFlowVue`), Svelte (`createTypeFlowSvelte`), and Solid.js (`createTypeFlowSolid`).
 
 ## Installation
 
@@ -45,11 +49,11 @@ npx jsr add @staticcanvas/typeflow
 
 ```html
 <!-- UMD (Global window.TypeFlow) -->
-<script src="https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.2.0/dist/typeflow.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.3.0/dist/typeflow.js"></script>
 
 <!-- ESM Module -->
 <script type="module">
-  import { TypeFlow, seq } from 'https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.2.0/dist/typeflow.esm.js';
+  import { TypeFlow, seq } from 'https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.3.0/dist/typeflow.esm.js';
 </script>
 ```
 
@@ -60,18 +64,31 @@ npx jsr add @staticcanvas/typeflow
 ```javascript
 import { TypeFlow } from '@staticcanvas/typeflow';
 
-// Plain text typing
-const controller = TypeFlow.type('#headline', 'Building resilient interfaces.', {
+// Plain text typing with natural punctuation cadence
+const controller = TypeFlow.type('#headline', 'Building resilient interfaces. Zero dependencies.', {
   speed: 45,
+  naturalCadence: true,
   cursor: '|',
   cursorBlink: true,
   onComplete: (text) => console.log('Typing complete:', text)
 });
 
-// Erase with left-erosion style
+// Erase with scramble decrypt style
 TypeFlow.erase('#headline', {
   speed: 20,
-  eraseStyle: 'start'
+  eraseStyle: 'scramble'
+});
+```
+
+### Matrix Decrypt & Scramble Reveal
+
+```javascript
+import { TypeFlow } from '@staticcanvas/typeflow';
+
+TypeFlow.type('#terminal', 'SYSTEM SECURE: ACCESS GRANTED', {
+  typeStyle: 'scramble',
+  scrambleRounds: 2,
+  speed: 35
 });
 ```
 
@@ -88,12 +105,13 @@ TypeFlow.type('#output', 'Deploy to <strong>Production</strong> with <span class
 });
 ```
 
-### Sequential Multi-Step Orchestration
+### Sequential Multi-Step Orchestration & Viewport Triggers
 
 ```javascript
 import { TypeFlow, seq } from '@staticcanvas/typeflow';
 
 TypeFlow.sequence([
+  seq.visible('#step-1'), // Waits until element scrolls into view
   seq.type('#step-1', 'Initializing runtime kernel...'),
   seq.pause(600),
   seq.call(() => console.log('Phase 1 complete')),
@@ -102,23 +120,11 @@ TypeFlow.sequence([
 ], { repeat: 1 });
 ```
 
-### Rotating Words
+### Framework Adapters
 
-```javascript
-import { TypeFlow } from '@staticcanvas/typeflow';
+#### React
 
-TypeFlow.rotate('#rotating-text', ['Fast.', 'Secure.', 'Accessible.'], {
-  typeConfig: { speed: 40 },
-  eraseConfig: { eraseStyle: 'end', speed: 20 },
-  holdDuration: 1500,
-  pauseBetween: 250,
-  repeat: Infinity
-});
-```
-
-### React Adapter
-
-```javascript
+```jsx
 import React from 'react';
 import { createTypeFlowReact } from '@staticcanvas/typeflow';
 
@@ -130,22 +136,47 @@ function Headline() {
 }
 ```
 
-### Vue Adapter
+#### Vue
 
-```javascript
+```vue
+<script setup>
 import * as Vue from 'vue';
 import { createTypeFlowVue } from '@staticcanvas/typeflow';
 
 const useTypeFlow = createTypeFlowVue(Vue);
+const text = Vue.ref('Reactive Typewriter');
+const headlineRef = useTypeFlow(() => text.value, { speed: 50 });
+</script>
 
-export default {
-  setup() {
-    const text = Vue.ref('Reactive Typewriter');
-    const containerRef = useTypeFlow(() => text.value, { speed: 50 });
-    return { containerRef };
-  },
-  template: '<div ref="containerRef"></div>'
-};
+<template>
+  <h1 ref="headlineRef"></h1>
+</template>
+```
+
+#### Svelte
+
+```svelte
+<script>
+  import { createTypeFlowSvelte } from '@staticcanvas/typeflow';
+  const typeflow = createTypeFlowSvelte();
+</script>
+
+<h1 use:typeflow={{ text: 'Svelte Action Animation', config: { speed: 40 } }}></h1>
+```
+
+#### Solid.js
+
+```jsx
+import * as Solid from 'solid-js';
+import { createTypeFlowSolid } from '@staticcanvas/typeflow';
+
+const useTypeFlow = createTypeFlowSolid(Solid);
+
+export function Hero() {
+  const [headline, setHeadline] = Solid.createSignal('Solid.js Reactive Typography');
+  const ref = useTypeFlow(headline, { speed: 40 });
+  return <h1 ref={ref} />;
+}
 ```
 
 ## API Reference
@@ -154,9 +185,14 @@ export default {
 
 | Property | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `speed` | `number` | `50` (type) / `25` (erase) | Milliseconds per character. |
+| `speed` | `number` | `50` (type) / `25` (erase) | Milliseconds per character / word unit. |
 | `delay` | `number` | `0` | Delay before animation starts in milliseconds. |
-| `speedVariance` | `number` | `0` | Random variance range in milliseconds per character. |
+| `speedVariance` | `number` | `0` | Random variance range in milliseconds per unit. |
+| `naturalCadence`| `boolean`| `false` | Automatic micro-pauses at punctuation and word breaks. |
+| `granularity` | `"grapheme" \| "word"` | `"grapheme"` | Unit segmentation mode using `Intl.Segmenter`. |
+| `typeStyle` | `"char" \| "word" \| "scramble"` | `"char"` | Typing reveal presentation style. |
+| `scrambleGlyphs`| `string` | `"!<>-_\\/[]{}—=+*^?#________"` | Character pool used during scramble reveals. |
+| `scrambleRounds`| `number` | `2` | Number of glyph iterations per character. |
 | `cursor` | `string` | `"\|"` | Cursor character appended during animation. Set to `""` to disable. |
 | `cursorBlink` | `boolean` | `true` | Enables post-completion cursor blinking. |
 | `html` | `boolean` | `false` | Enables sanitized HTML parsing mode. |
@@ -166,12 +202,13 @@ export default {
 | `sanitizer` | `(html: string) => string` | `undefined` | Custom sanitizer function overriding default sanitizer. |
 | `respectReducedMotion`| `boolean` | `true` | Instantly completes animation when reduced motion is preferred. |
 | `ariaLive` | `"off" \| "polite" \| "assertive"` | `undefined` | ARIA live region policy applied to target element. |
-| `eraseStyle` | `"end" \| "start" \| "instant" \| "fade"` | `"end"` | Erase technique direction or visual transition mode. |
+| `eraseStyle` | `"end" \| "start" \| "scramble" \| "instant" \| "fade"` | `"end"` | Erase technique direction or visual transition mode. |
 | `duration` | `number` | `250` | Transition duration in ms when `eraseStyle: "fade"`. |
 | `preserveBaseline` | `boolean` | `true` | Preserves base content when erasing `append` mode elements. |
 | `onStart` | `() => void` | `undefined` | Callback invoked when animation begins. |
 | `onComplete` | `(text: string) => void` | `undefined` | Callback invoked upon animation completion. |
 | `onInterrupt` | `() => void` | `undefined` | Callback invoked when controller is aborted before completion. |
+
 
 ### `TypeFlowController`
 

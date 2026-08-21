@@ -6,12 +6,13 @@ eyebrow: Guides
 
 ## Erase Styles Overview
 
-TypeFlow supports four distinct erase styles:
+TypeFlow supports five distinct erase styles:
 
 | Style | Description | Behavior |
 | :--- | :--- | :--- |
 | `end` (default) | Standard backspace erase | Removes characters from right to left. |
 | `start` | Left erosion erase | Removes characters from left to right; tail stays in place. |
+| `scramble` | Matrix decrypt erase | Jitters characters into randomized glyphs before clearing. |
 | `fade` | CSS cross-fade | Fades element opacity smoothly before clearing content. |
 | `instant` | Immediate reset | Clears content instantly without animation. |
 
@@ -23,6 +24,16 @@ TypeFlow supports four distinct erase styles:
 TypeFlow.erase('#headline', {
   eraseStyle: 'end',
   speed: 20
+});
+```
+
+### Scramble / Decrypt Erase (`scramble`)
+
+```javascript
+TypeFlow.erase('#headline', {
+  eraseStyle: 'scramble',
+  scrambleRounds: 2,
+  speed: 25
 });
 ```
 

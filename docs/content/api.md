@@ -22,16 +22,21 @@ export interface TypeFlowConfig {
   speed?: number;
   delay?: number;
   speedVariance?: number;
+  naturalCadence?: boolean;
+  granularity?: "grapheme" | "word";
   cursor?: string;
   cursorBlink?: boolean;
   html?: boolean;
   mode?: "replace" | "append";
+  typeStyle?: "char" | "word" | "scramble";
+  scrambleGlyphs?: string;
+  scrambleRounds?: number;
   allowedTags?: string[];
   allowedAttributes?: Record<string, string[]>;
   sanitizer?: (html: string) => string;
   respectReducedMotion?: boolean;
   ariaLive?: "off" | "polite" | "assertive";
-  eraseStyle?: "end" | "start" | "instant" | "fade";
+  eraseStyle?: "end" | "start" | "scramble" | "instant" | "fade";
   duration?: number;
   preserveBaseline?: boolean;
   onStart?: () => void;
@@ -44,9 +49,14 @@ export interface TypeFlowConfig {
 
 | Property | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `speed` | `number` | `50` (type) / `25` (erase) | Milliseconds per character delay. |
+| `speed` | `number` | `50` (type) / `25` (erase) | Milliseconds per character / word delay. |
 | `delay` | `number` | `0` | Initial delay in ms before animation initiates. |
-| `speedVariance` | `number` | `0` | Random jitter (+/- ms) added per character for natural typing cadence. |
+| `speedVariance` | `number` | `0` | Random jitter (+/- ms) added per unit for natural typing cadence. |
+| `naturalCadence`| `boolean`| `false` | Adds natural micro-pauses at punctuation (. , ! ?) and word breaks. |
+| `granularity` | `"grapheme" \| "word"` | `"grapheme"` | Unit segmentation mode using `Intl.Segmenter`. |
+| `typeStyle` | `"char" \| "word" \| "scramble"` | `"char"` | Typing reveal presentation style. |
+| `scrambleGlyphs`| `string` | `"!<>-_\\/[]{}—=+*^?#________"` | Character pool used during scramble reveals. |
+| `scrambleRounds`| `number` | `2` | Number of glyph iterations per unit. |
 | `cursor` | `string` | `"\|"` | Cursor glyph string. Set to `""` to omit cursor. |
 | `cursorBlink` | `boolean` | `true` | Enables post-completion cursor blinking effect. |
 | `html` | `boolean` | `false` | When `true`, parses input string as structured HTML markup. |
@@ -56,7 +66,7 @@ export interface TypeFlowConfig {
 | `sanitizer` | `(html: string) => string` | `undefined` | Custom HTML sanitization function. |
 | `respectReducedMotion` | `boolean` | `true` | Skips animation if user OS has `prefers-reduced-motion: reduce`. |
 | `ariaLive` | `"off" \| "polite" \| "assertive"` | `undefined` | Updates the element `aria-live` attribute during typing. |
-| `eraseStyle` | `"end" \| "start" \| "instant" \| "fade"` | `"end"` | Erasing animation method. |
+| `eraseStyle` | `"end" \| "start" \| "scramble" \| "instant" \| "fade"` | `"end"` | Erasing animation method. |
 | `duration` | `number` | `250` | Fade duration in ms when `eraseStyle: 'fade'`. |
 | `preserveBaseline` | `boolean` | `true` | Retains initial prefix when erasing an `append` mode element. |
 | `onStart` | `() => void` | `undefined` | Callback invoked right before the first character renders. |
