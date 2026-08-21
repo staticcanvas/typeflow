@@ -1,0 +1,96 @@
+{{ define "main" }}
+<section class="home-hero">
+  {{ $version := site.Data.package.version | default site.Params.version }}
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="eyebrow-dot"></span> Typewriter animation engine · v{{ $version }}</p>
+    <h1>Next-generation typewriter animations</h1>
+    <p class="hero-lede">TypeFlow is a lightweight, zero-dependency typewriter animation engine with multi-directional erasing, HTML sanitization, and seamless sequence orchestration.</p>
+    <div class="hero-actions">
+      <a class="button button-primary" href="{{ "getting-started/" | relURL }}">Get started <span>→</span></a>
+      <a class="button button-secondary" href="{{ "playground/" | relURL }}">Interactive Playground</a>
+      <a class="button button-secondary" href="{{ "api/" | relURL }}">API Reference</a>
+    </div>
+    <div class="install-line">
+      <span>npm</span>
+      <code>npm install @staticcanvas/typeflow</code>
+      <button type="button" data-copy="npm install @staticcanvas/typeflow" aria-label="Copy install command">Copy</button>
+    </div>
+  </div>
+
+  <div class="hero-art" aria-label="Live interactive TypeFlow demonstration">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <div class="dots">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <span class="terminal-title">typeflow-kernel.js</span>
+      </div>
+      <div class="terminal-body">
+        <div class="line"><span class="prompt">$</span> <span id="hero-typewriter" class="tf-typed"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="metrics" aria-label="TypeFlow characteristics">
+  <div><strong>0</strong><span>runtime dependencies</span></div>
+  <div><strong>4</strong><span>erase styles</span></div>
+  <div><strong>&lt;4kb</strong><span>minified & gzipped</span></div>
+  <div><strong>100%</strong><span>safe HTML parsing</span></div>
+</section>
+
+<section class="home-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Capabilities</p>
+      <h2>Engine features</h2>
+    </div>
+    <a class="text-link" href="{{ "api/" | relURL }}">Read the API reference →</a>
+  </div>
+  <div class="feature-grid">
+    <article class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Bidirectional Erasing</h3>
+      <p>Supports backspace-style erasing (<code>end</code>), left-erosion (<code>start</code>), CSS opacity cross-fades (<code>fade</code>), and immediate resets (<code>instant</code>).</p>
+      <a href="{{ "guides/erase-styles/" | relURL }}">Erase styles guide →</a>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3>Safe HTML Support</h3>
+      <p>Render bold, italics, links, and styling tokens safely. Built-in allowlist sanitization neutralizes malicious scripts without breaking tag hierarchy.</p>
+      <a href="{{ "guides/html-sanitization/" | relURL }}">Sanitization guide →</a>
+    </article>
+    <article class="feature-card">
+      <div class="feature-icon">🎼</div>
+      <h3>Sequence Orchestration</h3>
+      <p>Compose rich conversational flows, step-by-step terminal outputs, and cyclical word rotators with explicit pause durations and callback hooks.</p>
+      <a href="{{ "guides/sequences/" | relURL }}">Sequences guide →</a>
+    </article>
+  </div>
+</section>
+
+<section class="home-section compact-section">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Documentation sections</p>
+      <h2>Explore TypeFlow</h2>
+    </div>
+  </div>
+  <div class="path-grid">
+    <a href="{{ "getting-started/" | relURL }}">
+      <strong>Getting Started</strong>
+      <small>Install the package and setup your first animated instance.</small>
+    </a>
+    <a href="{{ "playground/" | relURL }}">
+      <strong>Playground Workbench</strong>
+      <small>Test speeds, delays, erase styles, and HTML trees in real time.</small>
+    </a>
+    <a href="{{ "api/" | relURL }}">
+      <strong>API Reference</strong>
+      <small>Complete specifications for options, controllers, and adapters.</small>
+    </a>
+  </div>
+</section>
+{{ end }}

@@ -1,0 +1,131 @@
+{{ $cacheBust := now.Unix }}
+{{ $version := site.Data.package.version | default site.Params.version }}
+<!doctype html>
+<html lang="{{ site.Language.Lang | default "en" }}" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {{ $pageTitle := cond .IsHome "TypeFlow — JavaScript Typewriter Animation Library" (printf "%s · TypeFlow" .Title) }}
+    {{ $pageDescription := .Description | default site.Params.description }}
+    {{ $is404 := eq .Kind "404" }}
+    {{ $robots := cond $is404 "noindex, nofollow" "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" }}
+    <meta name="description" content="{{ $pageDescription }}">
+    <meta name="robots" content="{{ $robots }}">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#090d16" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+    <script>
+      (() => {
+        try {
+          const theme = localStorage.getItem('typeflow-docs-theme');
+          if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+        } catch {}
+      })();
+    </script>
+    <title>{{ $pageTitle }}</title>
+    {{ if not $is404 }}<link rel="canonical" href="{{ .Permalink }}">{{ end }}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TypeFlow documentation">
+    <meta property="og:locale" content="en_AU">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ .Permalink }}">
+    <meta property="og:image" content="{{ "assets/branding/typeflow-banner.svg" | absURL }}">
+    <meta property="og:image:alt" content="TypeFlow JavaScript typewriter library">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
+    <script type="application/ld+json">{{ dict "@context" "https://schema.org" "@type" "SoftwareApplication" "name" "TypeFlow" "description" $pageDescription "applicationCategory" "DeveloperApplication" "operatingSystem" "Any" "url" .Permalink "softwareVersion" $version "isAccessibleForFree" true "license" (printf "%s/-/blob/develop/LICENSE" site.Params.repository) "codeRepository" site.Params.repository "sameAs" (slice site.Params.repository site.Params.github) | jsonify | safeJS }}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+    <link rel="icon" type="image/svg+xml" href="{{ "assets/branding/typeflow-logo.svg" | relURL }}">
+    <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $cacheBust }}">
+    <link rel="stylesheet" href="{{ "assets/docs.css" | relURL }}?v={{ $cacheBust }}">
+    <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}?v={{ $cacheBust }}">
+    {{ block "head" . }}{{ end }}
+  </head>
+  <body data-package-version="{{ $version }}" data-search-index="{{ "index.json" | relURL }}?v={{ $cacheBust }}">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="{{ "" | relURL }}" aria-label="TypeFlow home">
+          <img src="{{ "assets/branding/typeflow-logo.svg" | relURL }}" alt="" width="32" height="32">
+          <span>TypeFlow</span>
+          <small>v{{ $version }}</small>
+        </a>
+        <label class="search-box" for="site-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="site-search" type="search" placeholder="Search docs, APIs, and guides" autocomplete="off" role="combobox" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+          <kbd>Ctrl+K</kbd>
+          <div id="search-results" class="search-results" role="listbox" aria-label="Documentation search results" hidden></div>
+        </label>
+        <nav class="header-actions" aria-label="Utility navigation">
+          <a class="header-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab ↗</a>
+          <a class="header-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer">GitHub ↗</a>
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle color theme">◐</button>
+          {{ if not .Params.fullWidth }}
+          <button class="icon-button mobile-menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-sidebar" aria-label="Open navigation">☰</button>
+          {{ end }}
+        </nav>
+      </div>
+    </header>
+    <div class="shell{{ if .Params.fullWidth }} full-page-shell{{ else }} site-layout{{ end }}">
+      {{ if not .Params.fullWidth }}
+      <aside class="sidebar" id="site-sidebar" data-sidebar>
+        <nav aria-label="Documentation navigation">
+          {{ range site.Menus.main }}
+          <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}" href="{{ .URL | relURL }}"{{ if eq $.RelPermalink .URL }} aria-current="page"{{ end }}>{{ .Name }}</a>
+          {{ if .HasChildren }}
+          <div class="sidebar-children">
+            {{ range .Children }}
+            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}" href="{{ .URL | relURL }}"{{ if eq $.RelPermalink .URL }} aria-current="page"{{ end }}>{{ .Name }}</a>
+            {{ end }}
+          </div>
+          {{ end }}
+          {{ end }}
+        </nav>
+        <div class="sidebar-rule"></div>
+        <p class="sidebar-label">Resources</p>
+        <a class="sidebar-link" href="{{ "downloads/" | relURL }}">Downloads</a>
+        <a class="sidebar-link" href="{{ "changelog/" | relURL }}">Changelog</a>
+      </aside>
+      {{ end }}
+      <main id="main-content" class="main-content">
+        {{ block "main" . }}{{ end }}
+      </main>
+    </div>
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="{{ "" | relURL }}">
+            <img src="{{ "assets/branding/typeflow-logo.svg" | relURL }}" alt="" width="32" height="32">
+            <span>TypeFlow</span>
+          </a>
+          <p>Zero-dependency, interruptible typewriter animation library by StaticCanvas.</p>
+        </div>
+        <div>
+          <p class="footer-label">Documentation</p>
+          <a href="{{ "getting-started/" | relURL }}">Getting Started</a>
+          <a href="{{ "guides/sequences/" | relURL }}">Sequences Guide</a>
+          <a href="{{ "api/" | relURL }}">API Reference</a>
+          <a href="{{ "playground/" | relURL }}">Interactive Playground</a>
+        </div>
+        <div>
+          <p class="footer-label">Project</p>
+          <a href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab Repository ↗</a>
+          <a href="{{ site.Params.repository }}/-/issues" target="_blank" rel="noreferrer">Issue Tracker ↗</a>
+          <a href="{{ "downloads/" | relURL }}">Releases & Packages</a>
+        </div>
+        <div>
+          <p class="footer-label">Legal</p>
+          <a href="{{ site.Params.repository }}/-/blob/develop/LICENSE" target="_blank" rel="noreferrer">MIT License ↗</a>
+          <span>© StaticCanvas</span>
+          <span>Version {{ $version }}</span>
+        </div>
+      </div>
+    </footer>
+    <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $cacheBust }}"></script>
+    {{ block "scripts" . }}{{ end }}
+  </body>
+</html>

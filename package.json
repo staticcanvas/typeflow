@@ -1,0 +1,74 @@
+{
+  "name": "@staticcanvas/typeflow",
+  "version": "2.2.0",
+  "description": "A lightweight, interruptible, framework-agnostic typewriter animation library.",
+  "type": "module",
+  "main": "./dist/typeflow.cjs",
+  "module": "./dist/typeflow.mjs",
+  "browser": "./dist/typeflow.js",
+  "types": "./src/typeflow.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/typeflow.mjs",
+      "require": "./dist/typeflow.cjs",
+      "default": "./dist/typeflow.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "branding",
+    "README-npm.md",
+    "LICENSE",
+    "jsr.jsonc"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "serve:demo": "vite --open docs/static/webutil/index.html",
+    "docs:build": "npm run build && hugo --source docs",
+    "docs:serve": "npm run build && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
+    "build": "vite build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "check:size": "node scripts/check-bundle-size.mjs",
+    "validate:release": "node scripts/validate-release.mjs",
+    "check:quality": "npm run build && npm run check:size && npm test"
+  },
+  "keywords": [
+    "typewriter",
+    "typing-effect",
+    "typeflow",
+    "animation",
+    "ui-component",
+    "vanilla-js",
+    "staticcanvas",
+    "esm"
+  ],
+  "author": "Garvey K. Snow",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/staticcanvas/typeflow.git"
+  },
+  "homepage": "https://staticcanvas.gitlab.io/typeflow",
+  "bugs": {
+    "url": "https://gitlab.com/staticcanvas/typeflow/-/issues"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@vitest/coverage-v8": "^3.2.7",
+    "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.0.1",
+    "globals": "^15.14.0",
+    "jsdom": "^26.0.0",
+    "prettier": "^3.5.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.5"
+  }
+}
