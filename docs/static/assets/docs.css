@@ -1508,10 +1508,38 @@ td code {
   height: 12px;
 }
 
-.hero-cdn-type {
-  font-size: 10.5px;
-  color: var(--tf-text-muted);
-  font-family: var(--tf-font-mono);
+.hero-cdn-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--tf-bg-canvas);
+  border: 1px solid var(--tf-border-subtle);
+  border-radius: 6px;
+  padding: 2px;
+  border-bottom: none !important;
+}
+
+.hero-cdn-pills button {
+  padding: 3px 8px !important;
+  font-size: 10.5px !important;
+  font-family: var(--tf-font-mono) !important;
+  font-weight: 600 !important;
+  color: var(--tf-text-secondary) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  background: transparent !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hero-cdn-pills button:hover {
+  color: var(--tf-text-primary) !important;
+}
+
+.hero-cdn-pills button[aria-selected="true"] {
+  color: #ff6b2b !important;
+  background: var(--tf-bg-surface-elevated) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .hero-cdn-body {
