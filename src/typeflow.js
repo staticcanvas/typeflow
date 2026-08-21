@@ -21,7 +21,7 @@ const TypeFlow = (() => {
     /**
      * Creates a typewriter effect that can be interrupted and restarted
      * @param {HTMLElement|string} targetElement - Element or selector to type into
-     * @param {string} text - Text to type
+     * @param {string} text - Text to type (can be plain text or HTML)
      * @param {Object} config - Configuration options
      * @param {number} config.speed - Typing speed in ms per character (default: 50)
      * @param {number} config.delay - Initial delay before typing starts (default: 0)
@@ -30,6 +30,7 @@ const TypeFlow = (() => {
      * @param {Function} config.onComplete - Callback when typing completes
      * @param {Function} config.onInterrupt - Callback when typing is interrupted
      * @param {string} config.mode - 'replace' or 'append' (default: 'replace')
+     * @param {boolean} config.html - Enable HTML mode to preserve tags (default: false)
      * @returns {Object} Control object with stop() method and promise
      */
     function type(targetElement, text, config = {}) {
