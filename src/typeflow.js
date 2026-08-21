@@ -1,10 +1,10 @@
 /**
  * TypeFlow - A lightweight, interruptible, framework-agnostic typewriter library
- * @version 2.2.0
+ * @version 2.3.0
  * @license MIT
  *
  * Zero dependencies. Safe by default (no innerHTML string concatenation).
- * Vanilla-first, with optional adapter factories for React and Vue.
+ * Vanilla-first, with Intl.Segmenter support, multi-style reveals, and adapters for React and Vue.
  */
 
 // ============================================================
@@ -12,12 +12,16 @@
 // ============================================================
 
 export interface TypeFlowConfig {
-  /** Ms per character. Default: 50 (type) / 25 (erase) */
+  /** Ms per character/word. Default: 50 (type) / 25 (erase) */
   speed?: number;
   /** Ms before the animation starts. Default: 0 */
   delay?: number;
-  /** +/- ms randomization per character for a more natural feel. Default: 0 */
+  /** +/- ms randomization per character/word for a more natural feel. Default: 0 */
   speedVariance?: number;
+  /** Automatically add micro-pauses at punctuation (. , ! ?) and word boundaries. Default: false */
+  naturalCadence?: boolean;
+  /** Granularity of typing and erasing. Default: 'grapheme' */
+  granularity?: "grapheme" | "word";
   /** Cursor character. Empty string disables it. Default: '|' */
   cursor?: string;
   /** Blink the cursor once typing completes. Default: true. (Ignored by erase.) */
@@ -26,6 +30,12 @@ export interface TypeFlowConfig {
   html?: boolean;
   /** 'replace' clears the target first; 'append' types after existing content. Default: 'replace' */
   mode?: "replace" | "append";
+  /** Reveal style for typing: 'char' (standard), 'word', 'scramble' (matrix decrypt). Default: 'char' */
+  typeStyle?: "char" | "word" | "scramble";
+  /** Custom scramble glyph characters when typeStyle or eraseStyle is 'scramble'. */
+  scrambleGlyphs?: string;
+  /** Number of scramble iterations per unit before settling. Default: 2 */
+  scrambleRounds?: number;
   /** Extra tags allowed in html mode, merged with the safe default list. */
   allowedTags?: string[];
   /** Extra attributes allowed per tag, merged with the safe default map. */
@@ -38,12 +48,13 @@ export interface TypeFlowConfig {
   ariaLive?: "off" | "polite" | "assertive";
   /**
    * Erase-only: which direction/technique to erase with. Default: 'end'
-   * - 'end'     backspace-style, removes from the right
-   * - 'start'   removes from the left, tail stays until the end
-   * - 'instant' clears immediately, no animation
-   * - 'fade'    CSS opacity fade-out, then clears
+   * - 'end'      backspace-style, removes from the right
+   * - 'start'    removes from the left, tail stays until the end
+   * - 'scramble' scrambles characters into glyphs before clearing
+   * - 'instant'  clears immediately, no animation
+   * - 'fade'     CSS opacity fade-out, then clears
    */
-  eraseStyle?: "end" | "start" | "instant" | "fade";
+  eraseStyle?: "end" | "start" | "scramble" | "instant" | "fade";
   /** Erase-only: duration in ms for eraseStyle 'fade'. Default: 250 */
   duration?: number;
   /**
@@ -73,6 +84,7 @@ export type TypeFlowStep =
   | { kind: "type"; target?: HTMLElement | string; text: string; config?: TypeFlowConfig }
   | { kind: "erase"; target?: HTMLElement | string; config?: TypeFlowConfig }
   | { kind: "pause"; duration: number }
+  | { kind: "visible"; target?: HTMLElement | string; threshold?: number }
   | { kind: "call"; fn: () => void | Promise<void> };
 
 export interface TypeFlowSequenceConfig {
@@ -104,23 +116,29 @@ export interface TypeFlowRotateConfig {
 const TYPE_DEFAULTS: Required<
   Pick<
     TypeFlowConfig,
-    | "speed" | "delay" | "speedVariance" | "cursor" | "cursorBlink"
-    | "html" | "mode" | "respectReducedMotion"
+    | "speed" | "delay" | "speedVariance" | "naturalCadence" | "granularity"
+    | "cursor" | "cursorBlink" | "html" | "mode" | "typeStyle"
+    | "scrambleGlyphs" | "scrambleRounds" | "respectReducedMotion"
   >
 > = {
   speed: 50,
   delay: 0,
   speedVariance: 0,
+  naturalCadence: false,
+  granularity: "grapheme",
   cursor: "|",
   cursorBlink: true,
   html: false,
   mode: "replace",
+  typeStyle: "char",
+  scrambleGlyphs: "!<>-_\\/[]{}—=+*^?#________",
+  scrambleRounds: 2,
   respectReducedMotion: true,
 };
 
 const ERASE_DEFAULTS: TypeFlowConfig = {
   ...TYPE_DEFAULTS,
-  speed: 25, // erasing reads better faster than typing by default
+  speed: 25,
   cursorBlink: false,
   eraseStyle: "end",
   preserveBaseline: true,
@@ -147,8 +165,27 @@ const CURSOR_BLINK_INTERVAL = 530;
 const DEFAULT_FADE_DURATION = 250;
 
 // ============================================================
-// Sanitization (built-in, allowlist based — this only ever builds a
-// detached, sanitized tree; nothing here touches the live DOM)
+// Intl.Segmenter Helper & Unit Slicing
+// ============================================================
+
+function segmentText(text: string, granularity: "grapheme" | "word" = "grapheme"): string[] {
+  if (typeof Intl !== "undefined" && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity });
+    return Array.from(segmenter.segment(text), (s) => s.segment);
+  }
+  if (granularity === "word") {
+    const matches = text.match(/\s+|\S+/g);
+    return matches ? matches : [text];
+  }
+  return Array.from(text);
+}
+
+function getRandomGlyph(glyphs: string): string {
+  return glyphs[Math.floor(Math.random() * glyphs.length)];
+}
+
+// ============================================================
+// Sanitization
 // ============================================================
 
 function isSafeUrl(value: string): boolean {
@@ -219,27 +256,36 @@ function buildSourceTree(
 }
 
 // ============================================================
-// Reveal engines
-// revealFragment: takes the first N characters (used for typing, and
-//   for eraseStyle 'end' by counting DOWN — visually removes from the right)
-// revealSuffixFragment: skips the first N characters (used for
-//   eraseStyle 'start' — visually removes from the left)
-// Both always produce structurally valid, fully-closed markup.
+// Reveal Engines
 // ============================================================
 
-function countTextLength(node: Node): number {
-  if (node.nodeType === Node.TEXT_NODE) return (node.textContent ?? "").length;
+function countTextUnits(node: Node, granularity: "grapheme" | "word" = "grapheme"): number {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return segmentText(node.textContent ?? "", granularity).length;
+  }
   let total = 0;
-  node.childNodes.forEach((child) => (total += countTextLength(child)));
+  node.childNodes.forEach((child) => (total += countTextUnits(child, granularity)));
   return total;
 }
 
-function cloneReveal(node: Node, remaining: number): { clone: Node | null; remaining: number } {
+function cloneReveal(
+  node: Node,
+  remaining: number,
+  granularity: "grapheme" | "word" = "grapheme",
+  scrambleOpts?: { active: boolean; glyphs: string }
+): { clone: Node | null; remaining: number } {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent ?? "";
+    const units = segmentText(text, granularity);
     if (remaining <= 0) return { clone: null, remaining };
-    if (text.length <= remaining) return { clone: document.createTextNode(text), remaining: remaining - text.length };
-    return { clone: document.createTextNode(text.slice(0, remaining)), remaining: 0 };
+    if (units.length <= remaining) {
+      return { clone: document.createTextNode(text), remaining: remaining - units.length };
+    }
+    let sliced = units.slice(0, remaining).join("");
+    if (scrambleOpts?.active && remaining > 0 && units[remaining - 1]?.trim()) {
+      sliced = units.slice(0, remaining - 1).join("") + getRandomGlyph(scrambleOpts.glyphs);
+    }
+    return { clone: document.createTextNode(sliced), remaining: 0 };
   }
   if (node.nodeType === Node.ELEMENT_NODE) {
     const el = node as Element;
@@ -254,7 +300,7 @@ function cloneReveal(node: Node, remaining: number): { clone: Node | null; remai
     let appended = false;
     node.childNodes.forEach((child) => {
       if (rem < 0) return;
-      const result = cloneReveal(child, rem);
+      const result = cloneReveal(child, rem, granularity, scrambleOpts);
       if (result.clone) { clone.appendChild(result.clone); appended = true; }
       rem = result.remaining;
     });
@@ -263,24 +309,34 @@ function cloneReveal(node: Node, remaining: number): { clone: Node | null; remai
   return { clone: null, remaining };
 }
 
-function revealFragment(source: DocumentFragment, charCount: number): DocumentFragment {
+function revealFragment(
+  source: DocumentFragment,
+  unitCount: number,
+  granularity: "grapheme" | "word" = "grapheme",
+  scrambleOpts?: { active: boolean; glyphs: string }
+): DocumentFragment {
   const out = document.createDocumentFragment();
-  let remaining = charCount;
+  let remaining = unitCount;
   source.childNodes.forEach((child) => {
     if (remaining < 0) return;
-    const result = cloneReveal(child, remaining);
+    const result = cloneReveal(child, remaining, granularity, scrambleOpts);
     if (result.clone) out.appendChild(result.clone);
     remaining = result.remaining;
   });
   return out;
 }
 
-function cloneRevealSuffix(node: Node, skip: number): { clone: Node | null; skip: number } {
+function cloneRevealSuffix(
+  node: Node,
+  skip: number,
+  granularity: "grapheme" | "word" = "grapheme"
+): { clone: Node | null; skip: number } {
   if (node.nodeType === Node.TEXT_NODE) {
     const text = node.textContent ?? "";
+    const units = segmentText(text, granularity);
     if (skip <= 0) return { clone: document.createTextNode(text), skip: 0 };
-    if (skip >= text.length) return { clone: null, skip: skip - text.length };
-    return { clone: document.createTextNode(text.slice(skip)), skip: 0 };
+    if (skip >= units.length) return { clone: null, skip: skip - units.length };
+    return { clone: document.createTextNode(units.slice(skip).join("")), skip: 0 };
   }
   if (node.nodeType === Node.ELEMENT_NODE) {
     const el = node as Element;
@@ -293,7 +349,7 @@ function cloneRevealSuffix(node: Node, skip: number): { clone: Node | null; skip
     let rem = skip;
     let appended = false;
     node.childNodes.forEach((child) => {
-      const result = cloneRevealSuffix(child, rem);
+      const result = cloneRevealSuffix(child, rem, granularity);
       if (result.clone) { clone.appendChild(result.clone); appended = true; }
       rem = result.skip;
     });
@@ -302,21 +358,30 @@ function cloneRevealSuffix(node: Node, skip: number): { clone: Node | null; skip
   return { clone: null, skip };
 }
 
-function revealSuffixFragment(source: DocumentFragment, skipCount: number): DocumentFragment {
+function revealSuffixFragment(
+  source: DocumentFragment,
+  skipCount: number,
+  granularity: "grapheme" | "word" = "grapheme"
+): DocumentFragment {
   const out = document.createDocumentFragment();
   let skip = skipCount;
   source.childNodes.forEach((child) => {
-    const result = cloneRevealSuffix(child, skip);
+    const result = cloneRevealSuffix(child, skip, granularity);
     if (result.clone) out.appendChild(result.clone);
     skip = result.skip;
   });
   return out;
 }
 
-type Renderer = (source: DocumentFragment, count: number) => DocumentFragment;
+type Renderer = (
+  source: DocumentFragment,
+  count: number,
+  granularity: "grapheme" | "word",
+  scrambleOpts?: { active: boolean; glyphs: string }
+) => DocumentFragment;
 
 // ============================================================
-// Core engine
+// Core Engine
 // ============================================================
 
 function resolveTarget(target: HTMLElement | string): HTMLElement {
@@ -337,16 +402,23 @@ function prefersReducedMotion(): boolean {
   );
 }
 
+function calculateCadencePause(text: string, count: number): number {
+  if (count <= 0 || count > text.length) return 0;
+  const char = text[count - 1];
+  if (char === "." || char === "!" || char === "?") return 220;
+  if (char === "," || char === ";" || char === ":") return 110;
+  if (char === " ") return 40;
+  return 0;
+}
+
 class TypeFlowEngine {
   private active = new Map<HTMLElement, TypeFlowController>();
-  /** Tracks the "unerasable" prefix nodes for elements built with mode: 'append'. */
   private baselines = new WeakMap<HTMLElement, Node[]>();
 
-  /** Shared stepping engine used by type() and the 'end'/'start' erase styles. */
   private animate(
     el: HTMLElement,
     sourceTree: DocumentFragment,
-    totalChars: number,
+    totalUnits: number,
     options: TypeFlowConfig,
     startCount: number,
     endCount: number,
@@ -361,6 +433,9 @@ class TypeFlowEngine {
     const blinkOnFinish = extra.blinkOnFinish ?? false;
     const direction = endCount >= startCount ? 1 : -1;
     const speed = options.speed ?? TYPE_DEFAULTS.speed;
+    const granularity = options.granularity ?? TYPE_DEFAULTS.granularity;
+    const isScramble = options.typeStyle === "scramble" || options.eraseStyle === "scramble";
+    const scrambleGlyphs = options.scrambleGlyphs ?? TYPE_DEFAULTS.scrambleGlyphs;
 
     let settled = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -374,8 +449,11 @@ class TypeFlowEngine {
       cursorInterval = null;
     };
 
-    const render = (charCount: number, cursorChar: string) => {
-      el.replaceChildren(...prefix, renderer(sourceTree, charCount));
+    const render = (unitCount: number, cursorChar: string, scrambleActive = false) => {
+      el.replaceChildren(
+        ...prefix,
+        renderer(sourceTree, unitCount, granularity, { active: scrambleActive, glyphs: scrambleGlyphs })
+      );
       if (cursorChar) el.appendChild(document.createTextNode(cursorChar));
     };
 
@@ -385,11 +463,11 @@ class TypeFlowEngine {
       clearTimers();
       this.active.delete(el);
       if (completed) {
-        render(endCount, "");
+        render(endCount, "", false);
         if (blinkOnFinish && options.cursor && options.cursorBlink) {
           let visible = true;
           cursorInterval = setInterval(() => {
-            render(endCount, visible ? options.cursor! : CURSOR_SPACER);
+            render(endCount, visible ? options.cursor! : CURSOR_SPACER, false);
             visible = !visible;
           }, CURSOR_BLINK_INTERVAL);
         }
@@ -411,11 +489,25 @@ class TypeFlowEngine {
       return controller;
     }
 
+    let scrambleStep = 0;
+    const scrambleRounds = options.scrambleRounds ?? TYPE_DEFAULTS.scrambleRounds;
+
     const step = (count: number) => {
-      render(count, options.cursor ?? "");
+      if (isScramble && scrambleStep < scrambleRounds && count !== endCount) {
+        render(count, options.cursor ?? "", true);
+        scrambleStep++;
+        timeoutId = setTimeout(() => step(count), Math.max(10, speed / 2));
+        return;
+      }
+      scrambleStep = 0;
+
+      render(count, options.cursor ?? "", false);
       if (count === endCount) { settle(true); return; }
+
       const jitter = options.speedVariance ? (Math.random() * 2 - 1) * options.speedVariance : 0;
-      const delayMs = Math.max(0, speed + jitter);
+      const cadencePause = options.naturalCadence ? calculateCadencePause(resultText, count) : 0;
+      const delayMs = Math.max(0, speed + jitter + cadencePause);
+
       timeoutId = setTimeout(() => step(count + direction), delayMs);
     };
 
@@ -424,7 +516,6 @@ class TypeFlowEngine {
     return controller;
   }
 
-  /** CSS opacity fade-out, used by eraseStyle: 'fade'. Bypasses the char-reveal engine entirely. */
   private eraseFade(
     el: HTMLElement,
     erasableLive: Node[],
@@ -485,6 +576,8 @@ class TypeFlowEngine {
   type(target: HTMLElement | string, text: string, config: TypeFlowConfig = {}): TypeFlowController {
     const el = resolveTarget(target);
     const options: TypeFlowConfig = { ...TYPE_DEFAULTS, ...config };
+    if (options.typeStyle === "word") options.granularity = "word";
+
     const allowedTags = new Set([...DEFAULT_ALLOWED_TAGS, ...(options.allowedTags ?? [])]);
     const allowedAttrs: Record<string, Set<string>> = { ...DEFAULT_ALLOWED_ATTRS };
     if (options.allowedAttributes) {
@@ -496,19 +589,18 @@ class TypeFlowEngine {
     let sourceText = String(text);
     if (options.html && options.sanitizer) sourceText = options.sanitizer(sourceText);
     const sourceTree = buildSourceTree(sourceText, !options.html, allowedTags, allowedAttrs);
-    const totalChars = countTextLength(sourceTree);
+    const totalUnits = countTextUnits(sourceTree, options.granularity);
 
     const prefix = options.mode === "append" ? Array.from(el.childNodes) : [];
     if (options.mode === "append") this.baselines.set(el, prefix);
     else this.baselines.delete(el);
 
-    return this.animate(el, sourceTree, totalChars, options, 0, totalChars, sourceText, {
+    return this.animate(el, sourceTree, totalUnits, options, 0, totalUnits, sourceText, {
       prefix,
       blinkOnFinish: true,
     });
   }
 
-  /** Erases the target's current content. See TypeFlowConfig.eraseStyle for animation options. */
   erase(target: HTMLElement | string, config: TypeFlowConfig = {}): TypeFlowController {
     const el = resolveTarget(target);
     const options: TypeFlowConfig = { ...ERASE_DEFAULTS, ...config };
@@ -522,27 +614,24 @@ class TypeFlowEngine {
 
     const sourceTree = document.createDocumentFragment();
     erasableLive.forEach((n) => sourceTree.appendChild(n.cloneNode(true)));
-    const totalChars = countTextLength(sourceTree);
+    const totalUnits = countTextUnits(sourceTree, options.granularity);
 
     if (options.eraseStyle === "start") {
-      return this.animate(el, sourceTree, totalChars, options, 0, totalChars, "", {
+      return this.animate(el, sourceTree, totalUnits, options, 0, totalUnits, "", {
         prefix: baseline,
         renderer: revealSuffixFragment,
       });
     }
 
-    // 'end' (default)
-    return this.animate(el, sourceTree, totalChars, options, totalChars, 0, "", { prefix: baseline });
+    // 'end' & 'scramble'
+    return this.animate(el, sourceTree, totalUnits, options, totalUnits, 0, "", { prefix: baseline });
   }
 
-  /**
-   * Runs type / erase / pause / call steps in order. Stopping the returned
-   * controller stops the current step and cancels the rest. Never rejects.
-   */
   sequence(steps: TypeFlowStep[], seqConfig: TypeFlowSequenceConfig = {}): TypeFlowController {
     let isInterrupted = false;
     let currentSub: TypeFlowController | null = null;
     let cancelPause: (() => void) | null = null;
+    let cancelObserver: (() => void) | null = null;
 
     const resolveStepTarget = (step: { target?: HTMLElement | string }): HTMLElement | string => {
       const target = step.target ?? seqConfig.target;
@@ -560,6 +649,7 @@ class TypeFlowEngine {
         isInterrupted = true;
         currentSub?.stop();
         cancelPause?.();
+        cancelObserver?.();
       },
       promise: null as unknown as Promise<TypeFlowResult>,
     };
@@ -581,6 +671,24 @@ class TypeFlowEngine {
           });
           cancelPause = null;
           if (!finishedNaturally) return false;
+        } else if (step.kind === "visible") {
+          const targetEl = resolveTarget(resolveStepTarget(step));
+          const isVisible = await new Promise<boolean>((resolve) => {
+            if (typeof IntersectionObserver === "undefined") {
+              resolve(true);
+              return;
+            }
+            const observer = new IntersectionObserver((entries) => {
+              if (entries.some((e) => e.isIntersecting)) {
+                observer.disconnect();
+                resolve(true);
+              }
+            }, { threshold: step.threshold ?? 0.1 });
+            cancelObserver = () => { observer.disconnect(); resolve(false); };
+            observer.observe(targetEl);
+          });
+          cancelObserver = null;
+          if (!isVisible) return false;
         } else if (step.kind === "call") {
           await step.fn();
         }
@@ -601,12 +709,6 @@ class TypeFlowEngine {
     return controller;
   }
 
-  /**
-   * QoL shortcut for the extremely common "rotating text" pattern —
-   * builds and runs a type/pause/erase/pause sequence for each word.
-   *
-   *   TypeFlow.rotate('#hero span', ['designers.', 'developers.', 'you.']);
-   */
   rotate(target: HTMLElement | string, words: string[], config: TypeFlowRotateConfig = {}): TypeFlowController {
     const {
       typeConfig = {},
@@ -627,16 +729,6 @@ class TypeFlowEngine {
     return this.sequence(steps, { repeat });
   }
 
-  /**
-   * QoL shortcut for animating elements as they're added to the DOM later
-   * (e.g. search results, infinite scroll, streamed content) — wraps the
-   * MutationObserver boilerplate that pattern usually needs.
-   *
-   *   const watcher = TypeFlow.watch('#results', '.result-title', (el) => {
-   *     TypeFlow.type(el, el.textContent ?? '', { speed: 15, cursor: '' });
-   *   });
-   *   // later: watcher.disconnect();
-   */
   watch(
     container: HTMLElement | string,
     childSelector: string,
@@ -677,16 +769,17 @@ class TypeFlowEngine {
 }
 
 // ============================================================
-// Vanilla public API (singleton)
+// Vanilla Public API (Singleton)
 // ============================================================
 
 export const TypeFlow = new TypeFlowEngine();
 export default TypeFlow;
 
 export const seq = {
-  type: (target: HTMLElement | string, text: string, config?: TypeFlowConfig): TypeFlowStep => ({ kind: "type", target, text, config }),
-  erase: (target: HTMLElement | string, config?: TypeFlowConfig): TypeFlowStep => ({ kind: "erase", target, config }),
+  type: (target?: HTMLElement | string, text = "", config?: TypeFlowConfig): TypeFlowStep => ({ kind: "type", target, text, config }),
+  erase: (target?: HTMLElement | string, config?: TypeFlowConfig): TypeFlowStep => ({ kind: "erase", target, config }),
   pause: (duration: number): TypeFlowStep => ({ kind: "pause", duration }),
+  visible: (target?: HTMLElement | string, threshold?: number): TypeFlowStep => ({ kind: "visible", target, threshold }),
   call: (fn: () => void | Promise<void>): TypeFlowStep => ({ kind: "call", fn }),
 };
 
@@ -696,7 +789,7 @@ if (typeof window !== "undefined") {
 }
 
 // ============================================================
-// React adapter (no hard dependency — pass your React import in)
+// React Adapter
 // ============================================================
 
 interface ReactLike {
@@ -728,7 +821,7 @@ export function createTypeFlowSequenceReact(React: ReactLike) {
 }
 
 // ============================================================
-// Vue adapter (no hard dependency — pass your Vue import in)
+// Vue Adapter
 // ============================================================
 
 interface VueLike {
@@ -761,52 +854,3 @@ export function createTypeFlowSequenceVue(Vue: VueLike) {
     return run;
   };
 }
-
-/* ============================================
-   USAGE EXAMPLES
-   ============================================
-
-// Independent speed control for typing vs erasing
-TypeFlow.type('#hero', 'Hello there', { speed: 60 });
-TypeFlow.erase('#hero', { speed: 15, eraseStyle: 'end' });
-
-// Erase styles
-TypeFlow.erase('#hero', { eraseStyle: 'start' });    // erodes from the left
-TypeFlow.erase('#hero', { eraseStyle: 'fade' });     // opacity fade, then clear
-TypeFlow.erase('#hero', { eraseStyle: 'instant' });  // no animation
-
-// Rotating word pattern — one call instead of hand-built sequence
-TypeFlow.rotate('#hero-word', ['designers.', 'developers.', 'you.'], {
-  typeConfig: { speed: 40 },
-  eraseConfig: { eraseStyle: 'start', speed: 15 },
-  holdDuration: 1000,
-});
-
-// Append + erase only what was appended (baseline preserved)
-TypeFlow.type('#log', 'Status: ', { mode: 'replace' });
-TypeFlow.type('#log', 'Connecting...', { mode: 'append' });
-TypeFlow.erase('#log'); // only erases "Connecting...", "Status: " stays
-
-// Dynamically-added elements — no manual MutationObserver needed
-const watcher = TypeFlow.watch('#results', '.result-title', (el) => {
-  const text = el.textContent ?? '';
-  el.textContent = '';
-  TypeFlow.type(el, text, { speed: 15, cursor: '' });
-});
-// watcher.disconnect() when the list is torn down
-
-// Promise never rejects on interrupt — check `completed`
-const controller = TypeFlow.type('#output', 'Long text...', { speed: 40 });
-controller.promise.then(({ completed, text }) => {
-  console.log(completed ? 'finished:' : 'stopped early:', text);
-});
-setTimeout(() => controller.stop(), 300);
-
-// Sequence with a callback in between
-TypeFlow.sequence([
-  seq.type('#step1', 'Step one complete.'),
-  seq.pause(500),
-  seq.call(() => console.log('moving to step two')),
-  seq.type('#step2', 'Step two complete.'),
-]);
-*/

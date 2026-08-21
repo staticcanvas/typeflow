@@ -1,16 +1,20 @@
 /**
  * TypeFlow - TypeScript definitions
- * @version 2.2.0
+ * @version 2.3.0
  * @license MIT
  */
 
 export interface TypeFlowConfig {
-  /** Ms per character. Default: 50 (type) / 25 (erase) */
+  /** Ms per character/word. Default: 50 (type) / 25 (erase) */
   speed?: number;
   /** Ms before the animation starts. Default: 0 */
   delay?: number;
-  /** +/- ms randomization per character for a more natural feel. Default: 0 */
+  /** +/- ms randomization per character/word for a more natural feel. Default: 0 */
   speedVariance?: number;
+  /** Automatically add micro-pauses at punctuation (. , ! ?) and word boundaries. Default: false */
+  naturalCadence?: boolean;
+  /** Granularity of typing and erasing. Default: 'grapheme' */
+  granularity?: "grapheme" | "word";
   /** Cursor character. Empty string disables it. Default: '|' */
   cursor?: string;
   /** Blink the cursor once typing completes. Default: true. (Ignored by erase.) */
@@ -19,6 +23,12 @@ export interface TypeFlowConfig {
   html?: boolean;
   /** 'replace' clears the target first; 'append' types after existing content. Default: 'replace' */
   mode?: "replace" | "append";
+  /** Reveal style for typing: 'char' (standard), 'word', 'scramble' (matrix decrypt). Default: 'char' */
+  typeStyle?: "char" | "word" | "scramble";
+  /** Custom scramble glyph characters when typeStyle or eraseStyle is 'scramble'. */
+  scrambleGlyphs?: string;
+  /** Number of scramble iterations per unit before settling. Default: 2 */
+  scrambleRounds?: number;
   /** Extra tags allowed in html mode, merged with the safe default list. */
   allowedTags?: string[];
   /** Extra attributes allowed per tag, merged with the safe default map. */
@@ -31,12 +41,13 @@ export interface TypeFlowConfig {
   ariaLive?: "off" | "polite" | "assertive";
   /**
    * Erase-only: which direction/technique to erase with. Default: 'end'
-   * - 'end'     backspace-style, removes from the right
-   * - 'start'   removes from the left, tail stays until the end
-   * - 'instant' clears immediately, no animation
-   * - 'fade'    CSS opacity fade-out, then clears
+   * - 'end'      backspace-style, removes from the right
+   * - 'start'    removes from the left, tail stays until the end
+   * - 'scramble' scrambles characters into glyphs before clearing
+   * - 'instant'  clears immediately, no animation
+   * - 'fade'     CSS opacity fade-out, then clears
    */
-  eraseStyle?: "end" | "start" | "instant" | "fade";
+  eraseStyle?: "end" | "start" | "scramble" | "instant" | "fade";
   /** Erase-only: duration in ms for eraseStyle 'fade'. Default: 250 */
   duration?: number;
   /**
@@ -66,6 +77,7 @@ export type TypeFlowStep =
   | { kind: "type"; target?: HTMLElement | string; text: string; config?: TypeFlowConfig }
   | { kind: "erase"; target?: HTMLElement | string; config?: TypeFlowConfig }
   | { kind: "pause"; duration: number }
+  | { kind: "visible"; target?: HTMLElement | string; threshold?: number }
   | { kind: "call"; fn: () => void | Promise<void> };
 
 export interface TypeFlowSequenceConfig {
@@ -95,7 +107,7 @@ export declare class TypeFlowEngine {
   type(target: HTMLElement | string, text: string, config?: TypeFlowConfig): TypeFlowController;
   /** Erases the target's current content. */
   erase(target: HTMLElement | string, config?: TypeFlowConfig): TypeFlowController;
-  /** Runs type / erase / pause / call steps in order. */
+  /** Runs type / erase / pause / visible / call steps in order. */
   sequence(steps: TypeFlowStep[], seqConfig?: TypeFlowSequenceConfig): TypeFlowController;
   /** QoL shortcut for the rotating text pattern. */
   rotate(target: HTMLElement | string, words: string[], config?: TypeFlowRotateConfig): TypeFlowController;
@@ -120,6 +132,7 @@ export declare const seq: {
   type: (target?: HTMLElement | string, text?: string, config?: TypeFlowConfig) => TypeFlowStep;
   erase: (target?: HTMLElement | string, config?: TypeFlowConfig) => TypeFlowStep;
   pause: (duration: number) => TypeFlowStep;
+  visible: (target?: HTMLElement | string, threshold?: number) => TypeFlowStep;
   call: (fn: () => void | Promise<void>) => TypeFlowStep;
 };
 
