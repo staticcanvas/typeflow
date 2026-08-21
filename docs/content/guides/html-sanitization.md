@@ -2,6 +2,18 @@
 title: HTML & sanitization
 description: Type formatted HTML markup safely with allowlist sanitization and balanced tag trees.
 eyebrow: Guides
+category: Guides
+keywords:
+  - html
+  - sanitization
+  - xss
+  - security
+  - tags
+  - attributes
+  - void elements
+  - formatting
+  - bold
+  - links
 ---
 
 ## Safe HTML Typing

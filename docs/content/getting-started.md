@@ -2,6 +2,18 @@
 title: Get started
 description: Install TypeFlow and create your first typewriter animation in vanilla JS or modern frameworks.
 eyebrow: Quick start
+category: Guides
+keywords:
+  - install
+  - setup
+  - npm
+  - jsr
+  - cdn
+  - quickstart
+  - import
+  - type
+  - controller
+  - vanilla
 ---
 
 ## Installation

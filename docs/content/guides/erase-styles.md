@@ -2,21 +2,63 @@
 title: Erase styles
 description: Overview and configuration of TypeFlow multi-directional erase animation styles.
 eyebrow: Guides
+category: Guides
+keywords:
+  - erase
+  - eraseStyle
+  - backspace
+  - start
+  - center
+  - scramble
+  - fade
+  - fade-trail
+  - instant
+  - decay
+  - erosion
 ---
 
 ## Erase Styles Overview
 
-TypeFlow supports five distinct erase styles:
+TypeFlow supports six distinct erase styles:
 
 | Style | Description | Behavior |
 | :--- | :--- | :--- |
 | `end` (default) | Standard backspace erase | Removes characters from right to left. |
 | `start` | Left erosion erase | Removes characters from left to right; tail stays in place. |
+| `center` | Center-inward shrink | Shrinks content inward symmetrically toward the center. |
 | `scramble` | Matrix decrypt erase | Jitters characters into randomized glyphs before clearing. |
 | `fade` | CSS cross-fade | Fades element opacity smoothly before clearing content. |
 | `instant` | Immediate reset | Clears content instantly without animation. |
 
+## Reveal Directions
+
+Typing animations support three reveal directions via the `direction` option:
+
+| Direction | Behavior | Description |
+| :--- | :--- | :--- |
+| `left` (default) | Left-to-right (LTR) | Standard typewriter flow starting from index 0. |
+| `right` | Right-to-left (RTL) | Reverse reveal from end to start. |
+| `center` | Center-outward | Expands outward symmetrically from the middle. |
+
 ## Examples
+
+### Center-Inward Shrink (`center`)
+
+```javascript
+TypeFlow.erase('#headline', {
+  eraseStyle: 'center',
+  speed: 20
+});
+```
+
+### Center-Outward Reveal (`direction: 'center'`)
+
+```javascript
+TypeFlow.type('#headline', 'EXPAND FROM CENTER', {
+  direction: 'center',
+  speed: 35
+});
+```
 
 ### Right-to-Left Backspace (`end`)
 
@@ -32,6 +74,7 @@ TypeFlow.erase('#headline', {
 ```javascript
 TypeFlow.erase('#headline', {
   eraseStyle: 'scramble',
+  scrambleCharset: 'matrix',
   scrambleRounds: 2,
   speed: 25
 });

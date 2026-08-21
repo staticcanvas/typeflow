@@ -2,6 +2,16 @@
 title: Accessibility
 description: Guidelines for reduced motion support, ARIA live regions, and screen reader ergonomics.
 eyebrow: Guides
+category: Guides
+keywords:
+  - accessibility
+  - a11y
+  - reduced motion
+  - prefers-reduced-motion
+  - aria-live
+  - screen readers
+  - wcag
+  - aria
 ---
 
 ## Reduced Motion Compliance

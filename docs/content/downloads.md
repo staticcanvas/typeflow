@@ -2,6 +2,17 @@
 title: Downloads
 description: Direct download links and distribution assets for TypeFlow releases.
 eyebrow: Releases
+category: Resources
+keywords:
+  - downloads
+  - releases
+  - packages
+  - esm
+  - cjs
+  - umd
+  - tarball
+  - assets
+  - bundles
 ---
 
 ## Release Packages

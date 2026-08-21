@@ -2,6 +2,18 @@
 title: Sequences
 description: Construct multi-step animations, dialogues, and coordinated DOM sequences with TypeFlow.
 eyebrow: Guides
+category: Guides
+keywords:
+  - sequence
+  - orchestration
+  - seq
+  - pause
+  - visible
+  - call
+  - rotate
+  - steps
+  - repeat
+  - intersection observer
 ---
 
 ## Sequence Orchestration

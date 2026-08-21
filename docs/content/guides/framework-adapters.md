@@ -1,7 +1,18 @@
 ---
 title: Framework adapters
-description: First-class lightweight adapter hooks for React and Vue applications.
+description: First-class lightweight adapter hooks for React, Vue 3, Svelte actions, and Solid.js applications.
 eyebrow: Guides
+category: Guides
+keywords:
+  - react
+  - vue
+  - svelte
+  - solid
+  - hooks
+  - useTypeFlow
+  - components
+  - adapters
+  - frameworks
 ---
 
 ## Zero-Dependency Framework Adapters
