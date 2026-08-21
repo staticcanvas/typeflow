@@ -1,6 +1,6 @@
 {{ define "main" }}
 <section class="home-hero">
-  {{ $version := site.Data.package.version | default site.Params.version }}
+  {{ $version := hugo.Data.package.version | default site.Params.version }}
   <div class="hero-copy">
     <p class="eyebrow"><span class="eyebrow-dot"></span> Typewriter animation engine · v{{ $version }}</p>
     <h1>Next-generation typewriter animations</h1>

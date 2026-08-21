@@ -1,5 +1,5 @@
 baseURL = 'https://staticcanvas.gitlab.io/typeflow/'
-languageCode = 'en-au'
+locale = 'en-AU'
 title = 'TypeFlow documentation'
 publishDir = '../public'
 enableRobotsTXT = true

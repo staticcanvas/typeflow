@@ -1,5 +1,5 @@
 {{ $cacheBust := now.Unix }}
-{{ $version := site.Data.package.version | default site.Params.version }}
+{{ $version := hugo.Data.package.version | default site.Params.version }}
 <!doctype html>
 <html lang="{{ site.Language.Lang | default "en" }}" data-theme="dark">
   <head>

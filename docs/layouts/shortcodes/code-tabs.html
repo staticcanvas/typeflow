@@ -1,4 +1,4 @@
-{{- $version := site.Data.package.version | default site.Params.version -}}
+{{- $version := hugo.Data.package.version | default site.Params.version -}}
 {{- $tabs := slice
   (dict "id" "npm" "label" "npm" "lang" "bash" "code" (printf "npm install @staticcanvas/typeflow@%s" $version))
   (dict "id" "pnpm" "label" "pnpm" "lang" "bash" "code" (printf "pnpm add @staticcanvas/typeflow@%s" $version))
