@@ -4,6 +4,10 @@
 public/
 docs/data/package.json
 docs/data/releases.json
+docs/static/webutil/libs/
+docs/static/webutil/assets/
+*.map
+
 
 # Build locks & cache
 .hugo_build.lock

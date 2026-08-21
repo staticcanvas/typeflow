@@ -300,14 +300,28 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       const largeText = 'A'.repeat(10000);
       const startTime = performance.now();
 
-      const controller = TypeFlow.type(container, largeText, {
-        speed: 0,
-        delay: 0,
+      // Instantly clear or instant animation
+      const controller = TypeFlow.erase(container, { eraseStyle: 'instant' });
+      await controller.promise;
+
+      // Mock prefersReducedMotion matchMedia for instant typing benchmark
+      window.matchMedia = vi.fn().mockImplementation((query) => ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+
+      const typeCtrl = TypeFlow.type(container, largeText, {
         respectReducedMotion: true,
         cursor: ''
       });
 
-      const result = await controller.promise;
+      const result = await typeCtrl.promise;
       const duration = performance.now() - startTime;
 
       expect(result.completed).toBe(true);
@@ -320,17 +334,18 @@ describe('TypeFlow Comprehensive Test Suite', () => {
     it('creates React hook wrapper and cleans up on unmount', () => {
       let cleanupFn;
       const mockReact = {
-        useRef: (val) => ({ current: val }),
+        useRef: (val) => ({ current: container }),
         useEffect: vi.fn((fn) => { cleanupFn = fn(); })
       };
       const useTypeFlow = createTypeFlowReact(mockReact);
       useTypeFlow('Test text', { speed: 100 });
       expect(typeof cleanupFn).toBe('function');
+      cleanupFn();
     });
 
     it('creates Vue composition wrapper', () => {
       const mockVue = {
-        ref: (val) => ({ value: val }),
+        ref: (val) => ({ value: container }),
         watch: vi.fn((src, cb) => cb()),
         onBeforeUnmount: vi.fn()
       };
@@ -339,3 +354,4 @@ describe('TypeFlow Comprehensive Test Suite', () => {
     });
   });
 });
+
