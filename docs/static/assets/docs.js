@@ -226,6 +226,59 @@ if (menuToggleBtn && sidebar) {
   });
 }
 
+// ─── View Transitions — Same-Document Navigation ─────────────────────────────
+
+/**
+ * Intercepts clicks on internal navigation links and wraps the browser's
+ * native page navigation inside `document.startViewTransition()` so that
+ * the CSS ::view-transition-* animations fire.
+ *
+ * Cross-document @view-transition { navigation: auto } in docs.css handles
+ * browsers that support it natively (Chrome 126+). This JS layer handles
+ * same-origin SPA-style links for all VT-capable browsers and ensures the
+ * active sidebar link is updated before the transition snapshot is taken.
+ *
+ * Falls back silently to a normal link click when the API is unavailable.
+ */
+if ('startViewTransition' in document) {
+  document.addEventListener('click', (e) => {
+    const anchor = e.target.closest('a[href]');
+    if (!anchor) return;
+
+    const href = anchor.getAttribute('href');
+
+    // Ignore: external links, hash-only anchors, download links, new-tab targets
+    if (
+      !href ||
+      href.startsWith('http') ||
+      href.startsWith('//') ||
+      href.startsWith('#') ||
+      anchor.hasAttribute('download') ||
+      anchor.target === '_blank' ||
+      e.metaKey || e.ctrlKey || e.shiftKey || e.altKey
+    ) return;
+
+    // Ignore links outside the doc nav (only animate sidebar + header nav links)
+    const isNavLink = anchor.closest('#site-sidebar, .header-actions, .doc-article, .doc-toc');
+    if (!isNavLink) return;
+
+    e.preventDefault();
+
+    // Update active sidebar link state immediately so VT snapshot captures it
+    document.querySelectorAll('.sidebar-link').forEach((l) => {
+      const lHref = l.getAttribute('href');
+      const isCurrent = lHref && (href === lHref || href.startsWith(lHref.replace(/\/$/, '') + '/'));
+      l.classList.toggle('active', isCurrent);
+      if (isCurrent) l.setAttribute('aria-current', 'page');
+      else l.removeAttribute('aria-current');
+    });
+
+    document.startViewTransition(() => {
+      window.location.assign(href);
+    });
+  });
+}
+
 // ─── Keyboard Search Shortcut & Modal Triggers ───────────────────────────────
 
 /**

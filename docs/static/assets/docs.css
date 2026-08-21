@@ -98,6 +98,64 @@ html {
 }
 
 /* ============================================================
+   View Transitions API
+   ============================================================ */
+
+/* Opt-in to cross-document VT for browsers that support it
+   (Chrome 126+, Edge 126+). Same-document VT is handled via JS. */
+@view-transition {
+  navigation: auto;
+}
+
+/* Default: the whole page cross-fades */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Main content area slides in from the right on forward navigation */
+::view-transition-old(main-content) {
+  animation: vt-slide-out-left 180ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(main-content) {
+  animation: vt-slide-in-right 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Header and sidebar stay put — no animation */
+::view-transition-old(site-header),
+::view-transition-new(site-header),
+::view-transition-old(site-sidebar),
+::view-transition-new(site-sidebar) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@keyframes vt-slide-out-left {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-12px); }
+}
+@keyframes vt-slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Assign view-transition-name to key regions */
+.site-header   { view-transition-name: site-header; }
+#site-sidebar  { view-transition-name: site-sidebar; }
+.main-content  { view-transition-name: main-content; }
+
+/* Respect reduced motion — disable all transitions */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(main-content),
+  ::view-transition-new(main-content) {
+    animation: none;
+  }
+}
+
+
    Base / Body
    ============================================================ */
 
