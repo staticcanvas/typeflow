@@ -4,9 +4,18 @@
  * @license MIT
  */
 
-class TypeFlow {
-    constructor() {
-        this.activeInstances = new Map();
+const TypeFlow = (() => {
+    const activeInstances = new Map();
+
+    /**
+     * Generates a unique ID for an element
+     * @private
+     */
+    function getInstanceId(element) {
+        if (!element._typeFlowId) {
+            element._typeFlowId = `typeflow_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+        return element._typeFlowId;
     }
 
     /**
@@ -23,7 +32,7 @@ class TypeFlow {
      * @param {string} config.mode - 'replace' or 'append' (default: 'replace')
      * @returns {Object} Control object with stop() method and promise
      */
-    type(targetElement, text, config = {}) {
+    function type(targetElement, text, config = {}) {
         // Normalize target element
         const target = typeof targetElement === "string" ? document.querySelector(targetElement) : targetElement;
 
@@ -32,10 +41,10 @@ class TypeFlow {
         }
 
         // Generate unique instance ID for this target
-        const instanceId = this._getInstanceId(target);
+        const instanceId = getInstanceId(target);
 
         // Interrupt any existing animation on this target
-        this.stop(target);
+        stop(target);
 
         // Default configuration
         const options = {
@@ -64,7 +73,7 @@ class TypeFlow {
                 isInterrupted = true;
                 if (timeoutId) clearTimeout(timeoutId);
                 if (cursorInterval) clearInterval(cursorInterval);
-                this.activeInstances.delete(instanceId);
+                activeInstances.delete(instanceId);
                 if (options.onInterrupt) {
                     options.onInterrupt();
                 }
@@ -73,7 +82,7 @@ class TypeFlow {
         };
 
         // Store active instance
-        this.activeInstances.set(instanceId, controller);
+        activeInstances.set(instanceId, controller);
 
         // Create the typing promise
         controller.promise = new Promise((resolve, reject) => {
@@ -104,7 +113,7 @@ class TypeFlow {
                             target.textContent = text;
                         }
 
-                        this.activeInstances.delete(instanceId);
+                        activeInstances.delete(instanceId);
                         if (options.onComplete) {
                             options.onComplete();
                         }
@@ -128,13 +137,13 @@ class TypeFlow {
      * Stops typing animation on a specific element
      * @param {HTMLElement|string} targetElement - Element or selector
      */
-    stop(targetElement) {
+    function stop(targetElement) {
         const target = typeof targetElement === "string" ? document.querySelector(targetElement) : targetElement;
 
         if (!target) return;
 
-        const instanceId = this._getInstanceId(target);
-        const instance = this.activeInstances.get(instanceId);
+        const instanceId = getInstanceId(target);
+        const instance = activeInstances.get(instanceId);
 
         if (instance) {
             instance.stop();
@@ -144,9 +153,9 @@ class TypeFlow {
     /**
      * Stops all active typing animations
      */
-    stopAll() {
-        this.activeInstances.forEach((instance) => instance.stop());
-        this.activeInstances.clear();
+    function stopAll() {
+        activeInstances.forEach((instance) => instance.stop());
+        activeInstances.clear();
     }
 
     /**
@@ -154,37 +163,31 @@ class TypeFlow {
      * @param {HTMLElement|string} targetElement - Element or selector
      * @returns {boolean}
      */
-    isTyping(targetElement) {
+    function isTyping(targetElement) {
         const target = typeof targetElement === "string" ? document.querySelector(targetElement) : targetElement;
 
         if (!target) return false;
 
-        const instanceId = this._getInstanceId(target);
-        return this.activeInstances.has(instanceId);
+        const instanceId = getInstanceId(target);
+        return activeInstances.has(instanceId);
     }
 
-    /**
-     * Generates a unique ID for an element
-     * @private
-     */
-    _getInstanceId(element) {
-        if (!element._typeFlowId) {
-            element._typeFlowId = `typeflow_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        }
-        return element._typeFlowId;
-    }
-}
-
-// Create singleton instance
-const typeFlow = new TypeFlow();
+    // Public API
+    return {
+        type,
+        stop,
+        stopAll,
+        isTyping,
+    };
+})();
 
 // Export for different module systems
 if (typeof module !== "undefined" && module.exports) {
-    module.exports = typeFlow;
+    module.exports = TypeFlow;
 } else if (typeof define === "function" && define.amd) {
-    define([], () => typeFlow);
+    define([], () => TypeFlow);
 } else {
-    window.TypeFlow = typeFlow;
+    window.TypeFlow = TypeFlow;
 }
 
 /* ============================================
