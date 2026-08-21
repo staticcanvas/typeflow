@@ -491,17 +491,68 @@
 
     <link rel="icon" type="image/svg+xml" href="{{ "assets/branding/typeflow-logo.svg" | relURL }}">
 
-    {{/* Local core stylesheets loaded immediately for zero-latency synchronous styling */}}
-    <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}">
-    <link rel="stylesheet" href="{{ "assets/docs.css" | relURL }}?v={{ $version }}">
+    {{/*
+      ── Step 3: Local Stylesheets — preload + async non-render-blocking ────────
+      Preload triggers the fetch immediately at highest priority; the onload swap
+      to rel="stylesheet" applies the sheet the instant it arrives without
+      blocking the initial paint. A <noscript> fallback keeps the regular
+      blocking link for no-JS environments.
+
+      Google Fonts is deferred entirely — it only controls web font rendering,
+      not layout or colours, so it can safely arrive late (font-display:swap
+      prevents invisible text in the interim).
+    */}}
+
+    {{/* preload the local CSS at top priority */}}
+    <link rel="preload" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     {{ if eq .Section "playground" }}
-    <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}">
+    <link rel="preload" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     {{ end }}
 
-    {{/* Google Fonts preconnected and rendered with font-display swap */}}
+    {{/* noscript fallback — regular blocking link for no-JS */}}
+    <noscript>
+      <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}">
+      <link rel="stylesheet" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}">
+      {{ if eq .Section "playground" }}
+      <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}">
+      {{ end }}
+    </noscript>
+
+    {{/* Google Fonts — deferred, font-display:swap prevents FOIT */}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&display=swap">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&display=swap"></noscript>
+
+    {{/*
+      ── Step 4: FOUC elimination via body visibility ───────────────────────────
+      Hide the body until the local CSS resolves — since we preloaded it at
+      highest priority it will arrive before the first user-visible paint on
+      any warm or local connection. A 300ms max-wait timeout releases the lock
+      unconditionally so nothing is ever permanently hidden.
+    */}}
+    <script>
+      document.documentElement.style.setProperty('--fouc-opacity', '0');
+    </script>
+    <style>
+      html { opacity: var(--fouc-opacity, 1); }
+    </style>
+    <script>
+      (() => {
+        const release = () => document.documentElement.style.removeProperty('--fouc-opacity');
+        // Release as soon as both local sheets have loaded
+        let loaded = 0;
+        const onSheet = () => { if (++loaded >= 2) release(); };
+        document.querySelectorAll('link[rel="preload"][as="style"]').forEach(l => {
+          if (l.href.includes('fonts.googleapis')) return;
+          l.addEventListener('load', onSheet, { once: true });
+        });
+        // Hard deadline — never leave the page invisible
+        setTimeout(release, 300);
+      })();
+    </script>
+
     {{ block "head" . }}{{ end }}
   </head>
   <body data-package-version="{{ $version }}" data-search-index="{{ "index.json" | relURL }}?v={{ $version }}">
