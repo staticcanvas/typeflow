@@ -70,14 +70,20 @@ export interface TypeFlowController {
 }
 
 export type TypeFlowStep =
-  | { kind: "type"; target: HTMLElement | string; text: string; config?: TypeFlowConfig }
-  | { kind: "erase"; target: HTMLElement | string; config?: TypeFlowConfig }
+  | { kind: "type"; target?: HTMLElement | string; text: string; config?: TypeFlowConfig }
+  | { kind: "erase"; target?: HTMLElement | string; config?: TypeFlowConfig }
   | { kind: "pause"; duration: number }
   | { kind: "call"; fn: () => void | Promise<void> };
 
 export interface TypeFlowSequenceConfig {
   /** Number of times to run the sequence. Use Infinity to loop forever. Default: 1 */
   repeat?: number;
+  /**
+   * Default target used by any step that omits its own `target` — handy
+   * when a sequence types/erases on a single element. Steps can still
+   * override this individually for multi-element sequences.
+   */
+  target?: HTMLElement | string;
 }
 
 export interface TypeFlowRotateConfig {
