@@ -1,4 +1,4 @@
-# TypeFlow
+![Lume Banner](https://r2os.staticcanvas.me/logos/typeflow/typeflow-logo.svg)
 
 TypeFlow is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 
@@ -53,7 +53,10 @@ npx jsr add @staticcanvas/typeflow
 
 <!-- ESM Module -->
 <script type="module">
-  import { TypeFlow, seq } from 'https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.3.0/dist/typeflow.esm.js';
+  import {
+    TypeFlow,
+    seq,
+  } from 'https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.3.0/dist/typeflow.esm.js';
 </script>
 ```
 
@@ -70,13 +73,13 @@ const controller = TypeFlow.type('#headline', 'Building resilient interfaces. Ze
   naturalCadence: true,
   cursor: '|',
   cursorBlink: true,
-  onComplete: (text) => console.log('Typing complete:', text)
+  onComplete: (text) => console.log('Typing complete:', text),
 });
 
 // Erase with scramble decrypt style
 TypeFlow.erase('#headline', {
   speed: 20,
-  eraseStyle: 'scramble'
+  eraseStyle: 'scramble',
 });
 ```
 
@@ -88,7 +91,7 @@ import { TypeFlow } from '@staticcanvas/typeflow';
 TypeFlow.type('#terminal', 'SYSTEM SECURE: ACCESS GRANTED', {
   typeStyle: 'scramble',
   scrambleRounds: 2,
-  speed: 35
+  speed: 35,
 });
 ```
 
@@ -97,12 +100,16 @@ TypeFlow.type('#terminal', 'SYSTEM SECURE: ACCESS GRANTED', {
 ```javascript
 import { TypeFlow } from '@staticcanvas/typeflow';
 
-TypeFlow.type('#output', 'Deploy to <strong>Production</strong> with <span class="badge">Zero Downtime</span>', {
-  html: true,
-  speed: 30,
-  allowedTags: ['strong', 'span'],
-  allowedAttributes: { span: ['class'] }
-});
+TypeFlow.type(
+  '#output',
+  'Deploy to <strong>Production</strong> with <span class="badge">Zero Downtime</span>',
+  {
+    html: true,
+    speed: 30,
+    allowedTags: ['strong', 'span'],
+    allowedAttributes: { span: ['class'] },
+  }
+);
 ```
 
 ### Sequential Multi-Step Orchestration & Viewport Triggers
@@ -110,14 +117,17 @@ TypeFlow.type('#output', 'Deploy to <strong>Production</strong> with <span class
 ```javascript
 import { TypeFlow, seq } from '@staticcanvas/typeflow';
 
-TypeFlow.sequence([
-  seq.visible('#step-1'), // Waits until element scrolls into view
-  seq.type('#step-1', 'Initializing runtime kernel...'),
-  seq.pause(600),
-  seq.call(() => console.log('Phase 1 complete')),
-  seq.erase('#step-1', { eraseStyle: 'fade', duration: 300 }),
-  seq.type('#step-2', 'All systems operational.')
-], { repeat: 1 });
+TypeFlow.sequence(
+  [
+    seq.visible('#step-1'), // Waits until element scrolls into view
+    seq.type('#step-1', 'Initializing runtime kernel...'),
+    seq.pause(600),
+    seq.call(() => console.log('Phase 1 complete')),
+    seq.erase('#step-1', { eraseStyle: 'fade', duration: 300 }),
+    seq.type('#step-2', 'All systems operational.'),
+  ],
+  { repeat: 1 }
+);
 ```
 
 ### Framework Adapters
@@ -183,53 +193,54 @@ export function Hero() {
 
 ### `TypeFlowConfig`
 
-| Property | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `speed` | `number` | `50` (type) / `25` (erase) | Milliseconds per character / word unit. |
-| `delay` | `number` | `0` | Delay before animation starts in milliseconds. |
-| `speedVariance` | `number` | `0` | Random variance range in milliseconds per unit. |
-| `naturalCadence`| `boolean`| `false` | Automatic micro-pauses at punctuation and word breaks. |
-| `granularity` | `"grapheme" \| "word"` | `"grapheme"` | Unit segmentation mode using `Intl.Segmenter`. |
-| `typeStyle` | `"char" \| "word" \| "scramble"` | `"char"` | Typing reveal presentation style. |
-| `scrambleGlyphs`| `string` | `"!<>-_\\/[]{}—=+*^?#________"` | Character pool used during scramble reveals. |
-| `scrambleRounds`| `number` | `2` | Number of glyph iterations per character. |
-| `cursor` | `string` | `"\|"` | Cursor character appended during animation. Set to `""` to disable. |
-| `cursorBlink` | `boolean` | `true` | Enables post-completion cursor blinking. |
-| `html` | `boolean` | `false` | Enables sanitized HTML parsing mode. |
-| `mode` | `"replace" \| "append"` | `"replace"` | Clears target or appends to existing DOM child nodes. |
-| `allowedTags` | `string[]` | Default allowlist | Array of permitted HTML tag names. |
-| `allowedAttributes` | `Record<string, string[]>` | Default map | Map of allowed attributes per HTML tag. |
-| `sanitizer` | `(html: string) => string` | `undefined` | Custom sanitizer function overriding default sanitizer. |
-| `respectReducedMotion`| `boolean` | `true` | Instantly completes animation when reduced motion is preferred. |
-| `ariaLive` | `"off" \| "polite" \| "assertive"` | `undefined` | ARIA live region policy applied to target element. |
-| `eraseStyle` | `"end" \| "start" \| "scramble" \| "instant" \| "fade"` | `"end"` | Erase technique direction or visual transition mode. |
-| `duration` | `number` | `250` | Transition duration in ms when `eraseStyle: "fade"`. |
-| `preserveBaseline` | `boolean` | `true` | Preserves base content when erasing `append` mode elements. |
-| `onStart` | `() => void` | `undefined` | Callback invoked when animation begins. |
-| `onComplete` | `(text: string) => void` | `undefined` | Callback invoked upon animation completion. |
-| `onInterrupt` | `() => void` | `undefined` | Callback invoked when controller is aborted before completion. |
-
+| Property               | Type                                                    | Default                         | Description                                                         |
+| :--------------------- | :------------------------------------------------------ | :------------------------------ | :------------------------------------------------------------------ |
+| `speed`                | `number`                                                | `50` (type) / `25` (erase)      | Milliseconds per character / word unit.                             |
+| `delay`                | `number`                                                | `0`                             | Delay before animation starts in milliseconds.                      |
+| `speedVariance`        | `number`                                                | `0`                             | Random variance range in milliseconds per unit.                     |
+| `naturalCadence`       | `boolean`                                               | `false`                         | Automatic micro-pauses at punctuation and word breaks.              |
+| `granularity`          | `"grapheme" \| "word"`                                  | `"grapheme"`                    | Unit segmentation mode using `Intl.Segmenter`.                      |
+| `typeStyle`            | `"char" \| "word" \| "scramble"`                        | `"char"`                        | Typing reveal presentation style.                                   |
+| `scrambleGlyphs`       | `string`                                                | `"!<>-_\\/[]{}—=+*^?#________"` | Character pool used during scramble reveals.                        |
+| `scrambleRounds`       | `number`                                                | `2`                             | Number of glyph iterations per character.                           |
+| `cursor`               | `string`                                                | `"\|"`                          | Cursor character appended during animation. Set to `""` to disable. |
+| `cursorBlink`          | `boolean`                                               | `true`                          | Enables post-completion cursor blinking.                            |
+| `html`                 | `boolean`                                               | `false`                         | Enables sanitized HTML parsing mode.                                |
+| `mode`                 | `"replace" \| "append"`                                 | `"replace"`                     | Clears target or appends to existing DOM child nodes.               |
+| `allowedTags`          | `string[]`                                              | Default allowlist               | Array of permitted HTML tag names.                                  |
+| `allowedAttributes`    | `Record<string, string[]>`                              | Default map                     | Map of allowed attributes per HTML tag.                             |
+| `sanitizer`            | `(html: string) => string`                              | `undefined`                     | Custom sanitizer function overriding default sanitizer.             |
+| `respectReducedMotion` | `boolean`                                               | `true`                          | Instantly completes animation when reduced motion is preferred.     |
+| `ariaLive`             | `"off" \| "polite" \| "assertive"`                      | `undefined`                     | ARIA live region policy applied to target element.                  |
+| `eraseStyle`           | `"end" \| "start" \| "scramble" \| "instant" \| "fade"` | `"end"`                         | Erase technique direction or visual transition mode.                |
+| `duration`             | `number`                                                | `250`                           | Transition duration in ms when `eraseStyle: "fade"`.                |
+| `preserveBaseline`     | `boolean`                                               | `true`                          | Preserves base content when erasing `append` mode elements.         |
+| `onStart`              | `() => void`                                            | `undefined`                     | Callback invoked when animation begins.                             |
+| `onComplete`           | `(text: string) => void`                                | `undefined`                     | Callback invoked upon animation completion.                         |
+| `onInterrupt`          | `() => void`                                            | `undefined`                     | Callback invoked when controller is aborted before completion.      |
 
 ### `TypeFlowController`
 
-| Method / Property | Type | Description |
-| :--- | :--- | :--- |
-| `stop()` | `() => void` | Immediately terminates the active animation without rejecting promises. |
-| `promise` | `Promise<TypeFlowResult>` | Resolves with `{ completed: boolean, text: string }` upon completion or stop. |
+| Method / Property | Type                      | Description                                                                   |
+| :---------------- | :------------------------ | :---------------------------------------------------------------------------- |
+| `stop()`          | `() => void`              | Immediately terminates the active animation without rejecting promises.       |
+| `promise`         | `Promise<TypeFlowResult>` | Resolves with `{ completed: boolean, text: string }` upon completion or stop. |
 
 ### Core Engine Methods
 
-| Method | Parameters | Returns | Description |
-| :--- | :--- | :--- | :--- |
-| `TypeFlow.type()` | `target, text, config?` | `TypeFlowController` | Types text or sanitized HTML into target element. |
-| `TypeFlow.erase()` | `target, config?` | `TypeFlowController` | Erases content from target element. |
-| `TypeFlow.sequence()` | `steps, seqConfig?` | `TypeFlowController` | Executes an array of animation steps sequentially. |
-| `TypeFlow.rotate()` | `target, words, config?` | `TypeFlowController` | Cycles through an array of strings in a loop. |
-| `TypeFlow.watch()` | `container, selector, cb` | `{ disconnect: () => void }` | Observes and animates dynamically added DOM nodes. |
-| `TypeFlow.stop()` | `target` | `void` | Stops the active animation for a target. |
-| `TypeFlow.stopAll()` | `none` | `void` | Stops all currently active TypeFlow instances. |
-| `TypeFlow.isTyping()`| `target` | `boolean` | Returns active animation status for a target element. |
+| Method                | Parameters                | Returns                      | Description                                           |
+| :-------------------- | :------------------------ | :--------------------------- | :---------------------------------------------------- |
+| `TypeFlow.type()`     | `target, text, config?`   | `TypeFlowController`         | Types text or sanitized HTML into target element.     |
+| `TypeFlow.erase()`    | `target, config?`         | `TypeFlowController`         | Erases content from target element.                   |
+| `TypeFlow.sequence()` | `steps, seqConfig?`       | `TypeFlowController`         | Executes an array of animation steps sequentially.    |
+| `TypeFlow.rotate()`   | `target, words, config?`  | `TypeFlowController`         | Cycles through an array of strings in a loop.         |
+| `TypeFlow.watch()`    | `container, selector, cb` | `{ disconnect: () => void }` | Observes and animates dynamically added DOM nodes.    |
+| `TypeFlow.stop()`     | `target`                  | `void`                       | Stops the active animation for a target.              |
+| `TypeFlow.stopAll()`  | `none`                    | `void`                       | Stops all currently active TypeFlow instances.        |
+| `TypeFlow.isTyping()` | `target`                  | `boolean`                    | Returns active animation status for a target element. |
 
-## License
+---
 
-MIT (c) Garvey K. Snow
+### **License**
+
+Distributed under the **MIT License**. See `LICENSE` for more information.

@@ -86,10 +86,7 @@ const pgStage = document.getElementById('pg-stage');
 const pgText = document.getElementById('pg-text');
 const pgSpeed = document.getElementById('pg-speed');
 const pgSpeedVal = document.getElementById('pg-speed-val');
-const pgVar = document.getElementById('pg-variance');
-const pgVarVal = document.getElementById('pg-var-val');
 const pgEraseStyle = document.getElementById('pg-erase-style');
-const pgCursor = document.getElementById('pg-cursor');
 const pgHtml = document.getElementById('pg-html');
 const pgBlink = document.getElementById('pg-cursor-blink');
 
@@ -104,14 +101,10 @@ if (pgStage && btnType) {
   if (pgSpeed && pgSpeedVal) {
     pgSpeed.addEventListener('input', () => { pgSpeedVal.textContent = pgSpeed.value; });
   }
-  if (pgVar && pgVarVal) {
-    pgVar.addEventListener('input', () => { pgVarVal.textContent = pgVar.value; });
-  }
 
   const getConfig = () => ({
     speed: Number(pgSpeed?.value || 40),
-    speedVariance: Number(pgVar?.value || 0),
-    cursor: pgCursor?.value ?? '|',
+    cursor: '|',
     cursorBlink: pgBlink?.checked ?? true,
     html: pgHtml?.checked ?? true,
     eraseStyle: pgEraseStyle?.value || 'end',
@@ -198,4 +191,20 @@ if (searchInput && searchResults) {
       searchResults.hidden = true;
     }
   });
+}
+
+// TOC Active Section Highlighting
+const tocLinks = document.querySelectorAll('.doc-toc nav a');
+if (tocLinks.length) {
+  const headings = [...document.querySelectorAll('.doc-content h2, .doc-content h3')];
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach((a) => a.classList.remove('toc-active'));
+        const active = [...tocLinks].find((a) => a.getAttribute('href') === '#' + entry.target.id);
+        if (active) active.classList.add('toc-active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+  headings.forEach((h) => obs.observe(h));
 }

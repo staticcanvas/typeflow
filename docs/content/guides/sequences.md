@@ -6,7 +6,7 @@ eyebrow: Guides
 
 ## Sequence Orchestration
 
-`TypeFlow.sequence()` allows you to chain multiple animation steps cleanly without nesting asynchronous promises or callback pyramids.
+`TypeFlow.sequence()` chains multiple animation steps cleanly without nested asynchronous promises or callbacks.
 
 ```javascript
 import { TypeFlow, seq } from '@staticcanvas/typeflow';
@@ -24,7 +24,7 @@ const sequenceController = TypeFlow.sequence([
 
 ## Step Helper Reference
 
-TypeFlow exports the `seq` helper object for constructing strongly-typed sequence steps:
+TypeFlow exports the `seq` helper object to construct strongly-typed sequence steps:
 
 | Helper | Arguments | Description |
 | :--- | :--- | :--- |
@@ -35,7 +35,7 @@ TypeFlow exports the `seq` helper object for constructing strongly-typed sequenc
 
 ## Sequence Configuration
 
-You can provide default options to the sequence runner:
+Provide default options to the sequence runner:
 
 ```javascript
 TypeFlow.sequence([

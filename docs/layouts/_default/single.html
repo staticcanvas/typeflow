@@ -5,18 +5,19 @@
     <h1>{{ .Title }}</h1>
     {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
   </header>
-  
-  <div class="doc-body">
-    {{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }}
-    <aside class="doc-toc">
-      <div class="toc-title">On this page</div>
-      {{ .TableOfContents }}
-    </aside>
-    {{ end }}
-    
+
+  <div class="doc-body{{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }} doc-body--has-toc{{ end }}">
     <div class="doc-content">
       {{ .Content }}
     </div>
+    {{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }}
+    <aside class="doc-toc" aria-label="On this page">
+      <div class="toc-inner">
+        <p class="toc-title">On this page</p>
+        {{ .TableOfContents }}
+      </div>
+    </aside>
+    {{ end }}
   </div>
 </article>
 {{ end }}

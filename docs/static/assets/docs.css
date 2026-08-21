@@ -682,6 +682,76 @@ p code, li code, td code {
   color: var(--tf-text-primary);
 }
 
+/* --- Sidebar sticky inner --- */
+.sidebar-inner {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tf-text-muted);
+  padding: 16px 12px 4px;
+  margin: 0;
+}
+
+/* --- Table of Contents right rail --- */
+.doc-body {
+  display: block;
+}
+.doc-body.doc-body--has-toc {
+  display: grid;
+  grid-template-columns: 1fr 210px;
+  gap: 48px;
+  align-items: start;
+}
+.doc-toc {
+  position: sticky;
+  top: 80px;
+}
+.toc-inner {
+  border-left: 2px solid var(--tf-border-subtle);
+  padding-left: 14px;
+}
+.toc-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tf-text-muted);
+  margin-bottom: 10px;
+}
+.doc-toc nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.doc-toc nav ul ul {
+  padding-left: 12px;
+  margin-top: 2px;
+}
+.doc-toc nav a {
+  font-size: 13px;
+  color: var(--tf-text-muted);
+  text-decoration: none;
+  line-height: 1.5;
+  display: block;
+  padding: 2px 0;
+  transition: color 0.12s;
+}
+.doc-toc nav a:hover,
+.doc-toc nav a.toc-active {
+  color: var(--tf-accent);
+}
+
 @media (max-width: 860px) {
   .site-layout {
     grid-template-columns: 1fr;
@@ -694,5 +764,11 @@ p code, li code, td code {
   }
   .mobile-menu-button {
     display: flex;
+  }
+  .doc-body.doc-body--has-toc {
+    grid-template-columns: 1fr;
+  }
+  .doc-toc {
+    display: none;
   }
 }

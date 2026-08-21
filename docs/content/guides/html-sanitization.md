@@ -6,7 +6,7 @@ eyebrow: Guides
 
 ## Safe HTML Typing
 
-Unlike naive typewriter libraries that perform string slicing on `innerHTML` (which breaks tags during intermediate steps), TypeFlow constructs an internal sanitized DOM source tree and uses a recursive fragment cloner.
+TypeFlow constructs an internal sanitized DOM source tree and uses a recursive fragment cloner.
 
 ```javascript
 import { TypeFlow } from '@staticcanvas/typeflow';
@@ -17,7 +17,7 @@ TypeFlow.type('#notice', 'Deploy to <strong>production</strong> with <span class
 });
 ```
 
-During each character tick, TypeFlow clones only the visible character slice while keeping all parent tags correctly closed and well-formed.
+During each character tick, TypeFlow clones only the visible character slice while keeping all parent tags closed and well-formed.
 
 ## Allowlist & Attribute Filtering
 
@@ -41,7 +41,7 @@ TypeFlow.type('#custom', '<custom-tag class="chip" data-id="42">Custom content</
 
 ### Custom Sanitizer Hook
 
-For specialized sanitization requirements (e.g. DOMPurify), supply a custom `sanitizer` function:
+Supply a custom `sanitizer` function for specialized requirements (e.g. DOMPurify):
 
 ```javascript
 import DOMPurify from 'dompurify';

@@ -6,11 +6,9 @@ eyebrow: Guides
 
 ## Reduced Motion Compliance
 
-By default, TypeFlow checks the user's OS preference via `window.matchMedia('(prefers-reduced-motion: reduce)')`.
+TypeFlow checks `window.matchMedia('(prefers-reduced-motion: reduce)')`. When active, animations complete immediately.
 
-When reduced motion is active, animations complete immediately without flashing or rapid character intervals.
-
-You can explicitly control this behavior:
+Control this behavior explicitly:
 
 ```javascript
 TypeFlow.type('#headline', 'Text content', {
@@ -20,9 +18,9 @@ TypeFlow.type('#headline', 'Text content', {
 
 ## ARIA Live Regions
 
-To prevent overwhelming screen readers with continuous micro-updates on every typed character, `ariaLive` is untouched by default.
+`ariaLive` is untouched by default to prevent screen reader noise.
 
-When animating important status messages or announcements, specify the desired live region policy:
+Specify the desired live region policy for important announcements:
 
 ```javascript
 TypeFlow.type('#status-bar', 'Build passed in 1.4s', {

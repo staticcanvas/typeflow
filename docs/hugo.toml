@@ -7,7 +7,7 @@ enableGitInfo = true
 disableKinds = ['taxonomy', 'term']
 
 [params]
-  version = '2.2.0'
+  version = '2.3.0'
   description = 'Lightweight, interruptible typewriter animation library with HTML sanitization, erase modes, and sequence orchestration.'
   repository = 'https://gitlab.com/staticcanvas/typeflow'
   github = 'https://github.com/staticcanvas/typeflow'
@@ -77,10 +77,16 @@ disableKinds = ['taxonomy', 'term']
     pageRef = '/playground/'
     weight = 50
   [[menu.main]]
-    name = 'Downloads'
-    pageRef = '/downloads/'
+    name = 'Resources'
+    identifier = 'resources'
     weight = 60
   [[menu.main]]
+    name = 'Downloads'
+    parent = 'resources'
+    pageRef = '/downloads/'
+    weight = 61
+  [[menu.main]]
     name = 'Changelog'
+    parent = 'resources'
     pageRef = '/changelog/'
-    weight = 70
+    weight = 62

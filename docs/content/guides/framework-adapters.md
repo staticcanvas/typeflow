@@ -6,7 +6,7 @@ eyebrow: Guides
 
 ## Zero-Dependency Framework Adapters
 
-To prevent bundling unnecessary framework runtimes into library consumers, TypeFlow uses adapter factory functions that accept your application's React or Vue instance.
+TypeFlow uses adapter factory functions to avoid bundling framework runtimes.
 
 ## React Adapter
 

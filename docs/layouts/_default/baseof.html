@@ -73,22 +73,22 @@
     <div class="shell{{ if .Params.fullWidth }} full-page-shell{{ else }} site-layout{{ end }}">
       {{ if not .Params.fullWidth }}
       <aside class="sidebar" id="site-sidebar" data-sidebar>
-        <nav aria-label="Documentation navigation">
-          {{ range site.Menus.main }}
-          <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}" href="{{ .URL | relURL }}"{{ if eq $.RelPermalink .URL }} aria-current="page"{{ end }}>{{ .Name }}</a>
-          {{ if .HasChildren }}
-          <div class="sidebar-children">
-            {{ range .Children }}
-            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}" href="{{ .URL | relURL }}"{{ if eq $.RelPermalink .URL }} aria-current="page"{{ end }}>{{ .Name }}</a>
+        <div class="sidebar-inner">
+          <nav aria-label="Documentation navigation">
+            {{ range site.Menus.main }}
+            {{ if not .Parent }}
+              {{ if .HasChildren }}
+              <p class="sidebar-section-label">{{ .Name }}</p>
+              {{ range .Children }}
+              <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}" href="{{ .URL | relURL }}"{{ if eq $.RelPermalink .URL }} aria-current="page"{{ end }}>{{ .Name }}</a>
+              {{ end }}
+              {{ else }}
+              <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}" href="{{ .URL | relURL }}"{{ if eq $.RelPermalink .URL }} aria-current="page"{{ end }}>{{ .Name }}</a>
+              {{ end }}
             {{ end }}
-          </div>
-          {{ end }}
-          {{ end }}
-        </nav>
-        <div class="sidebar-rule"></div>
-        <p class="sidebar-label">Resources</p>
-        <a class="sidebar-link" href="{{ "downloads/" | relURL }}">Downloads</a>
-        <a class="sidebar-link" href="{{ "changelog/" | relURL }}">Changelog</a>
+            {{ end }}
+          </nav>
+        </div>
       </aside>
       {{ end }}
       <main id="main-content" class="main-content">

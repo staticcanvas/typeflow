@@ -1,3 +1,5 @@
+![Lume Banner](https://r2os.staticcanvas.me/logos/typeflow/typeflow-logo.svg)
+
 # @staticcanvas/typeflow
 
 A lightweight, interruptible, framework-agnostic typewriter animation library. Zero dependencies, safe HTML tag balancing, `Intl.Segmenter` powered grapheme/word units, bidirectional erasing, sequence orchestration, and framework adapters.
@@ -47,13 +49,13 @@ import { TypeFlow, seq } from '@staticcanvas/typeflow';
 TypeFlow.type('#headline', 'Fast. Resilient. Zero dependencies.', {
   speed: 40,
   naturalCadence: true,
-  cursor: '|'
+  cursor: '|',
 });
 
 // 2. Scramble / Decrypt Effect
 TypeFlow.type('#terminal', 'SYSTEM ONLINE', {
   typeStyle: 'scramble',
-  scrambleRounds: 2
+  scrambleRounds: 2,
 });
 
 // 3. Sequential Multi-Step Orchestration
@@ -62,7 +64,7 @@ TypeFlow.sequence([
   seq.type('#step-1', 'Initializing kernel...'),
   seq.pause(500),
   seq.erase('#step-1', { eraseStyle: 'scramble' }),
-  seq.type('#step-1', 'Kernel active.')
+  seq.type('#step-1', 'Kernel active.'),
 ]);
 ```
 
@@ -147,11 +149,11 @@ TypeFlow.isTyping(target): boolean
 
 ## Documentation
 
-Full interactive documentation, API specifications, and live workbench:  
+Full interactive documentation, API specifications, and live workbench:
 👉 **[https://staticcanvas.gitlab.io/typeflow](https://staticcanvas.gitlab.io/typeflow)**
 
 ---
 
-## License
+### **License**
 
-MIT © Garvey K. Snow
+Distributed under the **MIT License**. See `LICENSE` for more information.
