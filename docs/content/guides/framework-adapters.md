@@ -44,3 +44,31 @@ const headlineRef = useTypeFlow(() => message.value, { speed: 45 });
   <h1 ref="headlineRef"></h1>
 </template>
 ```
+
+## Svelte Adapter (Action)
+
+```svelte
+<script>
+  import { createTypeFlowSvelte } from '@staticcanvas/typeflow';
+  const typeflow = createTypeFlowSvelte();
+</script>
+
+<h1 use:typeflow={{ text: 'Reactive Svelte Action', config: { speed: 40 } }}></h1>
+```
+
+## Solid.js Adapter
+
+```jsx
+import * as Solid from 'solid-js';
+import { createTypeFlowSolid } from '@staticcanvas/typeflow';
+
+const useTypeFlow = createTypeFlowSolid(Solid);
+
+export function Hero() {
+  const [headline, setHeadline] = Solid.createSignal('Solid.js Reactive Typography');
+  const ref = useTypeFlow(headline, { speed: 40 });
+
+  return <h1 ref={ref} />;
+}
+```
+

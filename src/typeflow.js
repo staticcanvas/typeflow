@@ -843,14 +843,69 @@ export function createTypeFlowVue(Vue: VueLike) {
   };
 }
 
-export function createTypeFlowSequenceVue(Vue: VueLike) {
-  return function useTypeFlowSequence(buildSteps: () => TypeFlowStep[]) {
+// ============================================================
+// Svelte Adapter (Action)
+// ============================================================
+
+export function createTypeFlowSvelte() {
+  return function typeflowAction(
+    node: HTMLElement,
+    params: { text: string; config?: TypeFlowConfig } | string
+  ) {
     let controller: TypeFlowController | null = null;
-    const run = () => {
+
+    const start = (currentParams: { text: string; config?: TypeFlowConfig } | string) => {
       controller?.stop();
-      controller = TypeFlow.sequence(buildSteps());
+      const text = typeof currentParams === "string" ? currentParams : currentParams.text;
+      const config = typeof currentParams === "object" ? currentParams.config : {};
+      controller = TypeFlow.type(node, text, config);
     };
-    Vue.onBeforeUnmount(() => controller?.stop());
-    return run;
+
+    start(params);
+
+    return {
+      update(newParams: { text: string; config?: TypeFlowConfig } | string) {
+        start(newParams);
+      },
+      destroy() {
+        controller?.stop();
+      },
+    };
   };
 }
+
+// ============================================================
+// Solid.js Adapter
+// ============================================================
+
+interface SolidLike {
+  createSignal: <T>(value: T) => [() => T, (v: T) => T];
+  createEffect: (fn: () => void) => void;
+  onCleanup: (fn: () => void) => void;
+}
+
+export function createTypeFlowSolid(Solid: SolidLike) {
+  return function useTypeFlow<T extends HTMLElement = HTMLElement>(
+    getText: () => string,
+    config: TypeFlowConfig = {}
+  ) {
+    let el: T | undefined;
+    let controller: TypeFlowController | null = null;
+
+    Solid.createEffect(() => {
+      const text = getText();
+      if (!el) return;
+      controller?.stop();
+      controller = TypeFlow.type(el, text, config);
+    });
+
+    Solid.onCleanup(() => {
+      controller?.stop();
+    });
+
+    return (element: T) => {
+      el = element;
+    };
+  };
+}
+

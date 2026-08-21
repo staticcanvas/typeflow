@@ -164,3 +164,25 @@ export declare function createTypeFlowVue(Vue: VueLike): <T extends HTMLElement 
 export declare function createTypeFlowSequenceVue(
   Vue: VueLike
 ): (buildSteps: () => TypeFlowStep[]) => () => void;
+
+export declare function createTypeFlowSvelte(): (
+  node: HTMLElement,
+  params: { text: string; config?: TypeFlowConfig } | string
+) => {
+  update: (newParams: { text: string; config?: TypeFlowConfig } | string) => void;
+  destroy: () => void;
+};
+
+export interface SolidLike {
+  createSignal: <T>(value: T) => [() => T, (v: T) => T];
+  createEffect: (fn: () => void) => void;
+  onCleanup: (fn: () => void) => void;
+}
+
+export declare function createTypeFlowSolid(
+  Solid: SolidLike
+): <T extends HTMLElement = HTMLElement>(
+  getText: () => string,
+  config?: TypeFlowConfig
+) => (element: T) => void;
+
