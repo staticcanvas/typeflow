@@ -357,8 +357,8 @@ if (searchPlaceholderEl) {
       holdDuration: 3000,
       pauseBetween: 200,
       respectReducedMotion: false,
-      typeConfig: { speed: 55, cursor: '|', cursorBlink: true },
-      eraseConfig: { speed: 42, eraseStyle: 'end' },
+      typeConfig: { speed: 120, cursor: '|', cursorBlink: true },
+      eraseConfig: { speed: 90, eraseStyle: 'end' },
     }
   );
 }
@@ -1574,7 +1574,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
       const hintEl = document.getElementById('search-preview-empty-hint');
       if (hintEl) {
         TypeFlow.type(hintEl, 'Select any document or section to inspect live preview...', {
-          speed: 45,
+          speed: 180,
           respectReducedMotion: false,
         });
       }
@@ -1611,7 +1611,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
         typeStyle: item.isAnchor ? 'scramble' : 'char',
         scrambleCharset: 'cyber',
         scrambleRounds: 1,
-        speed: 40,
+        speed: 160,
         cursor: '|',
         cursorBlink: false,
         respectReducedMotion: false,
@@ -1620,7 +1620,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
 
     if (contentEl) {
       previewContentController = TypeFlow.type(contentEl, rawSnippet, {
-        speed: 22,
+        speed: 120,
         cursor: '',
         naturalCadence: false,
         respectReducedMotion: false,
