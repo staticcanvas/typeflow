@@ -103,10 +103,10 @@ const TypeFlow = (() => {
                     } else {
                         // Typing complete
                         if (options.cursor && options.cursorBlink) {
-                            // Blinking cursor after completion
+                            // Blinking cursor after completion with space placeholder
                             let cursorVisible = true;
                             cursorInterval = setInterval(() => {
-                                target.textContent = cursorVisible ? text + options.cursor : text;
+                                target.textContent = cursorVisible ? text + options.cursor : text + "\u00A0"; // Non-breaking space to maintain width
                                 cursorVisible = !cursorVisible;
                             }, 530);
                         } else {
