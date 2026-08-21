@@ -36,8 +36,158 @@ if (themeToggleBtn) {
     const nextTheme = root.dataset.theme === 'light' ? 'dark' : 'light';
     root.dataset.theme = nextTheme;
     localStorage.setItem('typeflow-docs-theme', nextTheme);
+    initMermaid(nextTheme);
   });
 }
+
+// ─── Mermaid.js Integration ───────────────────────────────────────────────────
+
+/**
+ * Builds a Mermaid theme variables object matched to the TypeFlow docs palette.
+ * @param {'dark'|'light'} theme
+ * @returns {object} Mermaid themeVariables config
+ */
+function getMermaidThemeVars(theme) {
+  const dark = theme !== 'light';
+  return {
+    // Base backgrounds
+    background:          dark ? '#090d16' : '#f8fafc',
+    mainBkg:             dark ? '#0f172a' : '#ffffff',
+    nodeBorder:          dark ? '#253347' : '#cbd5e1',
+    clusterBkg:          dark ? '#1e293b' : '#f1f5f9',
+    titleColor:          dark ? '#f1f5f9' : '#0f172a',
+    edgeLabelBackground: dark ? '#1e293b' : '#f1f5f9',
+
+    // Text
+    nodeTextColor:       dark ? '#f1f5f9' : '#0f172a',
+    textColor:           dark ? '#94a3b8' : '#475569',
+    labelTextColor:      dark ? '#f1f5f9' : '#0f172a',
+
+    // Primary accent (sky blue)
+    primaryColor:        dark ? '#0c2340' : '#e0f2fe',
+    primaryBorderColor:  dark ? '#38bdf8' : '#0284c7',
+    primaryTextColor:    dark ? '#38bdf8' : '#0284c7',
+
+    // Secondary accent (orange)
+    secondaryColor:      dark ? '#2a1200' : '#fff7ed',
+    secondaryBorderColor:dark ? '#fb923c' : '#ea580c',
+    secondaryTextColor:  dark ? '#fb923c' : '#ea580c',
+
+    // Tertiary accent (purple)
+    tertiaryColor:       dark ? '#1a0e2e' : '#faf5ff',
+    tertiaryBorderColor: dark ? '#a78bfa' : '#7c3aed',
+    tertiaryTextColor:   dark ? '#a78bfa' : '#7c3aed',
+
+    // Lines / borders
+    lineColor:           dark ? '#334155' : '#94a3b8',
+    activationBorderColor: dark ? '#38bdf8' : '#0284c7',
+    activationBkgColor:  dark ? '#0c2340' : '#e0f2fe',
+
+    // Sequence diagram participants
+    actorBkg:            dark ? '#0f172a' : '#ffffff',
+    actorBorder:         dark ? '#253347' : '#cbd5e1',
+    actorTextColor:      dark ? '#f1f5f9' : '#0f172a',
+    actorLineColor:      dark ? '#334155' : '#94a3b8',
+
+    // Signals / notes
+    signalColor:         dark ? '#94a3b8' : '#475569',
+    signalTextColor:     dark ? '#f1f5f9' : '#0f172a',
+    noteBkgColor:        dark ? '#1e293b' : '#f1f5f9',
+    noteBorderColor:     dark ? '#253347' : '#e2e8f0',
+    noteTextColor:       dark ? '#94a3b8' : '#475569',
+
+    // Fonts
+    fontFamily:          "'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace",
+    fontSize:            '13px',
+  };
+}
+
+/**
+ * Initialises (or re-initialises) Mermaid with the current theme.
+ * Processes any `.language-mermaid` code blocks Hugo emits and wraps
+ * them in a `.mermaid-diagram` container with toolbar controls.
+ * @param {'dark'|'light'} [theme]
+ */
+async function initMermaid(theme) {
+  const mermaid = window.mermaid;
+  if (!mermaid) return;
+
+  theme = theme || root.dataset.theme || 'dark';
+
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: getMermaidThemeVars(theme),
+    securityLevel: 'strict',
+    fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 60, useMaxWidth: false },
+    gantt: { useMaxWidth: false },
+  });
+
+  // Hugo renders ```mermaid as <pre><code class="language-mermaid">
+  // Mermaid itself also reads <div class="mermaid"> — handle both.
+  const codeBlocks = document.querySelectorAll('pre code.language-mermaid');
+
+  for (const code of codeBlocks) {
+    const pre = code.closest('pre');
+    if (!pre || pre.dataset.mermaidProcessed) continue;
+    pre.dataset.mermaidProcessed = '1';
+
+    const definition = code.textContent.trim();
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mermaid-diagram';
+    wrapper.innerHTML = `
+      <div class="mermaid-toolbar">
+        <span class="mermaid-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="m9 9 3 3 3-3"/><path d="M12 12v6"/></svg> Diagram</span>
+        <button type="button" class="mermaid-copy-btn" title="Copy source"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
+      </div>
+      <div class="mermaid-render" id="mermaid-${Math.random().toString(36).slice(2)}"></div>
+    `;
+
+    const renderTarget = wrapper.querySelector('.mermaid-render');
+    const copyBtn = wrapper.querySelector('.mermaid-copy-btn');
+
+    pre.replaceWith(wrapper);
+
+    try {
+      const { svg } = await mermaid.render(renderTarget.id, definition);
+      renderTarget.innerHTML = svg;
+      // Make SVG responsive
+      const svgEl = renderTarget.querySelector('svg');
+      if (svgEl) {
+        svgEl.removeAttribute('width');
+        svgEl.removeAttribute('height');
+        if (!svgEl.getAttribute('viewBox')) {
+          svgEl.setAttribute('viewBox', `0 0 ${svgEl.getAttribute('width') || 800} ${svgEl.getAttribute('height') || 400}`);
+        }
+        svgEl.style.maxWidth = '100%';
+        svgEl.style.height = 'auto';
+      }
+    } catch (err) {
+      renderTarget.innerHTML = `<pre class="mermaid-error">⚠ Diagram parse error:\n${err.message}</pre>`;
+    }
+
+    // Copy button
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(definition);
+        copyBtn.textContent = '✓ Copied';
+        setTimeout(() => { copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`; }, 1800);
+      } catch {}
+    });
+  }
+
+  // Also process any raw <div class="mermaid"> blocks (e.g. from shortcodes)
+  const rawDivs = document.querySelectorAll('div.mermaid:not([data-mermaid-processed])');
+  if (rawDivs.length) {
+    rawDivs.forEach(el => { el.dataset.mermaidProcessed = '1'; });
+    mermaid.run({ nodes: [...rawDivs] });
+  }
+}
+
+// Boot Mermaid once the module is loaded — use a small delay so mermaid.esm is ready
+window.addEventListener('load', () => setTimeout(() => initMermaid(), 80));
 
 // ─── Mobile Sidebar Toggle ───────────────────────────────────────────────────
 
