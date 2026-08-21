@@ -56,12 +56,22 @@ const TypeFlow = (() => {
             onComplete: null,
             onInterrupt: null,
             mode: "replace",
+            html: false,
             ...config,
         };
 
         // Validate text
         if (typeof text !== "string") {
             text = String(text);
+        }
+
+        // Parse HTML if in HTML mode
+        let textParts = [];
+        if (options.html) {
+            textParts = parseHTML(text);
+        } else {
+            // Plain text mode - split into characters
+            textParts = text.split("").map((char) => ({ type: "text", content: char }));
         }
 
         // Create control object
