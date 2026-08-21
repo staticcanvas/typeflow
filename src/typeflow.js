@@ -19,6 +19,53 @@ const TypeFlow = (() => {
     }
 
     /**
+     * Parse HTML string into parts (text and tags)
+     * @private
+     */
+    function parseHTML(html) {
+        const parts = [];
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = html;
+
+        function traverse(node) {
+            if (node.nodeType === 3) {
+                // Text node - split into individual characters
+                const text = node.textContent;
+                for (let i = 0; i < text.length; i++) {
+                    parts.push({ type: "text", content: text[i] });
+                }
+            } else if (node.nodeType === 1) {
+                // Element node - add opening tag
+                const tagName = node.tagName.toLowerCase();
+                let openTag = `<${tagName}`;
+
+                // Add attributes
+                for (let i = 0; i < node.attributes.length; i++) {
+                    const attr = node.attributes[i];
+                    openTag += ` ${attr.name}="${attr.value}"`;
+                }
+                openTag += ">";
+
+                parts.push({ type: "tag", content: openTag });
+
+                // Process children
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    traverse(node.childNodes[i]);
+                }
+
+                // Add closing tag
+                parts.push({ type: "tag", content: `</${tagName}>` });
+            }
+        }
+
+        for (let i = 0; i < tempDiv.childNodes.length; i++) {
+            traverse(tempDiv.childNodes[i]);
+        }
+
+        return parts;
+    }
+
+    /**
      * Creates a typewriter effect that can be interrupted and restarted
      * @param {HTMLElement|string} targetElement - Element or selector to type into
      * @param {string} text - Text to type (can be plain text or HTML)
