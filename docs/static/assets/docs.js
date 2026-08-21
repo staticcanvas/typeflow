@@ -139,6 +139,7 @@ document.querySelectorAll('[data-search-close]').forEach((btn) => {
 // Dynamic rotating search suggestions in the header search trigger
 const searchPlaceholderEl = document.querySelector('.search-trigger-placeholder');
 if (searchPlaceholderEl) {
+  searchPlaceholderEl.textContent = '';
   TypeFlow.rotate(
     searchPlaceholderEl,
     [
@@ -150,10 +151,11 @@ if (searchPlaceholderEl) {
       'Try "accessibility" & WCAG...',
     ],
     {
-      holdDuration: 3800,
-      pauseBetween: 350,
-      typeConfig: { speed: 38, cursor: '|' },
-      eraseConfig: { speed: 20 },
+      holdDuration: 3000,
+      pauseBetween: 200,
+      respectReducedMotion: false,
+      typeConfig: { speed: 55, cursor: '|', cursorBlink: true },
+      eraseConfig: { speed: 42, eraseStyle: 'end' },
     }
   );
 }
@@ -1343,6 +1345,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
 
   let previewTitleController = null;
   let previewContentController = null;
+  let currentPreviewKey = null;
 
   /**
    * Updates live preview pane with rich details, anchor links, and animated TypeFlow typography.
@@ -1350,6 +1353,10 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
    * @param {string} query
    */
   const updatePreview = (item, query = '') => {
+    const itemKey = item ? (item.permalink + (item.anchor || '')) : 'empty';
+    if (currentPreviewKey === itemKey) return;
+    currentPreviewKey = itemKey;
+
     // 1. Stop any in-flight TypeFlow animation controllers
     previewTitleController?.stop();
     previewContentController?.stop();
@@ -1358,12 +1365,15 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
       searchPreviewPane.innerHTML = `
         <div class="search-preview-empty">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <p id="search-preview-empty-hint">Type to search or browse documentation</p>
+          <p id="search-preview-empty-hint"></p>
         </div>
       `;
       const hintEl = document.getElementById('search-preview-empty-hint');
       if (hintEl) {
-        TypeFlow.type(hintEl, 'Select any document or section to inspect live preview...', { speed: 22 });
+        TypeFlow.type(hintEl, 'Select any document or section to inspect live preview...', {
+          speed: 45,
+          respectReducedMotion: false,
+        });
       }
       return;
     }
@@ -1371,7 +1381,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
     const rawTitle = item.heading || item.title;
     const targetUrl = normalizeUrl(item.permalink);
     const rawSnippet = item.content
-      ? (item.content.length > 320 ? item.content.slice(0, 320) + '...' : item.content)
+      ? (item.content.length > 280 ? item.content.slice(0, 280) + '...' : item.content)
       : item.description;
 
     searchPreviewPane.innerHTML = `
@@ -1398,17 +1408,19 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
         typeStyle: item.isAnchor ? 'scramble' : 'char',
         scrambleCharset: 'cyber',
         scrambleRounds: 1,
-        speed: 16,
+        speed: 40,
         cursor: '|',
         cursorBlink: false,
+        respectReducedMotion: false,
       });
     }
 
     if (contentEl) {
       previewContentController = TypeFlow.type(contentEl, rawSnippet, {
-        speed: 9,
+        speed: 22,
         cursor: '',
         naturalCadence: false,
+        respectReducedMotion: false,
       });
     }
   };
