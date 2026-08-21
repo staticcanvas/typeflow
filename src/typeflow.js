@@ -103,25 +103,62 @@ const TypeFlow = (() => {
                     return;
                 }
 
-                if (index <= text.length) {
-                    const currentText = text.slice(0, index);
-                    const displayText = options.cursor ? currentText + options.cursor : currentText;
+                if (index <= textParts.length) {
+                    // Build current content
+                    let displayContent = "";
+                    for (let i = 0; i < index; i++) {
+                        const part = textParts[i];
+                        if (part.type === "text") {
+                            displayContent += part.content;
+                        } else if (part.type === "tag") {
+                            displayContent += part.content;
+                        }
+                    }
 
-                    target.textContent = displayText;
+                    // Add cursor if enabled
+                    if (options.cursor) {
+                        displayContent += options.cursor;
+                    }
 
-                    if (index < text.length) {
-                        timeoutId = setTimeout(() => typeCharacter(index + 1), options.speed);
+                    // Update element
+                    if (options.html) {
+                        target.innerHTML = displayContent;
+                    } else {
+                        target.textContent = displayContent;
+                    }
+
+                    if (index < textParts.length) {
+                        // Determine delay for next character
+                        const currentPart = textParts[index];
+                        const delay = currentPart.type === "tag" ? 0 : options.speed;
+
+                        timeoutId = setTimeout(() => typeCharacter(index + 1), delay);
                     } else {
                         // Typing complete
+                        let finalContent = "";
+                        for (let i = 0; i < textParts.length; i++) {
+                            const part = textParts[i];
+                            finalContent += part.content;
+                        }
+
                         if (options.cursor && options.cursorBlink) {
                             // Blinking cursor after completion with space placeholder
                             let cursorVisible = true;
                             cursorInterval = setInterval(() => {
-                                target.textContent = cursorVisible ? text + options.cursor : text + "\u00A0"; // Non-breaking space to maintain width
+                                const cursorChar = cursorVisible ? options.cursor : "\u00A0";
+                                if (options.html) {
+                                    target.innerHTML = finalContent + cursorChar;
+                                } else {
+                                    target.textContent = finalContent + cursorChar;
+                                }
                                 cursorVisible = !cursorVisible;
                             }, 530);
                         } else {
-                            target.textContent = text;
+                            if (options.html) {
+                                target.innerHTML = finalContent;
+                            } else {
+                                target.textContent = finalContent;
+                            }
                         }
 
                         activeInstances.delete(instanceId);
