@@ -1546,6 +1546,69 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
     }
   };
 
+  /**
+   * Converts markdown formatting (code blocks, inline code, bold, italic, quotes, lists)
+   * into clean HTML for search preview typography.
+   * @param {string} md
+   * @param {string} [query='']
+   * @returns {string}
+   */
+  const formatMarkdownSnippet = (md, query = '') => {
+    if (!md) return '';
+
+    // 1. Escape HTML special characters
+    let html = md
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 2. Fenced code blocks ```lang ... ```
+    html = html.replace(/```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)```/g, (_m, code) => {
+      return `<pre><code>${code.trim()}</code></pre>`;
+    });
+
+    // 3. Inline code `code`
+    html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+    // 4. Bold **bold** or __bold__
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+    // 5. Italic *italic* or _italic_
+    html = html.replace(/(^|[^\*])\*([^\*]+)\*([^\*]|$)/g, '$1<em>$2</em>$3');
+    html = html.replace(/(^|[^_])_([^_]+)_([^_]|$)/g, '$1<em>$2</em>$3');
+
+    // 6. Blockquotes > quote
+    html = html.replace(/^&gt;\s*(.+)$/gm, '<blockquote>$1</blockquote>');
+
+    // 7. Markdown lists - item or * item
+    html = html.replace(/^[\*\-]\s+(.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.+<\/li>\n?)+/g, '<ul>$&</ul>');
+
+    // 8. Paragraphs: split by double newlines if not inside pre/ul/blockquote
+    const blocks = html.split(/\n\n+/);
+    html = blocks.map((block) => {
+      const trimmed = block.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('<pre>') || trimmed.startsWith('<ul>') || trimmed.startsWith('<blockquote>')) {
+        return trimmed;
+      }
+      return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+    }).filter(Boolean).join('');
+
+    // 9. Highlight matching query terms (avoid modifying inside tag attributes)
+    if (query && query.trim().length > 1) {
+      const q = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const parts = html.split(/(<[^>]+>)/g);
+      html = parts.map((part) => {
+        if (part.startsWith('<') && part.endsWith('>')) return part;
+        return part.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-match">$1</mark>');
+      }).join('');
+    }
+
+    return html;
+  };
+
   let previewTitleController = null;
   let previewContentController = null;
   let currentPreviewKey = null;
@@ -1584,8 +1647,10 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
     const rawTitle = item.heading || item.title;
     const targetUrl = normalizeUrl(item.permalink);
     const rawSnippet = item.content
-      ? (item.content.length > 280 ? item.content.slice(0, 280) + '...' : item.content)
+      ? (item.content.length > 320 ? item.content.slice(0, 320) + '...' : item.content)
       : item.description;
+
+    const formattedSnippet = formatMarkdownSnippet(rawSnippet, query);
 
     searchPreviewPane.innerHTML = `
       <div class="search-preview-header">
@@ -1593,7 +1658,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
         ${item.isAnchor ? `<span class="search-anchor-badge">${item.anchor}</span>` : ''}
       </div>
       <h3 class="search-preview-title" id="search-preview-title-el"></h3>
-      ${item.isAnchor ? `<div class="search-preview-section">Document: ${item.title}</div>` : ''}
+      ${item.isAnchor ? `<div class="search-preview-section"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Document: ${item.title}</div>` : ''}
       <div class="search-preview-content" id="search-preview-content-el"></div>
       <div class="search-preview-actions">
         <a class="search-jump-btn" href="${targetUrl}">
@@ -1619,7 +1684,9 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
     }
 
     if (contentEl) {
-      previewContentController = TypeFlow.type(contentEl, rawSnippet, {
+      previewContentController = TypeFlow.type(contentEl, formattedSnippet, {
+        html: true,
+        allowedTags: ['pre', 'code', 'strong', 'em', 'blockquote', 'p', 'ul', 'ol', 'li', 'mark', 'a', 'kbd', 'span', 'b', 'i', 'br'],
         speed: 2,
         cursor: '',
         naturalCadence: false,
