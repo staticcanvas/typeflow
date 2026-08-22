@@ -1,0 +1,73 @@
+[
+  {
+    "slogan": "typewriter animations.",
+    "mode": "typeStyle: char · eraseStyle: end",
+    "typeStyle": "char",
+    "eraseStyle": "end",
+    "speed": 48
+  },
+  {
+    "slogan": "center-outward typography.",
+    "mode": "direction: center · eraseStyle: center",
+    "direction": "center",
+    "eraseStyle": "center",
+    "speed": 46
+  },
+  {
+    "slogan": "cybernetic matrix decrypt.",
+    "mode": "typeStyle: scramble · scrambleCharset: matrix",
+    "typeStyle": "scramble",
+    "scrambleCharset": "matrix",
+    "scrambleRounds": 2,
+    "eraseStyle": "scramble",
+    "speed": 44
+  },
+  {
+    "slogan": "smart diff morphing.",
+    "mode": "TypeFlow.morph() · longest common prefix",
+    "eraseStyle": "start",
+    "speed": 45
+  },
+  {
+    "slogan": "real-time llm token streaming.",
+    "mode": "TypeFlow.stream() · zero DOM lag",
+    "typeStyle": "word",
+    "cursor": "▍",
+    "eraseStyle": "fade",
+    "speed": 40
+  },
+  {
+    "slogan": "procedural web audio clicks.",
+    "mode": "audio: mechanical · Web Audio API",
+    "speed": 45,
+    "eraseStyle": "end"
+  },
+  {
+    "slogan": "trailing fade dissolve.",
+    "mode": "typeStyle: fade-trail · trailFade: 6",
+    "typeStyle": "fade-trail",
+    "trailFade": 6,
+    "eraseStyle": "fade-trail",
+    "speed": 42
+  },
+  {
+    "slogan": "100% safe HTML parsing.",
+    "mode": "html: true · DOMParser AST tree",
+    "html": true,
+    "eraseStyle": "word",
+    "speed": 45
+  },
+  {
+    "slogan": "right-to-left reverse reveals.",
+    "mode": "direction: right · eraseStyle: start",
+    "direction": "right",
+    "eraseStyle": "start",
+    "speed": 46
+  },
+  {
+    "slogan": "declarative sequences & rotators.",
+    "mode": "TypeFlow.sequence() · seq.visible()",
+    "eraseStyle": "fade",
+    "speed": 45
+  }
+]

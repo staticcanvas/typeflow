@@ -2478,9 +2478,27 @@ td code {
   background: var(--tf-bg-canvas);
   font-family: var(--tf-font-mono);
   font-size: 13.5px;
+  line-height: 1.6;
   color: var(--tf-text-primary);
   overflow-x: auto;
 }
+
+/* Syntax Highlighting Tokens */
+.token-keyword { color: #f43f5e; font-weight: 600; }
+.token-string { color: #22c55e; }
+.token-number { color: #fb923c; }
+.token-boolean { color: #38bdf8; font-weight: 600; }
+.token-property { color: #38bdf8; }
+.token-function { color: #c084fc; font-weight: 600; }
+.token-class { color: #fbbf24; font-weight: 600; }
+
+[data-theme="light"] .token-keyword { color: #e11d48; }
+[data-theme="light"] .token-string { color: #16a34a; }
+[data-theme="light"] .token-number { color: #ea580c; }
+[data-theme="light"] .token-boolean { color: #0284c7; }
+[data-theme="light"] .token-property { color: #0369a1; }
+[data-theme="light"] .token-function { color: #9333ea; }
+[data-theme="light"] .token-class { color: #d97706; }
 
 @media (max-width: 900px) {
   .pg-grid {

@@ -389,7 +389,7 @@ document.querySelectorAll('[data-copy]').forEach((btn) => {
  * clipboard.
  */
 document.querySelectorAll('pre').forEach((pre) => {
-  if (pre.querySelector('.copy-button')) return;
+  if (pre.classList.contains('pg-code-pre') || pre.closest('.pg-code-card') || pre.querySelector('.copy-button')) return;
 
   const btn = document.createElement('button');
   btn.className = 'copy-button';
@@ -448,179 +448,97 @@ if (heroSloganEl) {
     }
   };
 
-  const sloganSteps = [
-    // 1. Classic Character Typewriter + Backspace Erase
-    seq.call(() => setMode('typeStyle: char · eraseStyle: end (backspace)')),
-    seq.type(heroSloganEl, 'typewriter animations.', {
-      typeStyle: 'char',
-      speed: 55,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'end',
-      speed: 28,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
+  let sloganSteps = [];
+  const slogansDataEl = document.getElementById('splash-slogans-data');
+  if (slogansDataEl) {
+    try {
+      const parsedSlogans = JSON.parse(slogansDataEl.textContent);
+      if (Array.isArray(parsedSlogans) && parsedSlogans.length > 0) {
+        parsedSlogans.forEach((item) => {
+          sloganSteps.push(
+            seq.call(() => setMode(item.mode || item.slogan)),
+            seq.type(heroSloganEl, item.slogan, {
+              typeStyle: item.typeStyle || 'char',
+              direction: item.direction || 'left',
+              scrambleCharset: item.scrambleCharset || 'matrix',
+              scrambleRounds: item.scrambleRounds || 2,
+              trailFade: item.trailFade,
+              html: item.html,
+              speed: item.speed || 45,
+              cursor: item.cursor || '|',
+              cursorBlink: true,
+              respectReducedMotion: false,
+            }),
+            seq.pause(2600),
+            seq.erase(heroSloganEl, {
+              eraseStyle: item.eraseStyle || 'end',
+              scrambleCharset: item.scrambleCharset || 'matrix',
+              scrambleRounds: 1,
+              speed: Math.max(16, Math.floor((item.speed || 45) * 0.55)),
+              duration: 350,
+              respectReducedMotion: false,
+            }),
+            seq.pause(450)
+          );
+        });
+      }
+    } catch {}
+  }
 
-    // 2. Multi-Directional Reveal & Erasing (Center-Outward & Inward)
-    seq.call(() => setMode('direction: center · eraseStyle: center (inward shrink)')),
-    seq.type(heroSloganEl, 'multi-directional reveals & erasing.', {
-      direction: 'center',
-      speed: 40,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'center',
-      speed: 24,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 3. Cybernetic Matrix Decrypt Reveal + Matrix Scramble Decay
-    seq.call(() => setMode('typeStyle: scramble · scrambleCharset: matrix')),
-    seq.type(heroSloganEl, 'cybernetic matrix decrypt.', {
-      typeStyle: 'scramble',
-      scrambleCharset: 'matrix',
-      scrambleRounds: 2,
-      speed: 44,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'scramble',
-      scrambleCharset: 'matrix',
-      scrambleRounds: 1,
-      speed: 22,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 4. Smart Morph Diffing
-    seq.call(() => setMode('TypeFlow.morph() · longest common prefix')),
-    seq.type(heroSloganEl, 'smart diff morphing.', {
-      speed: 45,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'start',
-      speed: 25,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 5. Real-Time LLM Token Streaming
-    seq.call(() => setMode('TypeFlow.stream() · zero DOM lag')),
-    seq.type(heroSloganEl, 'real-time llm token streaming.', {
-      typeStyle: 'word',
-      speed: 40,
-      cursor: '▍',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'fade',
-      duration: 350,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 6. Procedural Web Audio Clicks
-    seq.call(() => setMode('audio: mechanical · Web Audio API')),
-    seq.type(heroSloganEl, 'procedural web audio clicks.', {
-      speed: 45,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'end',
-      speed: 25,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 7. Human Natural Cadence + Left-to-Right Erosion
-    seq.call(() => setMode('naturalCadence: true · speedVariance: 22ms')),
-    seq.type(heroSloganEl, 'natural human cadence.', {
-      naturalCadence: true,
-      speed: 52,
-      speedVariance: 22,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'start',
-      speed: 26,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 8. HTML Token Formatting & Nested Tag Typing + Backspace Erase
-    seq.call(() => setMode('html: true · allowlist sanitization')),
-    seq.type(heroSloganEl, 'safe html &amp; tag balancing.', {
-      html: true,
-      speed: 45,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'end',
-      speed: 25,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 9. Rapid Burst Keystrokes + Left-to-Right Erosion
-    seq.call(() => setMode('speed: 28ms (burst mode) · <7kb gzipped')),
-    seq.type(heroSloganEl, 'ultra-fast zero dependency.', {
-      typeStyle: 'char',
-      speed: 28,
-      cursor: '▍',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'start',
-      speed: 20,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-
-    // 10. Declarative Sequences & Viewport Triggers
-    seq.call(() => setMode('TypeFlow.sequence() · seq.visible()')),
-    seq.type(heroSloganEl, 'declarative sequences & rotators.', {
-      speed: 45,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }),
-    seq.pause(2600),
-    seq.erase(heroSloganEl, {
-      eraseStyle: 'fade',
-      duration: 350,
-      respectReducedMotion: false,
-    }),
-    seq.pause(450),
-  ];
+  // Fallback defaults if json data is absent
+  if (sloganSteps.length === 0) {
+    sloganSteps = [
+      seq.call(() => setMode('typeStyle: char · eraseStyle: end (backspace)')),
+      seq.type(heroSloganEl, 'typewriter animations.', {
+        typeStyle: 'char',
+        speed: 55,
+        cursor: '|',
+        cursorBlink: true,
+        respectReducedMotion: false,
+      }),
+      seq.pause(2600),
+      seq.erase(heroSloganEl, {
+        eraseStyle: 'end',
+        speed: 28,
+        respectReducedMotion: false,
+      }),
+      seq.pause(450),
+      seq.call(() => setMode('direction: center · eraseStyle: center (inward shrink)')),
+      seq.type(heroSloganEl, 'multi-directional reveals & erasing.', {
+        direction: 'center',
+        speed: 40,
+        cursor: '|',
+        cursorBlink: true,
+        respectReducedMotion: false,
+      }),
+      seq.pause(2600),
+      seq.erase(heroSloganEl, {
+        eraseStyle: 'center',
+        speed: 24,
+        respectReducedMotion: false,
+      }),
+      seq.pause(450),
+      seq.call(() => setMode('typeStyle: scramble · scrambleCharset: matrix')),
+      seq.type(heroSloganEl, 'cybernetic matrix decrypt.', {
+        typeStyle: 'scramble',
+        scrambleCharset: 'matrix',
+        scrambleRounds: 2,
+        speed: 44,
+        cursor: '|',
+        cursorBlink: true,
+        respectReducedMotion: false,
+      }),
+      seq.pause(2600),
+      seq.erase(heroSloganEl, {
+        eraseStyle: 'scramble',
+        scrambleCharset: 'matrix',
+        scrambleRounds: 1,
+        speed: 22,
+        respectReducedMotion: false,
+      }),
+      seq.pause(450),
+    ];
+  }
 
   TypeFlow.sequence(sloganSteps, { repeat: Infinity });
 }
@@ -628,21 +546,19 @@ if (heroSloganEl) {
 // ─── Hero Staggered Terminal Demo ─────────────────────────────────────────────
 
 /**
- * Runs a 4-line staggered typewriter sequence in the hero terminal using
+ * Runs a 3-line staggered typewriter sequence in the hero terminal using
  * {@link TypeFlow.stagger}.
  */
 const line1 = document.getElementById('hero-type-1');
 const line2 = document.getElementById('hero-type-2');
 const line3 = document.getElementById('hero-type-3');
-const line4 = document.getElementById('hero-type-4');
 
-if (line1 && line2 && line3 && line4) {
-  const terminalLines = [line1, line2, line3, line4];
+if (line1 && line2 && line3) {
+  const terminalLines = [line1, line2, line3];
   const terminalTexts = [
     'npm install @staticcanvas/typeflow',
     'import { TypeFlow } from "@staticcanvas/typeflow";',
-    'TypeFlow.stagger(".terminal-lines", texts, { stagger: 200 });',
-    '✨ All systems operational · Ready for production'
+    'TypeFlow.type("#target", "Fast. Resilient. Safe.", { speed: 30 });'
   ];
 
   const runTerminalStagger = () => {
@@ -1037,6 +953,22 @@ if (pgStage && btnType) {
     return opts;
   };
 
+  const highlightJavaScript = (code) => {
+    const escaped = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    return escaped
+      .replace(/(['"`])(.*?)\1/g, '<span class="token-string">$1$2$1</span>')
+      .replace(/\b(import|from|const|let|var|return|function|async|await|new|export|default|if|else)\b/g, '<span class="token-keyword">$1</span>')
+      .replace(/\b(true|false|null|undefined)\b/g, '<span class="token-boolean">$1</span>')
+      .replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
+      .replace(/(["']?[a-zA-Z0-9_$]+["']?)(?=\s*:)/g, '<span class="token-property">$1</span>')
+      .replace(/\b(type|erase|morph|stream|sequence|rotate|stagger|fit|stop|preset)\b(?=\s*\()/g, '<span class="token-function">$1</span>')
+      .replace(/\b(TypeFlow)\b/g, '<span class="token-class">$1</span>');
+  };
+
   const updateCodeSnippet = () => {
     if (!pgCodeSnippet) return;
     const opts = getOptions();
@@ -1056,7 +988,8 @@ if (pgStage && btnType) {
     if (!cleanOpts.respectReducedMotion) delete cleanOpts.respectReducedMotion;
 
     const formatted = JSON.stringify(cleanOpts, null, 2);
-    pgCodeSnippet.textContent = `import { TypeFlow } from '@staticcanvas/typeflow';\n\nconst controller = TypeFlow.type(\n  '#target',\n  ${JSON.stringify(pgText.value)},\n  ${formatted}\n);`;
+    const rawJs = `import { TypeFlow } from '@staticcanvas/typeflow';\n\nconst controller = TypeFlow.type(\n  '#target',\n  ${JSON.stringify(pgText.value)},\n  ${formatted}\n);`;
+    pgCodeSnippet.innerHTML = highlightJavaScript(rawJs);
   };
 
   // Slider Badges Listeners

@@ -4,7 +4,34 @@ Thank you for contributing to TypeFlow! We welcome pull requests, bug fixes, arc
 
 ---
 
-## 1. AI-Assisted Code Policy
+## 1. Core Architecture & Maintainability Principles
+
+To ensure TypeFlow remains lightweight, robust, and maintainable across long-term evolution, all contributions must adhere to the following core practices:
+
+1. **Single Source of Truth (SOT) Architecture**:
+   - All styling tokens, color palettes, spacing metrics, and elevation curves must be defined in centralized CSS custom properties (`--tf-*`). Never introduce hardcoded magic numbers or duplicate color constants across stylesheets.
+
+2. **Zero Runtime Dependencies for Core Engine**:
+   - The core TypeFlow engine bundle (`dist/typeflow.esm.js`, `dist/typeflow.min.js`) must strictly maintain **zero runtime dependencies** ($0$ NPM dependencies). Specialized subpath modules (such as Web Audio synthesizers or metrics telemetry) must be decoupled as opt-in extensions.
+
+3. **Non-Destructive AST Windowing**:
+   - Never slice or mutate HTML strings using regular expressions during the typing/erasing loop. All tree slicing, tag preservation, and character masking must operate over DOM Node trees and AST interval ranges (`revealWindowFragment`) to guarantee zero malformed tags and 100% safe rendering.
+
+4. **Dual-Target Monospace & Web Readability**:
+   - Code formatting, component layouts, and documentation must render with equal visual clarity across both standard graphical web browsers and strict monospace terminal/TUI environments.
+
+5. **Zero Cumulative Layout Shift (CLS = 0.00)**:
+   - Dynamic typing must never trigger container reflows. Layout containers, typography metrics, and floating cursors must use fixed geometry, tabular numerals, or reservation containers to maintain absolute layout stability.
+
+6. **Strict WCAG 2.2 Accessibility Compliance**:
+   - Honor `prefers-reduced-motion` unconditionally across all animation loops. Decorative cursors must always be tagged `aria-hidden="true"`, and live text regions must never spam screen readers during intermediate keystrokes.
+
+7. **Editorial Factuality & Clean Technical Documentation**:
+   - Technical documentation, architecture guides, and API references must maintain absolute factuality, precision, and zero-emoji editorial rigor. Use Unicode geometric symbols (`■`, `◆`, `▶`) when visual hierarchy is required.
+
+---
+
+## 2. AI-Assisted Code Policy
 
 AI-assisted and LLM-generated code is **explicitly welcome** in the TypeFlow codebase under the following strict conditions:
 
@@ -19,7 +46,7 @@ AI-assisted and LLM-generated code is **explicitly welcome** in the TypeFlow cod
 
 ---
 
-## 2. Development Workflow
+## 3. Development Workflow
 
 ### Prerequisites
 - Node.js 18+
@@ -50,7 +77,7 @@ npm run docs:dev
 
 ---
 
-## 3. Git & Commit Conventions
+## 4. Git & Commit Conventions
 
 TypeFlow strictly enforces **Conventional Commits** on all branches. Ongoing development occurs on the `develop` branch.
 
@@ -78,10 +105,10 @@ TypeFlow strictly enforces **Conventional Commits** on all branches. Ongoing dev
 
 ---
 
-## 4. Pull Request Checklist
+## 5. Pull Request Checklist
 
 Before submitting a pull request, ensure that:
-- [ ] All 44+ unit tests pass via `npm test`.
+- [ ] All 48 unit tests pass via `npm test`.
 - [ ] Production bundles compile cleanly via `npm run build`.
 - [ ] Hugo documentation site builds with zero errors via `npm run docs:build`.
 - [ ] TypeScript declaration file (`src/typeflow.d.ts`) is updated for any new methods or options.

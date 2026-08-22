@@ -89,10 +89,12 @@
           <div class="line"><span class="prompt" aria-hidden="true">$</span> <span id="hero-type-1" class="tf-typed"></span></div>
           <div class="line"><span class="prompt" aria-hidden="true">$</span> <span id="hero-type-2" class="tf-typed"></span></div>
           <div class="line"><span class="prompt" aria-hidden="true">$</span> <span id="hero-type-3" class="tf-typed"></span></div>
-          <div class="line"><span class="prompt" aria-hidden="true">$</span> <span id="hero-type-4" class="tf-typed"></span></div>
         </div>
       </div>
     </div>
+    {{ with site.Data.splashSlogans }}
+    <script id="splash-slogans-data" type="application/json">{{ . | jsonify | safeJS }}</script>
+    {{ end }}
   </section>
 
   {{/* ── Metrics strip ──────────────────────────────────────────── */}}
