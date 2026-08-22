@@ -6,7 +6,7 @@
 #     [string]$LogoName
 # )
 # Logo
-mystro config -Source "./typeflow-logo.svg" -OutputDir "./dist" -AutoScale | mystro Gen
+mystro config -Source "./branding/typeflow-logo.svg" -OutputDir "./branding/dist" -AutoScale | mystro Gen
 
 # Banner
 #mystro config -Source "./lume-banner.svg" -OutputDir "./dist" -AutoScale | mystro Gen

@@ -7,14 +7,14 @@
   // The name must be scoped with an '@' (e.g. @username/pkgname)
   "name": "@staticcanvas/typeflow",
   // Must be a valid SemVer version (e.g. 0.1.0, 1.0.0-rc.1)
-  "version": "2.2.0",
+  "version": "0.20.0",
   // ---------------------------------------------------------
   // EXPORTS
   // ---------------------------------------------------------
   // Defines what files users can import.
   // "." is the default import (e.g. import { TypeFlow } from "@staticcanvas/typeflow")
   "exports": {
-    ".": "./src/typeflow.js"
+    ".": "./src/typeflow.js",
   },
   // ---------------------------------------------------------
   // PUBLISHING CONTROLS
@@ -22,6 +22,6 @@
   // Controls which files are uploaded to JSR.
   "publish": {
     "include": ["src/**", "dist/**", "package.json", "README-npm.md", "LICENSE"],
-    "exclude": ["src/**/*.test.js"]
-  }
+    "exclude": ["src/**/*.test.js"],
+  },
 }
