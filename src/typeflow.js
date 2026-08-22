@@ -4,7 +4,7 @@
  * @license MIT
  *
  * Zero dependencies. Safe by default (no innerHTML string concatenation).
- * Vanilla-first, with Intl.Segmenter support, multi-style reveals, and adapters for React, Vue, Svelte, and Solid.
+ * Vanilla-first, with Intl.Segmenter support, multi-style reveals, and integrations for React, Vue, Svelte, Solid.js, Alpine.js, and Web Components.
  */
 
 // ============================================================
@@ -1628,4 +1628,3 @@ export function defineTypeFlowElement(customElementsRegistry = typeof customElem
 
   customElementsRegistry.define('type-flow', TypeFlowCustomElement);
 }
-

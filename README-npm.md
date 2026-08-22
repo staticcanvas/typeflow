@@ -24,7 +24,7 @@ A lightweight, interruptible, framework-agnostic typewriter animation library. Z
 - **Animation Presets**: One-line profiles for common styles (`TypeFlow.preset('cyberpunk')`).
 - **CLS Layout Shift Prevention**: Automatic dimension stabilization (`TypeFlow.fit()`).
 - **Sequence Orchestration**: Coordinate multi-step flows with `seq.type`, `seq.erase`, `seq.pause`, `seq.visible`, and `seq.call`.
-- **Framework Ready**: First-class adapters for React, Vue, Svelte, and Solid.js.
+- **Framework Ready**: First-class adapters for React, Vue, Svelte, Solid.js, and Alpine.js, plus native Web Components and Astro client-side integration.
 
 ---
 
@@ -140,6 +140,26 @@ export function Hero() {
   return <h1 ref={ref} />;
 }
 ```
+
+### Alpine.js
+
+```html
+<script type="module">
+  import Alpine from 'alpinejs';
+  import { createTypeFlowAlpine } from '@staticcanvas/typeflow';
+
+  createTypeFlowAlpine(Alpine);
+  Alpine.start();
+</script>
+
+<div x-data="{ title: 'Alpine.js Typography' }">
+  <h1 x-typeflow="{ text: title, config: { speed: 40 } }"></h1>
+</div>
+```
+
+### Astro and Web Components
+
+Astro uses the browser-native ESM API from a client-side script or client island; it does not need a separate Astro runtime adapter. The native `<type-flow>` custom element is also available when a declarative integration is preferred. See the [framework adapter guide](https://staticcanvas.gitlab.io/typeflow/guides/framework-adapters/) for complete Astro and Web Components examples.
 
 ---
 

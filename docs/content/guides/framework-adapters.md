@@ -9,6 +9,7 @@ keywords:
   - svelte
   - solid
   - alpine
+  - astro
   - web components
   - custom elements
   - angular
@@ -198,6 +199,29 @@ TypeFlow provides a native autonomous custom element `<type-flow>` compatible wi
 
 ---
 
+## Astro Integration
+
+Astro does not require a separate TypeFlow adapter. Use the browser-native ESM API inside a client island or use the native `<type-flow>` custom element. Keep DOM access in a client-side script; Astro's server-rendered HTML must not call `TypeFlow.type()` during SSR.
+
+```astro
+---
+const text = 'Astro island typography';
+---
+
+<h1 id="astro-headline">{text}</h1>
+
+<script>
+  import { TypeFlow } from '@staticcanvas/typeflow';
+
+  const target = document.querySelector('#astro-headline');
+  if (target) TypeFlow.type(target, target.textContent ?? '', { speed: 40 });
+</script>
+```
+
+For reusable Astro islands, place the animation in a client framework component and render it with an Astro client directive such as `client:load`. No Astro-specific runtime package is bundled or required.
+
+---
+
 ## Angular Integration Recipe
 
 In Angular applications, TypeFlow can be encapsulated in a reusable attribute directive:
@@ -233,7 +257,7 @@ export class TypeFlowDirective implements OnChanges, OnDestroy {
 
 ---
 
-## Adapter Compatibility Matrix
+## Integration Compatibility Matrix
 
 | Target Ecosystem | Integration Method | Teardown Handling | SSR Safe |
 | :--- | :--- | :--- | :--- |
@@ -243,6 +267,8 @@ export class TypeFlowDirective implements OnChanges, OnDestroy {
 | **Solid.js** | Hook (`useTypeFlow`) | `onCleanup` hook | Yes |
 | **Alpine.js** (v3+) | Directive (`x-typeflow`) | Directive `cleanup()` hook | Yes |
 | **Web Components** | Custom Element (`<type-flow>`) | `disconnectedCallback()` | Yes |
+| **Astro** | Client-side ESM or `<type-flow>` | Browser lifecycle / custom-element disconnect | Yes, when client-rendered |
 | **Angular** (v14+) | Standalone Directive | `ngOnDestroy()` | Yes |
 
+Angular is documented as an integration recipe rather than a built-in adapter factory. Astro likewise uses TypeFlow's framework-agnostic browser API rather than a separate Astro package.
 

@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Framework Integrations**:
+  - Runtime adapter factories for React, Vue 3, Svelte actions, Solid.js signals, and Alpine.js directives.
+  - Native `<type-flow>` Web Component support for declarative use across browser applications and framework templates.
+  - Documented Astro client-island integration through the browser-native ESM API; Astro does not require a separate runtime adapter.
+- **Documentation**:
+  - Expanded the README and framework guide with all shipped adapters, Astro integration, Web Components, and the Angular directive recipe.
 - **Core Engine Architecture**:
   - Pure ECMAScript zero-dependency typewriter animation engine with frame-accurate timing (<7.2 KB gzipped).
   - Trailing Fade Reveal & Erase (`typeStyle: 'fade-trail'`, `eraseStyle: 'fade-trail'`, `trailFade: number`) rendering soft glowing opacity ramps along the typing edge.
