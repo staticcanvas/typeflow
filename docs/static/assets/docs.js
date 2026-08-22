@@ -1139,7 +1139,7 @@ if (pgStage && btnType) {
     } else if (val === 'html') {
       pgText.value = 'Deploy to <strong>Production</strong> with <span class="highlight">Zero Downtime</span>.';
     } else if (val === 'cyber') {
-      pgText.value = 'SYSTEM BREACH DETECTED // INITIALIZING COUNTERMEASURES';
+      pgText.value = 'BUILD STATUS RUNNING | ESLP: 10m 3s';
     } else if (val === 'code') {
       pgText.value = 'const session = await TypeFlow.stream(target, { speed: 20 });';
     }
