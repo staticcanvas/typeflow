@@ -1,0 +1,33 @@
+{{ define "main" }}
+{{/*
+  single.html — Renders a documentation page with:
+    - doc-page grid (content | TOC)
+    - doc-header (eyebrow, h1, lead)
+    - doc-content (markdown body)
+    - doc-toc (sticky right rail, only when headings exist)
+*/}}
+<div class="doc-page{{ if or (eq (len .TableOfContents) 0) .Params.noToc }} doc-page--no-toc{{ end }}">
+
+  {{/* ── Left: article column ───────────────────────────────── */}}
+  <article class="doc-article">
+    <header class="doc-header">
+      {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+
+    <div class="doc-content">
+      {{ .Content }}
+    </div>
+  </article>
+
+  {{/* ── Right: sticky table of contents ───────────────────── */}}
+  {{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }}
+  <aside class="doc-toc" aria-label="On this page">
+    <span class="toc-title">On this page</span>
+    {{ .TableOfContents }}
+  </aside>
+  {{ end }}
+
+</div>
+{{ end }}

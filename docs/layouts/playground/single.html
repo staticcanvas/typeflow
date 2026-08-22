@@ -1,0 +1,376 @@
+{{ define "main" }}
+<div class="doc-page doc-page--no-toc doc-page--playground">
+  <article class="doc-article">
+    <header class="doc-header">
+      {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+
+    <div class="doc-content">
+      <div class="playground-workbench">
+
+        <!-- Controls Section -->
+        <div class="pg-controls-card">
+          
+          <!-- Preset & Sample Bar -->
+          <div class="pg-presets-bar">
+            <div class="pg-preset-select-wrap">
+              <label for="pg-preset-select"><i data-lucide="sparkles" class="icon-inline"></i> Animation Profile Preset:</label>
+              <select id="pg-preset-select" class="pg-select">
+                <option value="custom" selected>Custom Configuration</option>
+                <option value="cyberpunk">Cyberpunk Matrix Decrypt</option>
+                <option value="terminal">Monospace Terminal with Clicks</option>
+                <option value="writer">Natural Writer with Cadence</option>
+                <option value="blocks">Block Shading Matrix</option>
+                <option value="subtle">Subtle Smooth Cross-Fade</option>
+              </select>
+            </div>
+
+            <div class="pg-sample-select-wrap">
+              <label for="pg-sample-select"><i data-lucide="file-text" class="icon-inline"></i> Sample Phrase / Demo:</label>
+              <select id="pg-sample-select" class="pg-select">
+                <option value="custom">Custom Text</option>
+                <option value="headline" selected>Headline: "Build modern resilient interfaces with TypeFlow."</option>
+                <option value="progress">Progress Bar: "Deploying Assets [████████████████████░░░░░░░░░░] 67% (42/63 MB)"</option>
+                <option value="chart">Sparkline Chart: "Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s | Heap: ████████░░ 78%"</option>
+                <option value="pipeline">Pipeline: "[✓ Lint] ➔ [⚡ Build (ESM/CJS)] ➔ [▶ Test (48/48)] ➔ [🚀 Released]"</option>
+                <option value="braille">Braille Meter: "CPU Core Matrix: ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ [⡿⣿⢿⣻⣽⣾] Peak: 98.4%"</option>
+                <option value="html">HTML: "Deploy to &lt;strong&gt;Production&lt;/strong&gt; with &lt;span class='highlight'&gt;Zero Downtime&lt;/span&gt;."</option>
+                <option value="cyber">Cyber: "BUILD STATUS RUNNING | ESLP: 10m 3s"</option>
+                <option value="code">Code: "const session = await TypeFlow.stream(target, { speed: 20 });"</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Textarea Input -->
+          <div class="pg-control-group pg-textarea-group">
+            <label for="pg-text"><i data-lucide="edit-3" class="icon-inline"></i> Input Text / HTML Content:</label>
+            <textarea id="pg-text" rows="3" class="pg-textarea">Build modern resilient interfaces with TypeFlow.</textarea>
+          </div>
+
+          <!-- Grid of Control Panels -->
+          <div class="pg-grid">
+            
+            <!-- Panel 1: Direction & Style -->
+            <div class="pg-panel">
+              <h4 class="pg-panel-title"><i data-lucide="split" class="icon-inline"></i> Reveal &amp; Erase Styles</h4>
+              
+              <div class="pg-field">
+                <label for="pg-direction">Reveal Direction</label>
+                <select id="pg-direction" class="pg-select">
+                  <option value="left" selected>left (LTR Standard)</option>
+                  <option value="center">center (Expand Outward)</option>
+                  <option value="right">right (RTL / Reverse)</option>
+                </select>
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-type-style">Type Style</label>
+                <select id="pg-type-style" class="pg-select">
+                  <option value="char" selected>char (Character by character)</option>
+                  <option value="word">word (Word-by-word streaming)</option>
+                  <option value="scramble">scramble (Matrix decrypt)</option>
+                  <option value="fade-trail">fade-trail (Soft trailing opacity ramp)</option>
+                  <option value="stream">stream (Simulated LLM token flow)</option>
+                </select>
+              </div>
+
+              <div class="pg-field" id="pg-charset-field">
+                <label for="pg-scramble-charset">Scramble Charset</label>
+                <select id="pg-scramble-charset" class="pg-select">
+                  <option value="matrix" selected>matrix (01X_#*~&lt;&gt;[]{})</option>
+                  <option value="blocks">blocks ( ▂▃▄▅▆▇█░▒▓)</option>
+                  <option value="ascii">ascii (!@#$%^&amp;*()_+-=[])</option>
+                  <option value="ascii-extended">ascii-extended (¡¢£¤¥¦§¨©ª)</option>
+                  <option value="binary">binary (01)</option>
+                  <option value="hex">hex (0123456789ABCDEF)</option>
+                  <option value="braille">braille (⠁⠃⠇⠏⠟⠿⡿⣿)</option>
+                  <option value="runic">runic (ᚠᚡᚢᚣᚤᚥᚦᚧᚨᚩᚪ)</option>
+                  <option value="cyber">cyber (!&lt;&gt;-_\\/[]{}—=+*^?#)</option>
+                  <option value="hieroglyphs">hieroglyphs (𓂀𓃀𓃁𓃂𓃃𓃄)</option>
+                  <option value="greek">greek (αβγδεζηθικλμνξοπρστυφχψω)</option>
+                  <option value="math">math (∀∃∄∅∆∇∈∉∋∌∎∏∑−∓∔∕∖∗∘√∛∝∞)</option>
+                  <option value="chess">chess (♔♕♖♗♘♙♚♛♜♝♞♟)</option>
+                  <option value="geometric">geometric (▲▼◀▶◆◇◈◉◊○●◐◑)</option>
+                  <option value="astronomy">astronomy (☉☽☿♀♁♂♃♄♅♆♇)</option>
+                  <option value="currency">currency ($€£¥₹₽₩₪₺₫฿)</option>
+                  <option value="arrows">arrows (←↑→↓↔↕↖↗↘↙)</option>
+                </select>
+              </div>
+
+              <div class="pg-field" id="pg-scramble-color-field">
+                <label for="pg-scramble-color">Scramble Glyph Color &amp; Glow</label>
+                <select id="pg-scramble-color" class="pg-select">
+                  <option value="default" selected>Accent Cyan (#38bdf8)</option>
+                  <option value="#22c55e">Matrix Green (#22c55e)</option>
+                  <option value="#fb923c">Cyber Orange (#fb923c)</option>
+                  <option value="#f43f5e">Neon Pink (#f43f5e)</option>
+                  <option value="#a855f7">Synth Purple (#a855f7)</option>
+                  <option value="cyber-gradient">Cyber Gradient (Cyan → Orange)</option>
+                  <option value="matrix-gradient">Matrix Gradient (Green → Cyan)</option>
+                  <option value="sunset-gradient">Sunset Gradient (Orange → Pink)</option>
+                </select>
+              </div>
+
+              <div class="pg-field" id="pg-rounds-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-scramble-rounds">Scramble Rounds</label>
+                  <span id="pg-scramble-rounds-val" class="pg-val-badge">2</span>
+                </div>
+                <input type="range" id="pg-scramble-rounds" min="1" max="8" value="2" class="pg-slider">
+              </div>
+
+              <div class="pg-field" id="pg-fade-trail-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-fade-trail-len">Trailing Fade Length</label>
+                  <span id="pg-fade-trail-len-val" class="pg-val-badge">4 chars</span>
+                </div>
+                <input type="range" id="pg-fade-trail-len" min="1" max="12" value="4" class="pg-slider">
+              </div>
+
+              <div class="pg-field" id="pg-fade-trail-minop-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-fade-trail-min-op">Trail Min Opacity</label>
+                  <span id="pg-fade-trail-min-op-val" class="pg-val-badge">0.18</span>
+                </div>
+                <input type="range" id="pg-fade-trail-min-op" min="0.05" max="0.60" step="0.05" value="0.18" class="pg-slider">
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-erase-style">Erase Style</label>
+                <select id="pg-erase-style" class="pg-select">
+                  <option value="end" selected>end (Backspace)</option>
+                  <option value="start">start (Left erosion)</option>
+                  <option value="center">center (Center-inward shrink)</option>
+                  <option value="smart">smart (Smart diff morphing)</option>
+                  <option value="word">word (Word-by-word erasure)</option>
+                  <option value="scramble">scramble (Matrix decrypt)</option>
+                  <option value="fade-trail">fade-trail (Soft trailing opacity dissolve)</option>
+                  <option value="fade">fade (CSS opacity fade)</option>
+                  <option value="instant">instant (Immediate reset)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Panel 2: Timing & Speed -->
+            <div class="pg-panel">
+              <h4 class="pg-panel-title"><i data-lucide="clock" class="icon-inline"></i> Speed &amp; Dynamics</h4>
+              
+              <div class="pg-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-speed">Typing Speed</label>
+                  <span id="pg-speed-val" class="pg-val-badge">40 ms</span>
+                </div>
+                <input type="range" id="pg-speed" min="5" max="200" step="5" value="40" class="pg-slider">
+              </div>
+
+              <div class="pg-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-speed-variance">Speed Variance (Jitter)</label>
+                  <span id="pg-speed-variance-val" class="pg-val-badge">0 ms</span>
+                </div>
+                <input type="range" id="pg-speed-variance" min="0" max="60" step="2" value="0" class="pg-slider">
+              </div>
+
+              <div class="pg-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-delay">Initial Delay</label>
+                  <span id="pg-delay-val" class="pg-val-badge">0 ms</span>
+                </div>
+                <input type="range" id="pg-delay" min="0" max="1500" step="50" value="0" class="pg-slider">
+              </div>
+
+              <div class="pg-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-stagger">Stagger Offset</label>
+                  <span id="pg-stagger-val" class="pg-val-badge">0 ms</span>
+                </div>
+                <input type="range" id="pg-stagger" min="0" max="800" step="25" value="0" class="pg-slider">
+              </div>
+
+              <div class="pg-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-fade-duration">Fade Duration</label>
+                  <span id="pg-fade-duration-val" class="pg-val-badge">250 ms</span>
+                </div>
+                <input type="range" id="pg-fade-duration" min="100" max="1000" step="50" value="250" class="pg-slider">
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-audio">Audio Synchronization</label>
+                <select id="pg-audio" class="pg-select">
+                  <option value="none" selected>none (Silent)</option>
+                  <option value="mechanical">mechanical (Switch clicks - Web Audio)</option>
+                  <option value="beep">beep (Terminal ping - Web Audio)</option>
+                  <option value="synth">synth (Cyber chirp - Web Audio)</option>
+                  <option value="soundtrack">soundtrack (Dance Playful Night - MP3 Audio Track)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Panel 3: Typography & Options -->
+            <div class="pg-panel">
+              <h4 class="pg-panel-title"><i data-lucide="type" class="icon-inline"></i> Typography &amp; Appearance</h4>
+              
+              <div class="pg-field">
+                <div class="pg-field-label-row">
+                  <label for="pg-font-size">Font Size</label>
+                  <span id="pg-font-size-val" class="pg-val-badge">24 px</span>
+                </div>
+                <input type="range" id="pg-font-size" min="14" max="52" step="2" value="24" class="pg-slider">
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-font-family">Font Family</label>
+                <select id="pg-font-family" class="pg-select">
+                  <option value="Inter" selected>Inter (UI Sans-Serif)</option>
+                  <option value="Roboto Condensed">Roboto Condensed (Brand Headline)</option>
+                  <option value="Anton SC">Anton SC (Display Headline)</option>
+                  <option value="Lexend">Lexend (Heading Geometric)</option>
+                  <option value="JetBrains Mono">JetBrains Mono (Monospace)</option>
+                  <option value="Syne">Syne (Display Title)</option>
+                </select>
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-text-align">Text Alignment</label>
+                <select id="pg-text-align" class="pg-select">
+                  <option value="left" selected>left</option>
+                  <option value="center">center</option>
+                  <option value="right">right</option>
+                </select>
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-cursor-char">Cursor Glyph</label>
+                <select id="pg-cursor-char" class="pg-select">
+                  <option value="|" selected>| (Pipe cursor)</option>
+                  <option value="_">_ (Underscore)</option>
+                  <option value="■">■ (Filled Block)</option>
+                  <option value="▍">▍ (Terminal Bar)</option>
+                  <option value="">(none / hidden)</option>
+                </select>
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-granularity">Segmentation Granularity</label>
+                <select id="pg-granularity" class="pg-select">
+                  <option value="grapheme" selected>grapheme (Character clusters / emoji safe)</option>
+                  <option value="word">word (Full words)</option>
+                </select>
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-mode">Container Mode</label>
+                <select id="pg-mode" class="pg-select">
+                  <option value="replace" selected>replace (Clear existing nodes)</option>
+                  <option value="append">append (Preserve prefix content)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Toggles & Checkboxes -->
+          <div class="pg-toggles-bar">
+            <label class="pg-toggle-label">
+              <input type="checkbox" id="pg-html" class="pg-checkbox" checked>
+              <span><i data-lucide="code" class="icon-inline"></i> HTML Mode</span>
+            </label>
+            <label class="pg-toggle-label">
+              <input type="checkbox" id="pg-natural-cadence" class="pg-checkbox">
+              <span><i data-lucide="sparkles" class="icon-inline"></i> Natural Cadence</span>
+            </label>
+            <label class="pg-toggle-label">
+              <input type="checkbox" id="pg-cursor-blink" class="pg-checkbox" checked>
+              <span><i data-lucide="eye" class="icon-inline"></i> Cursor Blink</span>
+            </label>
+            <label class="pg-toggle-label">
+              <input type="checkbox" id="pg-reduced-motion" class="pg-checkbox">
+              <span><i data-lucide="activity" class="icon-inline"></i> Reduced Motion Guard</span>
+            </label>
+            <label class="pg-toggle-label">
+              <input type="checkbox" id="pg-metrics-toggle" class="pg-checkbox">
+              <span><i data-lucide="gauge" class="icon-inline"></i> Metrics HUD</span>
+            </label>
+            <label class="pg-toggle-label">
+              <input type="checkbox" id="pg-debug-toggle" class="pg-checkbox">
+              <span><i data-lucide="bug" class="icon-inline"></i> Debug Tracing</span>
+            </label>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pg-actions-bar">
+            <button type="button" id="pg-btn-type" class="button button-primary">
+              <i data-lucide="play"></i> Type
+            </button>
+            <button type="button" id="pg-btn-erase" class="button button-secondary">
+              <i data-lucide="eraser"></i> Erase
+            </button>
+            <button type="button" id="pg-btn-morph" class="button button-secondary" title="Morphs current text to a new candidate phrase">
+              <i data-lucide="git-compare"></i> Morph
+            </button>
+            <button type="button" id="pg-btn-stream" class="button button-secondary" title="Simulates real-time LLM token streaming">
+              <i data-lucide="radio"></i> Stream
+            </button>
+            <button type="button" id="pg-btn-rotator" class="button button-secondary" title="Runs cyclical rotator animation">
+              <i data-lucide="refresh-cw"></i> Rotate
+            </button>
+            <button type="button" id="pg-btn-stop" class="button button-danger">
+              <i data-lucide="square"></i> Stop
+            </button>
+            <button type="button" id="pg-btn-reset" class="button button-ghost">
+              <i data-lucide="rotate-ccw"></i> Reset
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Live Preview Output Stage (Below Controls) -->
+        <div class="pg-preview-card">
+          <div class="pg-preview-header">
+            <div class="pg-preview-meta">
+              <span class="pg-status-dot" id="pg-status-dot"></span>
+              <span class="pg-status-text" id="pg-status-text">Ready</span>
+              <span class="pg-meta-pill" id="pg-meta-chars">0 chars</span>
+              <span class="pg-meta-pill" id="pg-meta-font">24px · Inter</span>
+            </div>
+            <div class="pg-preview-actions">
+              <button type="button" id="pg-btn-metrics" class="button button-ghost button-sm" title="Toggle floating Performance Metrics HUD">
+                <i data-lucide="gauge"></i> Metrics HUD
+              </button>
+              <button type="button" id="pg-btn-debug" class="button button-ghost button-sm" title="Toggle Console Debug Tracing">
+                <i data-lucide="bug"></i> Debug
+              </button>
+              <button type="button" id="pg-btn-clear" class="button button-ghost button-sm" title="Clear stage content">
+                <i data-lucide="trash-2"></i> Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="pg-stage-container">
+            <div id="pg-stage" class="pg-stage-box" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <!-- Live Generated Code Snippet -->
+        <div class="pg-code-card">
+          <div class="pg-code-header">
+            <div class="pg-code-title">
+              <i data-lucide="file-code" class="icon-inline"></i> Generated Configuration Code
+            </div>
+            <button type="button" id="pg-btn-copy-code" class="button button-secondary button-sm">
+              <i data-lucide="copy"></i> Copy Code
+            </button>
+          </div>
+          <pre class="pg-code-pre"><code id="pg-code-snippet" class="language-javascript"></code></pre>
+        </div>
+
+      </div>
+    </div>
+    {{ with site.Data.playgroundSamples }}
+    <script id="playground-samples-data" type="application/json">{{ . | jsonify | safeJS }}</script>
+    {{ end }}
+  </article>
+</div>
+{{ end }}

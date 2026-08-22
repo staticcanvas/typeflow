@@ -1,0 +1,77 @@
+{
+  "streamChunks": [
+    "TypeFlow Stream Ingestion: ",
+    "tokens arrive asynchronously ",
+    "from server-sent events (SSE) ",
+    "and render fluidly ",
+    "with zero DOM lag or layout shift!"
+  ],
+  "progressSteps": [
+    "Deploying Assets [░░░░░░░░░░░░░░░░░░░░]   0% (0/64 MB)",
+    "Deploying Assets [█████░░░░░░░░░░░░░░░]  25% (16/64 MB)",
+    "Deploying Assets [██████████░░░░░░░░░░]  50% (32/64 MB)",
+    "Deploying Assets [███████████████░░░░░]  75% (48/64 MB)",
+    "Deploying Assets [████████████████████] 100% (64/64 MB) · Verified ✓"
+  ],
+  "chartSteps": [
+    "Telemetry | Throughput:   ▂▃  12.4 MB/s | Heap: ██░░░░░░░░ 20% | Status: OK",
+    "Telemetry | Throughput:  ▂▃▄▅ 48.1 MB/s | Heap: ████░░░░░░ 40% | Status: OK",
+    "Telemetry | Throughput:  ▂▃▄▅▆ 72.8 MB/s | Heap: ██████░░░░ 60% | Status: LOAD",
+    "Telemetry | Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s | Heap: ████████░░ 82% | Status: PEAK",
+    "Telemetry | Throughput:  ▂▃▄▅▆ 68.5 MB/s | Heap: ██████░░░░ 60% | Status: NOMINAL"
+  ],
+  "pipelineSteps": [
+    "Pipeline: [⏳ Pending] ➔ [⏳ Pending] ➔ [⏳ Pending] ➔ [⏳ Pending]",
+    "Pipeline: [✓ Lint: PASS] ➔ [⚡ Building...] ➔ [⏳ Pending] ➔ [⏳ Pending]",
+    "Pipeline: [✓ Lint: PASS] ➔ [✓ Build: PASS] ➔ [▶ Testing 48/48...] ➔ [⏳ Pending]",
+    "Pipeline: [✓ Lint: PASS] ➔ [✓ Build: PASS] ➔ [✓ Tests: 48/48 PASS] ➔ [🚀 Deployed v0.20.0]"
+  ],
+  "samples": {
+    "headline": {
+      "text": "Build modern resilient interfaces with TypeFlow.",
+      "fontFamily": "Inter",
+      "typeStyle": "char",
+      "direction": "left"
+    },
+    "progress": {
+      "text": "Deploying Assets [████████████████████░░░░░░░░░░] 67% (42/63 MB)",
+      "fontFamily": "JetBrains Mono",
+      "typeStyle": "char",
+      "direction": "left"
+    },
+    "chart": {
+      "text": "Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s | Heap: ████████░░ 78%",
+      "fontFamily": "JetBrains Mono",
+      "typeStyle": "char",
+      "direction": "left"
+    },
+    "pipeline": {
+      "text": "[✓ Lint] ➔ [⚡ Build (ESM/CJS)] ➔ [▶ Test (48/48)] ➔ [🚀 Released]",
+      "fontFamily": "JetBrains Mono",
+      "typeStyle": "char",
+      "direction": "left"
+    },
+    "braille": {
+      "text": "CPU Core Matrix: ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ [⡿⣿⢿⣻⣽⣾] Peak: 98.4%",
+      "fontFamily": "JetBrains Mono",
+      "typeStyle": "char",
+      "direction": "left"
+    },
+    "html": {
+      "text": "Deploy to <strong>Production</strong> with <span class=\"highlight\">Zero Downtime</span>.",
+      "fontFamily": "Inter",
+      "html": true
+    },
+    "cyber": {
+      "text": "BUILD STATUS RUNNING | ESLP: 10m 3s",
+      "fontFamily": "JetBrains Mono",
+      "typeStyle": "scramble",
+      "scrambleCharset": "matrix"
+    },
+    "code": {
+      "text": "const session = await TypeFlow.stream(target, { speed: 20 });",
+      "fontFamily": "JetBrains Mono",
+      "typeStyle": "char"
+    }
+  }
+}

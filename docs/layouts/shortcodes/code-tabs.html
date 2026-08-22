@@ -1,0 +1,20 @@
+{{- $version := site.Data.package.version | default site.Params.version -}}
+{{- $tabs := slice
+  (dict "id" "npm" "label" "npm" "lang" "bash" "code" (printf "npm install @staticcanvas/typeflow@%s" $version))
+  (dict "id" "pnpm" "label" "pnpm" "lang" "bash" "code" (printf "pnpm add @staticcanvas/typeflow@%s" $version))
+  (dict "id" "jsr" "label" "JSR" "lang" "bash" "code" (printf "npx jsr add @staticcanvas/typeflow@%s" $version))
+  (dict "id" "jsdelivr" "label" "CDN (jsDelivr)" "lang" "html" "code" (printf "<script type=\"module\">\n  import { TypeFlow } from 'https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@%s/dist/typeflow.esm.js';\n</script>" $version))
+  (dict "id" "umd" "label" "CDN (UMD)" "lang" "html" "code" (printf "<script src=\"https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@%s/dist/typeflow.js\"></script>\n<script>\n  TypeFlow.type('#target', 'Hello world');\n</script>" $version))
+-}}
+<div class="code-tabs" data-code-tabs>
+  <div class="code-tab-list" role="tablist" aria-label="Installation methods">
+    {{- range $index, $tab := $tabs -}}
+    <button type="button" role="tab" id="code-tab-{{ $tab.id }}" aria-controls="code-panel-{{ $tab.id }}" aria-selected="{{ eq $index 0 }}" data-code-tab="{{ $tab.id }}">{{ $tab.label }}</button>
+    {{- end -}}
+  </div>
+  {{- range $index, $tab := $tabs -}}
+  <div class="code-tab-panel" role="tabpanel" id="code-panel-{{ $tab.id }}" aria-labelledby="code-tab-{{ $tab.id }}" data-code-panel="{{ $tab.id }}"{{ if ne $index 0 }} hidden{{ end }}>
+    {{ highlight $tab.code $tab.lang "" }}
+  </div>
+  {{- end -}}
+</div>

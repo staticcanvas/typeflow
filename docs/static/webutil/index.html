@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TypeFlow - Web Utility & Interactive Test Suite</title>
+    <link rel="stylesheet" href="../assets/typeflow.css" />
+    <link rel="stylesheet" href="../assets/docs.css" />
+    <link rel="stylesheet" href="../assets/playground.css" />
+    <style>
+      body {
+        padding: 40px 20px 100px;
+        background-color: var(--tf-bg-canvas);
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+      }
+      .app-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--tf-border-subtle);
+      }
+      .card {
+        background: var(--tf-bg-surface);
+        border: 1px solid var(--tf-border-subtle);
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .card h2 {
+        font-size: 18px;
+        color: var(--tf-accent);
+      }
+      .stage-box {
+        background: var(--tf-bg-surface-elevated);
+        border: 1px solid var(--tf-border-strong);
+        border-radius: 8px;
+        padding: 16px;
+        min-height: 80px;
+        font-size: 18px;
+        font-family: var(--tf-font-mono);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="app-header">
+        <img src="../assets/branding/typeflow-logo.svg" alt="TypeFlow" width="48" height="48" />
+        <div>
+          <h1>TypeFlow Web Utility</h1>
+          <p style="color: var(--tf-text-secondary); font-size: 14px;">Standalone developer utility and manual verification suite</p>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2>1. Basic Typing & Erasing</h2>
+        <div class="stage-box" id="test-stage-1"></div>
+        <div class="button-bar">
+          <button type="button" class="button button-primary" id="btn-t1-type">Type</button>
+          <button type="button" class="button button-secondary" id="btn-t1-erase">Erase (Start)</button>
+          <button type="button" class="button button-danger" id="btn-t1-stop">Stop</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>2. Sequence Runner</h2>
+        <div class="stage-box" id="test-stage-2"></div>
+        <div class="button-bar">
+          <button type="button" class="button button-primary" id="btn-t2-seq">Run Sequence</button>
+        </div>
+      </section>
+    </div>
+
+    <script type="module">
+      import { TypeFlow, seq } from './libs/typeflow.esm.js';
+
+      const s1 = document.getElementById('test-stage-1');
+      let c1 = TypeFlow.type(s1, 'Testing TypeFlow core typing stream...', { speed: 30 });
+
+      document.getElementById('btn-t1-type').addEventListener('click', () => {
+        c1?.stop();
+        c1 = TypeFlow.type(s1, 'Testing TypeFlow core typing stream...', { speed: 30 });
+      });
+
+      document.getElementById('btn-t1-erase').addEventListener('click', () => {
+        c1?.stop();
+        c1 = TypeFlow.erase(s1, { eraseStyle: 'start', speed: 20 });
+      });
+
+      document.getElementById('btn-t1-stop').addEventListener('click', () => {
+        c1?.stop();
+      });
+
+      const s2 = document.getElementById('test-stage-2');
+      document.getElementById('btn-t2-seq').addEventListener('click', () => {
+        TypeFlow.sequence([
+          seq.type(s2, 'Starting sequence check...'),
+          seq.pause(600),
+          seq.erase(s2, { eraseStyle: 'fade' }),
+          seq.type(s2, 'Sequence executed successfully.')
+        ]);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,745 @@
+{{ $version := site.Data.package.version | default site.Params.version }}
+<!doctype html>
+<html lang="{{ site.Language.Lang | default "en" }}" data-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+
+    {{/*
+      ── Step 1: Inline theme guard ────────────────────────────────────────────
+      Reads the persisted preference from localStorage and sets data-theme on
+      <html> synchronously, before the parser reaches <body>.
+    */}}
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem('typeflow-docs-theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.dataset.theme = stored;
+          } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            document.documentElement.dataset.theme = 'light';
+          }
+        } catch {}
+      })();
+    </script>
+
+    {{/*
+      ── Step 2: Critical Layout Skeleton (Zero-FOUC Inline CSS) ───────────────
+      Paints the complete page skeleton (header, sidebar, content grid, typography)
+      synchronously on first paint with zero external request dependencies.
+    */}}
+    <style>
+      :root {
+        --tf-bg-canvas:           #090d16;
+        --tf-bg-surface:          #0f172a;
+        --tf-bg-surface-elevated: #1e293b;
+        --tf-border-subtle:       #1e293b;
+        --tf-border-default:      #253347;
+        --tf-border-strong:       #334155;
+        --tf-text-primary:        #f1f5f9;
+        --tf-text-secondary:      #94a3b8;
+        --tf-text-muted:          #64748b;
+        --tf-accent:              #38bdf8;
+        --tf-accent-dim:          rgba(56, 189, 248, 0.12);
+        --tf-accent-glow:         rgba(56, 189, 248, 0.25);
+        --tf-accent-orange:       #fb923c;
+        --tf-accent-orange-dim:   rgba(251, 146, 60, 0.12);
+        --tf-accent-orange-glow:  rgba(251, 146, 60, 0.25);
+        --tf-accent-gradient:     linear-gradient(135deg, #38bdf8 0%, #a78bfa 45%, #fb923c 100%);
+        --tf-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        --tf-font-header: 'Lexend', var(--tf-font-sans);
+        --tf-font-brand: 'Roboto Condensed', 'Arial Narrow', sans-serif-condensed, sans-serif;
+        --tf-font-splash: 'Anton SC', 'Impact', 'Arial Black', sans-serif;
+        --tf-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        --header-height: 64px;
+        --sidebar-width: 220px;
+        --toc-width: 200px;
+        --shell-max: 1440px;
+        --sidebar-top-offset: calc(var(--header-height) + 24px);
+      }
+      [data-theme="light"] {
+        --tf-bg-canvas:           #f8fafc;
+        --tf-bg-surface:          #ffffff;
+        --tf-bg-surface-elevated: #f1f5f9;
+        --tf-border-subtle:       #e2e8f0;
+        --tf-border-default:      #cbd5e1;
+        --tf-border-strong:       #94a3b8;
+        --tf-text-primary:        #0f172a;
+        --tf-text-secondary:      #475569;
+        --tf-text-muted:          #94a3b8;
+        --tf-accent:              #0284c7;
+        --tf-accent-dim:          rgba(2, 132, 199, 0.10);
+        --tf-accent-orange:       #ea580c;
+        --tf-accent-orange-dim:   rgba(234, 88, 12, 0.10);
+        --tf-accent-orange-glow:  rgba(234, 88, 12, 0.20);
+        --tf-accent-gradient:     linear-gradient(135deg, #0284c7 0%, #7c3aed 45%, #ea580c 100%);
+      }
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: calc(var(--header-height) + 16px);
+      }
+      body {
+        background-color: var(--tf-bg-canvas);
+        color: var(--tf-text-primary);
+        font-family: var(--tf-font-sans);
+        font-size: 15px;
+        line-height: 1.7;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        -webkit-font-smoothing: antialiased;
+      }
+      .shell {
+        max-width: var(--shell-max);
+        margin-inline: auto;
+        padding-inline: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
+        width: 100%;
+      }
+      .site-header {
+        position: sticky;
+        top: 0;
+        height: var(--header-height);
+        background: rgba(9, 13, 22, 0.88);
+        backdrop-filter: blur(14px) saturate(160%);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        border-bottom: 1px solid transparent;
+        border-image: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.5) 15%, rgba(251, 146, 60, 0.85) 50%, rgba(255, 12, 5, 0.5) 85%, transparent 100%) 1;
+        z-index: 100;
+        flex-shrink: 0;
+      }
+      [data-theme="light"] .site-header {
+        background: rgba(248, 250, 252, 0.90);
+        border-image: linear-gradient(90deg, transparent 0%, rgba(2, 132, 199, 0.5) 15%, rgba(234, 88, 12, 0.8) 50%, rgba(255, 12, 5, 0.5) 85%, transparent 100%) 1;
+      }
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 100%;
+        gap: 20px;
+      }
+      .search-trigger-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 380px;
+        width: 100%;
+        margin-inline: auto;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: var(--tf-bg-surface);
+        border: 1px solid rgba(255, 107, 43, 0.35);
+        color: var(--tf-text-muted);
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        text-align: left;
+        transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        user-select: none;
+      }
+      [data-theme="light"] .search-trigger-btn {
+        border-color: rgba(234, 88, 12, 0.3);
+      }
+      .search-trigger-btn:hover {
+        border-color: #ff6b2b;
+        background: var(--tf-bg-surface-elevated);
+        color: var(--tf-text-primary);
+        box-shadow: 0 0 14px rgba(255, 107, 43, 0.22);
+      }
+      [data-theme="light"] .search-trigger-btn:hover {
+        border-color: #ea580c;
+        box-shadow: 0 0 14px rgba(234, 88, 12, 0.2);
+      }
+      .search-trigger-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff6b2b;
+        flex-shrink: 0;
+      }
+      [data-theme="light"] .search-trigger-icon {
+        color: #ea580c;
+      }
+      .search-trigger-placeholder {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .search-trigger-kbd {
+        font-size: 10px;
+        font-family: var(--tf-font-mono);
+        font-weight: 600;
+        background: var(--tf-bg-surface-elevated);
+        border: 1px solid var(--tf-border-default);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: var(--tf-text-muted);
+        flex-shrink: 0;
+        letter-spacing: 0.05em;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--tf-text-primary);
+        font-weight: 700;
+        font-size: 17px;
+        white-space: nowrap;
+      }
+      .brand small {
+        font-size: 10px;
+        font-weight: 600;
+        background: var(--tf-bg-surface-elevated);
+        padding: 2px 7px;
+        border-radius: 4px;
+        color: var(--tf-accent);
+        border: 1px solid var(--tf-border-subtle);
+      }
+      .page-body {
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr;
+        gap: 0;
+        max-width: var(--shell-max);
+        margin-inline: auto;
+        padding-inline: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
+        padding-block: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
+        flex: 1;
+        align-items: start;
+        width: 100%;
+      }
+      .sidebar {
+        position: sticky;
+        top: var(--sidebar-top-offset);
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        max-height: calc(100vh - var(--sidebar-top-offset) - 24px);
+        overflow-y: auto;
+        padding-right: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
+      }
+      .sidebar-section-label {
+        display: block;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--tf-text-muted);
+        padding: 20px 10px 6px;
+      }
+      .sidebar-link {
+        display: block;
+        color: var(--tf-text-secondary);
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13.5px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .sidebar-link.active {
+        color: var(--tf-accent);
+        background: var(--tf-accent-dim);
+        font-weight: 600;
+      }
+      .main-content {
+        min-width: 0;
+        padding-left: clamp(2rem, 1.6rem + 1.6vw, 3.5rem);
+        padding-bottom: clamp(3rem, 2.2rem + 3vw, 6rem);
+      }
+      .doc-page {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) var(--toc-width);
+        gap: clamp(2rem, 1.6rem + 1.6vw, 3.5rem);
+        align-items: start;
+        width: 100%;
+      }
+      .doc-page.doc-page--no-toc {
+        grid-template-columns: minmax(0, 1fr);
+        max-width: 780px;
+      }
+      .doc-page.doc-page--no-toc.doc-page--playground,
+      .doc-page--playground {
+        max-width: 100% !important;
+      }
+      .doc-content h2 code,
+      .doc-content h3 code,
+      .doc-content h4 code,
+      .api-engine-method {
+        color: #ff9f68;
+        background: rgba(255, 159, 104, 0.1);
+        border: 1px solid rgba(255, 159, 104, 0.25);
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 600;
+        display: inline-block;
+        letter-spacing: -0.01em;
+      }
+      [data-theme="light"] .doc-content h2 code,
+      [data-theme="light"] .doc-content h3 code,
+      [data-theme="light"] .doc-content h4 code,
+      [data-theme="light"] .api-engine-method {
+        color: #ea580c;
+        background: rgba(234, 88, 12, 0.08);
+        border: 1px solid rgba(234, 88, 12, 0.22);
+      }
+      .doc-header {
+        margin-bottom: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
+        padding-bottom: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
+        border-bottom: 1px solid var(--tf-border-subtle);
+      }
+      .doc-eyebrow {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--tf-accent);
+        margin-bottom: 8px;
+      }
+      .doc-header h1 {
+        font-size: clamp(1.75rem, 1.5rem + 1.2vw, 2.25rem);
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin-bottom: 12px;
+      }
+      .doc-lead {
+        font-size: 17px;
+        color: var(--tf-text-secondary);
+        line-height: 1.65;
+        max-width: 60ch;
+      }
+      .doc-toc {
+        position: sticky;
+        top: var(--sidebar-top-offset);
+        max-height: calc(100vh - var(--sidebar-top-offset) - 24px);
+        overflow-y: auto;
+        padding-left: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
+        border-left: 1px solid var(--tf-border-subtle);
+      }
+      .toc-title {
+        display: block;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--tf-text-muted);
+        margin-bottom: 10px;
+      }
+      .brand-text {
+        font-family: var(--tf-font-brand);
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: -0.01em;
+        color: var(--tf-text-primary);
+        display: inline-flex;
+        align-items: baseline;
+      }
+      .brand-ext {
+        color: #ff6b2b !important;
+        font-family: var(--tf-font-brand);
+        font-weight: 700;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: clamp(2rem, 1.5rem + 2vw, 4rem);
+        align-items: center;
+        padding-block: clamp(1.5rem, 1rem + 2vw, 3.5rem);
+      }
+      @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; }
+      }
+      .hero-title {
+        font-family: var(--tf-font-header);
+        font-size: clamp(2.8rem, 2rem + 3vw, 4.8rem);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+        text-transform: lowercase;
+        color: var(--tf-text-primary);
+        margin-bottom: 12px;
+      }
+      .hero-title .brand-ext {
+        color: #ff6b2b !important;
+        font-family: var(--tf-font-header);
+        font-size: 0.85em;
+        font-weight: 800;
+        text-transform: lowercase;
+        letter-spacing: -0.02em;
+        margin-left: 2px;
+      }
+      .hero-lede {
+        font-size: 16.5px;
+        color: var(--tf-text-secondary);
+        line-height: 1.65;
+        margin-bottom: 28px;
+        max-width: 52ch;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .button-primary {
+        background: var(--tf-accent);
+        color: #090d16;
+        border: 1px solid var(--tf-accent);
+      }
+      .button-secondary {
+        background: var(--tf-bg-surface-elevated);
+        color: var(--tf-text-primary);
+        border: 1px solid var(--tf-border-default);
+      }
+      .hero-install-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 580px;
+        width: 100%;
+      }
+      .hero-install-tabs {
+        margin: 0 !important;
+        border: 1px solid var(--tf-border-subtle);
+        border-radius: 9px;
+        background: var(--tf-bg-surface);
+        overflow: hidden;
+      }
+      .hero-install-tabs .code-tab-list {
+        background: var(--tf-bg-surface-elevated);
+        border-bottom: 1px solid var(--tf-border-subtle);
+        padding: 0 4px;
+        display: flex;
+      }
+      .hero-install-tabs .code-tab-list button {
+        padding: 8px 14px;
+        font-size: 12px;
+        font-family: var(--tf-font-mono);
+        font-weight: 600;
+        color: var(--tf-text-secondary);
+        border: none;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        cursor: pointer;
+      }
+      .hero-install-tabs .code-tab-list button[aria-selected="true"] {
+        color: var(--tf-accent);
+        border-bottom-color: var(--tf-accent);
+        background: var(--tf-bg-surface);
+      }
+      .hero-tab-panel {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        gap: 12px;
+        background: var(--tf-bg-canvas);
+        min-height: 48px;
+        box-sizing: border-box;
+      }
+      .hero-tab-panel[hidden] {
+        display: none !important;
+      }
+      .hero-tab-panel code {
+        font-family: var(--tf-font-mono);
+        font-size: 13px;
+        color: var(--tf-accent);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        min-width: 0;
+      }
+      @media (min-width: 1440px) {
+        .shell { padding-inline: clamp(2rem, 2.5vw, 4rem); }
+        .page-body { padding-inline: clamp(2rem, 2.5vw, 4rem); }
+      }
+      @media (max-width: 1024px) {
+        .doc-page { grid-template-columns: minmax(0, 1fr); }
+        .doc-toc { display: none; }
+      }
+      @media (max-width: 768px) {
+        .shell { padding-inline: 14px; }
+        .page-body { grid-template-columns: 1fr; padding-inline: 14px; padding-block: 16px; }
+        .sidebar { display: none; }
+        .main-content { padding-left: 0; }
+      }
+      @media (max-width: 480px) {
+        .shell { padding-inline: 10px; }
+        .page-body { padding-inline: 10px; }
+      }
+    </style>
+
+    {{ $pageTitle := cond .IsHome "TypeFlow — JavaScript Typewriter Animation Library" (printf "%s · TypeFlow" .Title) }}
+    {{ $pageDescription := .Description | default site.Params.description }}
+    {{ $is404 := eq .Kind "404" }}
+    {{ $robots := cond $is404 "noindex, nofollow" "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" }}
+    <meta name="description" content="{{ $pageDescription }}">
+    <meta name="robots" content="{{ $robots }}">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="theme-color" content="#090d16" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+    <title>{{ $pageTitle }}</title>
+    {{ if not $is404 }}<link rel="canonical" href="{{ .Permalink }}">{{ end }}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TypeFlow documentation">
+    <meta property="og:locale" content="en_AU">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ .Permalink }}">
+    <meta property="og:image" content="{{ "assets/branding/typeflow-banner.svg" | absURL }}">
+    <meta property="og:image:alt" content="TypeFlow JavaScript typewriter library">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
+    <script type="application/ld+json">{{ dict "@context" "https://schema.org" "@type" "SoftwareApplication" "name" "TypeFlow" "description" $pageDescription "applicationCategory" "DeveloperApplication" "operatingSystem" "Any" "url" .Permalink "softwareVersion" $version "isAccessibleForFree" true "license" (printf "%s/-/blob/develop/LICENSE" site.Params.repository) "codeRepository" site.Params.repository "sameAs" (slice site.Params.repository site.Params.github) | jsonify | safeJS }}</script>
+
+    <link rel="icon" type="image/svg+xml" href="{{ "assets/branding/typeflow-logo.svg" | relURL }}">
+
+    {{/*
+      ── Step 3: Local Stylesheets — preload + async non-render-blocking ────────
+      Preload triggers the fetch immediately at highest priority; the onload swap
+      to rel="stylesheet" applies the sheet the instant it arrives without
+      blocking the initial paint. A <noscript> fallback keeps the regular
+      blocking link for no-JS environments.
+
+      Google Fonts is deferred entirely — it only controls web font rendering,
+      not layout or colours, so it can safely arrive late (font-display:swap
+      prevents invisible text in the interim).
+    */}}
+
+    {{/* preload the local CSS at top priority */}}
+    <link rel="preload" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    {{ if eq .Section "playground" }}
+    <link rel="preload" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    {{ end }}
+
+    {{/* noscript fallback — regular blocking link for no-JS */}}
+    <noscript>
+      <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}">
+      <link rel="stylesheet" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}">
+      {{ if eq .Section "playground" }}
+      <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}">
+      {{ end }}
+    </noscript>
+
+    {{/* Google Fonts — deferred, font-display:swap prevents FOIT */}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&display=swap"></noscript>
+
+    {{/*
+      ── Step 4: FOUC elimination via body visibility ───────────────────────────
+      Hide the body until the local CSS resolves — since we preloaded it at
+      highest priority it will arrive before the first user-visible paint on
+      any warm or local connection. A 300ms max-wait timeout releases the lock
+      unconditionally so nothing is ever permanently hidden.
+    */}}
+    <script>
+      document.documentElement.style.setProperty('--fouc-opacity', '0');
+    </script>
+    <style>
+      html { opacity: var(--fouc-opacity, 1); }
+    </style>
+    <script>
+      (() => {
+        const release = () => document.documentElement.style.removeProperty('--fouc-opacity');
+        // Release as soon as both local sheets have loaded
+        let loaded = 0;
+        const onSheet = () => { if (++loaded >= 2) release(); };
+        document.querySelectorAll('link[rel="preload"][as="style"]').forEach(l => {
+          if (l.href.includes('fonts.googleapis')) return;
+          l.addEventListener('load', onSheet, { once: true });
+        });
+        // Hard deadline — never leave the page invisible
+        setTimeout(release, 300);
+      })();
+    </script>
+
+    {{ block "head" . }}{{ end }}
+  </head>
+  <body data-package-version="{{ $version }}" data-search-index="{{ "index.json" | relURL }}?v={{ $version }}">
+
+    {{/* ── Site Header ──────────────────────────────────────────── */}}
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="{{ "" | relURL }}" aria-label="typeflow.js home">
+          <img src="{{ "assets/branding/typeflow-logo.svg" | relURL }}" alt="" width="30" height="30">
+          <span class="brand-text">typeflow<span class="brand-ext">.js</span></span>
+          <small>v{{ $version }}</small>
+        </a>
+
+        <button class="search-trigger-btn" type="button" data-search-trigger aria-label="Search documentation (Ctrl+K)" aria-haspopup="dialog" aria-expanded="false">
+          <span class="search-trigger-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+          <span class="search-trigger-placeholder">Search docs, APIs, and guides...</span>
+          <kbd class="search-trigger-kbd">Ctrl+K</kbd>
+        </button>
+
+        <nav class="header-actions" aria-label="Utility navigation">
+          <a class="header-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab ↗</a>
+          <a class="header-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer">GitHub ↗</a>
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle color theme">◐</button>
+          {{ if not (or .IsHome .Params.fullWidth) }}
+          <button class="icon-button mobile-menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-sidebar" aria-label="Open navigation">☰</button>
+          {{ end }}
+        </nav>
+      </div>
+    </header>
+
+    {{/* ── Page Body: sidebar + main (3-col grid via CSS) ──────── */}}
+    {{ if or .IsHome .Params.fullWidth }}
+    <div class="shell" style="flex:1; padding-block: clamp(1rem, 0.75rem + 1vw, 2rem);">
+      <main id="main-content" class="main-content" style="padding-left:0; padding-bottom: 0;">
+        {{ block "main" . }}{{ end }}
+      </main>
+    </div>
+    {{ else }}
+    <div class="page-body">
+      {{/* Left sidebar nav */}}
+      <aside class="sidebar" id="site-sidebar" data-sidebar aria-label="Documentation navigation">
+        <nav>
+          {{ range site.Menus.main }}
+          {{ if not .Parent }}
+            {{ if .HasChildren }}
+            <p class="sidebar-section-label">{{ .Name }}</p>
+            {{ range .Children }}
+            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}"
+               href="{{ .URL | relURL }}"
+               {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
+            {{ end }}
+            {{ else }}
+            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}"
+               href="{{ .URL | relURL }}"
+               {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
+            {{ end }}
+          {{ end }}
+          {{ end }}
+        </nav>
+      </aside>
+
+      {{/* Main content + TOC (rendered by child templates) */}}
+      <main id="main-content" class="main-content">
+        {{ block "main" . }}{{ end }}
+      </main>
+    </div>
+    {{ end }}
+
+    {{/* ── Site Footer ──────────────────────────────────────────── */}}
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="{{ "" | relURL }}">
+            <img src="{{ "assets/branding/typeflow-logo.svg" | relURL }}" alt="" width="28" height="28">
+            <span class="brand-text">typeflow<span class="brand-ext">.js</span></span>
+          </a>
+          <p>Zero-dependency, interruptible typewriter animation library by StaticCanvas.</p>
+        </div>
+        <div>
+          <span class="footer-label">Documentation</span>
+          <a href="{{ "getting-started/" | relURL }}">Getting Started</a>
+          <a href="{{ "guides/sequences/" | relURL }}">Sequences Guide</a>
+          <a href="{{ "api/" | relURL }}">API Reference</a>
+          <a href="{{ "playground/" | relURL }}">Interactive Playground</a>
+        </div>
+        <div>
+          <span class="footer-label">Project</span>
+          <a href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab Repository ↗</a>
+          <a href="{{ site.Params.repository }}/-/issues" target="_blank" rel="noreferrer">Issue Tracker ↗</a>
+          <a href="{{ "downloads/" | relURL }}">Releases &amp; Packages</a>
+        </div>
+        <div>
+          <span class="footer-label">Legal</span>
+          <a href="{{ site.Params.repository }}/-/blob/develop/LICENSE" target="_blank" rel="noreferrer">MIT License ↗</a>
+          <span>© StaticCanvas</span>
+          <span>Version {{ $version }}</span>
+        </div>
+      </div>
+    </footer>
+
+    {{/* ── Two-Column Search Dialog Popup ────────────────────────── */}}
+    <div id="typeflow-search-modal" class="search-modal" role="dialog" aria-modal="true" aria-label="Documentation Search" hidden>
+      <div class="search-modal-backdrop" data-search-close tabindex="-1"></div>
+      <div class="search-modal-dialog">
+        <div class="search-modal-header">
+          <span class="search-modal-header-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+          <input
+            id="search-modal-input"
+            class="search-modal-input"
+            type="search"
+            placeholder="Search docs, section anchors, APIs, and guides..."
+            autocomplete="off"
+            spellcheck="false"
+            aria-autocomplete="list"
+            aria-controls="search-results-list"
+          >
+          <button class="search-modal-esc" type="button" data-search-close aria-label="Close search dialog">
+            <kbd>ESC</kbd>
+          </button>
+        </div>
+
+        <div class="search-modal-filters" id="search-modal-filters" role="tablist" aria-label="Filter by category">
+          <button class="search-filter-pill active" type="button" data-filter="all" role="tab" aria-selected="true">All</button>
+          <button class="search-filter-pill" type="button" data-filter="Guides" role="tab" aria-selected="false">Guides</button>
+          <button class="search-filter-pill" type="button" data-filter="Reference" role="tab" aria-selected="false">Reference</button>
+          <button class="search-filter-pill" type="button" data-filter="Tools" role="tab" aria-selected="false">Tools</button>
+          <button class="search-filter-pill" type="button" data-filter="Extensions" role="tab" aria-selected="false">Extensions</button>
+        </div>
+
+        <div class="search-modal-body">
+          {{/* Left Column: Results List */}}
+          <div class="search-results-pane" id="search-results-list" role="listbox" aria-label="Matching search results"></div>
+
+          {{/* Right Column: Live Result Preview */}}
+          <aside class="search-preview-pane" id="search-preview-pane" aria-live="polite" aria-label="Result Preview">
+            <div class="search-preview-empty">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <p>Select a result to inspect live section details and jump directly</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="search-modal-footer">
+          <div class="search-modal-hints">
+            <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+            <span><kbd>↵</kbd> Select</span>
+            <span><kbd>ESC</kbd> Close</span>
+          </div>
+          <div class="search-modal-counter" id="search-modal-counter">Type to search</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs" crossorigin="anonymous"></script>
+    <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $version }}"></script>
+    {{ block "scripts" . }}{{ end }}
+  </body>
+</html>
