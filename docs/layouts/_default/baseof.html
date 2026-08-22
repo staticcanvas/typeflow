@@ -120,8 +120,69 @@
       .header-inner {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         height: 100%;
         gap: 20px;
+      }
+      .search-trigger-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 380px;
+        width: 100%;
+        margin-inline: auto;
+        padding: 6px 14px;
+        border-radius: 8px;
+        background: var(--tf-bg-surface);
+        border: 1px solid rgba(255, 107, 43, 0.35);
+        color: var(--tf-text-muted);
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        text-align: left;
+        transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        user-select: none;
+      }
+      [data-theme="light"] .search-trigger-btn {
+        border-color: rgba(234, 88, 12, 0.3);
+      }
+      .search-trigger-btn:hover {
+        border-color: #ff6b2b;
+        background: var(--tf-bg-surface-elevated);
+        color: var(--tf-text-primary);
+        box-shadow: 0 0 14px rgba(255, 107, 43, 0.22);
+      }
+      [data-theme="light"] .search-trigger-btn:hover {
+        border-color: #ea580c;
+        box-shadow: 0 0 14px rgba(234, 88, 12, 0.2);
+      }
+      .search-trigger-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff6b2b;
+        flex-shrink: 0;
+      }
+      [data-theme="light"] .search-trigger-icon {
+        color: #ea580c;
+      }
+      .search-trigger-placeholder {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .search-trigger-kbd {
+        font-size: 10px;
+        font-family: var(--tf-font-mono);
+        font-weight: 600;
+        background: var(--tf-bg-surface-elevated);
+        border: 1px solid var(--tf-border-default);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: var(--tf-text-muted);
+        flex-shrink: 0;
+        letter-spacing: 0.05em;
       }
       .brand {
         display: flex;
@@ -405,77 +466,6 @@
         font-family: var(--tf-font-mono);
         font-size: 13px;
         color: var(--tf-accent);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex: 1;
-        min-width: 0;
-      }
-      .hero-cdn-box {
-        background: var(--tf-bg-surface);
-        border: 1px solid var(--tf-border-subtle);
-        border-radius: 9px;
-        overflow: hidden;
-        box-sizing: border-box;
-        width: 100%;
-      }
-      .hero-cdn-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 12px;
-        background: var(--tf-bg-surface-elevated);
-        border-bottom: 1px solid var(--tf-border-subtle);
-      }
-      .hero-cdn-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11px;
-        font-family: var(--tf-font-mono);
-        font-weight: 600;
-        color: #ff6b2b;
-        text-transform: uppercase;
-      }
-      .hero-cdn-pills {
-        display: inline-flex;
-        align-items: center;
-        gap: 2px;
-        background: var(--tf-bg-canvas);
-        border: 1px solid var(--tf-border-subtle);
-        border-radius: 6px;
-        padding: 2px;
-        border-bottom: none !important;
-      }
-      .hero-cdn-pills button {
-        padding: 3px 8px !important;
-        font-size: 10.5px !important;
-        font-family: var(--tf-font-mono) !important;
-        font-weight: 600 !important;
-        color: var(--tf-text-secondary) !important;
-        border: none !important;
-        border-radius: 4px !important;
-        background: transparent !important;
-        cursor: pointer;
-      }
-      .hero-cdn-pills button[aria-selected="true"] {
-        color: #ff6b2b !important;
-        background: var(--tf-bg-surface-elevated) !important;
-      }
-      .hero-cdn-body {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 14px;
-        gap: 12px;
-        background: var(--tf-bg-canvas);
-        min-height: 48px;
-        box-sizing: border-box;
-      }
-      .hero-cdn-body code {
-        font-family: var(--tf-font-mono);
-        font-size: 12px;
-        color: var(--tf-text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;

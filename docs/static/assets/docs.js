@@ -1545,7 +1545,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
         description: pageDesc || pageText.slice(0, 160),
         category,
         keywords,
-        content: pageText,
+        content: rawText || pageText,
         isAnchor: false,
       });
 
@@ -1558,18 +1558,19 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
 
         const flushSection = () => {
           if (currentHeading && currentSlug) {
-            const sectionContent = currentSectionLines.join(' ').replace(/<[^>]+>/g, '').trim();
-            if (sectionContent.length > 10 || currentHeading.length > 3) {
+            const rawSectionMarkdown = currentSectionLines.join('\n').trim();
+            const cleanPlain = rawSectionMarkdown.replace(/<[^>]+>/g, '').replace(/```[\s\S]*?```/g, '').replace(/\s+/g, ' ').trim();
+            if (rawSectionMarkdown.length > 5 || currentHeading.length > 2) {
               const headingWords = currentHeading.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
               items.push({
                 title: pageTitle,
                 heading: currentHeading,
                 anchor: `#${currentSlug}`,
                 permalink: `${pageUrl}#${currentSlug}`,
-                description: sectionContent.slice(0, 160) || pageDesc,
+                description: cleanPlain.slice(0, 160) || pageDesc,
                 category,
                 keywords: [...keywords, ...headingWords],
-                content: `${currentHeading} ${sectionContent}`,
+                content: rawSectionMarkdown,
                 isAnchor: true,
               });
             }
@@ -1586,7 +1587,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
             currentSlug = slugifyHeading(rawHeading);
           } else if (currentHeading) {
             if (line.trim()) {
-              currentSectionLines.push(line.trim());
+              currentSectionLines.push(line);
             }
           }
         }
@@ -1626,8 +1627,8 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
   };
 
   /**
-   * Converts markdown formatting (code blocks, inline code, bold, italic, quotes, lists)
-   * into clean HTML for search preview typography.
+   * Converts markdown formatting (code blocks, tables, inline code, bold, italic, quotes, lists, links, alerts)
+   * into clean, balanced HTML for search preview typography without broken syntax.
    * @param {string} md
    * @param {string} [query='']
    * @returns {string}
@@ -1635,54 +1636,127 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
   const formatMarkdownSnippet = (md, query = '') => {
     if (!md) return '';
 
-    // 1. Escape HTML special characters
-    let html = md
+    // 1. Strip Hugo shortcodes, HTML comments, and frontmatter delimiters
+    let text = String(md)
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/\{\{[<%][\s\S]*?[>%]\}\}/g, '')
+      .replace(/^---[\s\S]*?---\n*/, '')
+      .trim();
+
+    // 2. Limit excessive length while keeping code fences intact
+    if (text.length > 550) {
+      text = text.slice(0, 550);
+      // If truncation cut off inside a fenced code block, we will close it below
+    }
+
+    // 3. Escape HTML special chars to prevent unescaped injections
+    let safe = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    // 2. Fenced code blocks ```lang ... ```
-    html = html.replace(/```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)```/g, (_m, code) => {
-      return `<pre><code>${code.trim()}</code></pre>`;
+    // 4. Fenced Code Blocks (closed and unclosed due to truncation)
+    safe = safe.replace(/```(?:[a-zA-Z0-9_+-]+)?\n([\s\S]*?)```/g, (_m, code) => {
+      return `\n\n<pre><code>${code.trim()}</code></pre>\n\n`;
+    });
+    // Handle unclosed trailing fence if snippet was truncated
+    safe = safe.replace(/```(?:[a-zA-Z0-9_+-]+)?\n([\s\S]*)$/g, (_m, code) => {
+      return `\n\n<pre><code>${code.trim()}</code></pre>\n\n`;
     });
 
-    // 3. Inline code `code`
-    html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    // 5. Markdown Tables
+    safe = safe.replace(/((?:^\|.+?\|\r?\n)+)/gm, (tableBlock) => {
+      const rows = tableBlock.trim().split('\n').map((r) => r.trim()).filter(Boolean);
+      if (rows.length < 2) return tableBlock;
+      // Filter out separator row |--|--|
+      const validRows = rows.filter((r) => !/^\|[\s\-:|]+\|$/.test(r));
+      if (validRows.length === 0) return '';
 
-    // 4. Bold **bold** or __bold__
-    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+      const headerRow = validRows[0];
+      const bodyRows = validRows.slice(1);
 
-    // 5. Italic *italic* or _italic_
-    html = html.replace(/(^|[^\*])\*([^\*]+)\*([^\*]|$)/g, '$1<em>$2</em>$3');
-    html = html.replace(/(^|[^_])_([^_]+)_([^_]|$)/g, '$1<em>$2</em>$3');
+      const parseCells = (row) => row.replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
 
-    // 6. Blockquotes > quote
-    html = html.replace(/^&gt;\s*(.+)$/gm, '<blockquote>$1</blockquote>');
+      const ths = parseCells(headerRow).map((c) => `<th>${c}</th>`).join('');
+      const trs = bodyRows.map((r) => {
+        const tds = parseCells(r).map((c) => `<td>${c}</td>`).join('');
+        return `<tr>${tds}</tr>`;
+      }).join('');
 
-    // 7. Markdown lists - item or * item
-    html = html.replace(/^[\*\-]\s+(.+)$/gm, '<li>$1</li>');
-    html = html.replace(/(<li>.+<\/li>\n?)+/g, '<ul>$&</ul>');
+      return `\n\n<table class="search-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>\n\n`;
+    });
 
-    // 8. Paragraphs: split by double newlines if not inside pre/ul/blockquote
-    const blocks = html.split(/\n\n+/);
-    html = blocks.map((block) => {
+    // 6. GitHub Alert Blockquotes (> [!NOTE], > [!TIP], > [!WARNING], > [!IMPORTANT], > [!CAUTION])
+    safe = safe.replace(/^&gt;\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$/gim, (_m, type, content) => {
+      const t = type.toUpperCase();
+      return `\n\n<blockquote class="search-alert search-alert-${t.toLowerCase()}"><strong>${t}:</strong> ${content.trim()}</blockquote>\n\n`;
+    });
+
+    // 7. Standard Blockquotes (> quote)
+    safe = safe.replace(/^&gt;\s*(.+)$/gm, '<blockquote>$1</blockquote>');
+
+    // 8. Markdown Headings (# Heading, ## Heading, etc.)
+    safe = safe.replace(/^#{1,6}\s+(.+)$/gm, '<strong>$1</strong>');
+
+    // 9. Horizontal Rules (---, ***, ___)
+    safe = safe.replace(/^(\-{3,}|\*{3,}|_{3,})$/gm, '<hr class="search-hr">');
+
+    // 10. Links [text](url) and Images ![alt](url)
+    safe = safe.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<em>[Image: $1]</em>');
+    safe = safe.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="search-preview-link" target="_blank" rel="noopener">$1</a>');
+
+    // 11. Inline Code `code`
+    safe = safe.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    // Handle dangling single backtick if truncated
+    safe = safe.replace(/`([^`\n]+)$/g, '<code>$1</code>');
+
+    // 12. Bold **bold** or __bold__
+    safe = safe.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    safe = safe.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+
+    // 13. Italic *italic* or _italic_
+    safe = safe.replace(/(^|[^\*])\*([^\*]+)\*([^\*]|$)/g, '$1<em>$2</em>$3');
+    safe = safe.replace(/(^|[^_])_([^_]+)_([^_]|$)/g, '$1<em>$2</em>$3');
+
+    // 14. Strikethrough ~~text~~
+    safe = safe.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+    // 15. Unordered Lists (- item or * item)
+    safe = safe.replace(/^[\*\-]\s+(.+)$/gm, '<li>$1</li>');
+    safe = safe.replace(/(<li>.+<\/li>\n?)+/g, '<ul>$&</ul>');
+
+    // 16. Ordered Lists (1. item)
+    safe = safe.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+
+    // 17. Paragraph wrapping
+    const blocks = safe.split(/\n\n+/);
+    let html = blocks.map((block) => {
       const trimmed = block.trim();
       if (!trimmed) return '';
-      if (trimmed.startsWith('<pre>') || trimmed.startsWith('<ul>') || trimmed.startsWith('<blockquote>')) {
+      if (
+        trimmed.startsWith('<pre>') ||
+        trimmed.startsWith('<ul>') ||
+        trimmed.startsWith('<ol>') ||
+        trimmed.startsWith('<blockquote>') ||
+        trimmed.startsWith('<table') ||
+        trimmed.startsWith('<hr')
+      ) {
         return trimmed;
       }
       return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
     }).filter(Boolean).join('');
 
-    // 9. Highlight matching query terms (avoid modifying inside tag attributes)
+    // 18. Query Word Highlighting (without corrupting HTML tag attributes)
     if (query && query.trim().length > 1) {
-      const q = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const parts = html.split(/(<[^>]+>)/g);
-      html = parts.map((part) => {
-        if (part.startsWith('<') && part.endsWith('>')) return part;
-        return part.replace(new RegExp(`(${q})`, 'gi'), '<mark class="search-match">$1</mark>');
-      }).join('');
+      const terms = query.trim().split(/\s+/).filter((t) => t.length > 1);
+      if (terms.length > 0) {
+        const regex = new RegExp(`(${terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+        const parts = html.split(/(<[^>]+>)/g);
+        html = parts.map((part) => {
+          if (part.startsWith('<') && part.endsWith('>')) return part;
+          return part.replace(regex, '<mark class="search-match">$1</mark>');
+        }).join('');
+      }
     }
 
     return html;
@@ -1725,9 +1799,7 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
 
     const rawTitle = item.heading || item.title;
     const targetUrl = normalizeUrl(item.permalink);
-    const rawSnippet = item.content
-      ? (item.content.length > 320 ? item.content.slice(0, 320) + '...' : item.content)
-      : item.description;
+    const rawSnippet = item.content || item.description;
 
     const formattedSnippet = formatMarkdownSnippet(rawSnippet, query);
 
@@ -1765,10 +1837,13 @@ if (searchModalInput && searchResultsList && searchPreviewPane) {
     if (contentEl) {
       previewContentController = TypeFlow.type(contentEl, formattedSnippet, {
         html: true,
-        allowedTags: ['pre', 'code', 'strong', 'em', 'blockquote', 'p', 'ul', 'ol', 'li', 'mark', 'a', 'kbd', 'span', 'b', 'i', 'br'],
+        allowedTags: [
+          'pre', 'code', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          'strong', 'em', 'blockquote', 'p', 'ul', 'ol', 'li',
+          'mark', 'a', 'kbd', 'span', 'b', 'i', 'br', 'hr', 'del'
+        ],
         speed: 2,
         cursor: '',
-        naturalCadence: false,
         respectReducedMotion: false,
       });
     }
