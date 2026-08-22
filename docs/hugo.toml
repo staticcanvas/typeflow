@@ -69,6 +69,16 @@ disableKinds = ['taxonomy', 'term']
     pageRef = '/guides/accessibility/'
     weight = 35
   [[menu.main]]
+    name = 'Charts & Progress'
+    parent = 'guides'
+    pageRef = '/guides/charts-and-progress-bars/'
+    weight = 36
+  [[menu.main]]
+    name = 'Sound & Audio'
+    parent = 'guides'
+    pageRef = '/guides/audio-soundtracks/'
+    weight = 37
+  [[menu.main]]
     name = 'API reference'
     pageRef = '/api/'
     weight = 40

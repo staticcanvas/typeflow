@@ -28,10 +28,14 @@
             </div>
 
             <div class="pg-sample-select-wrap">
-              <label for="pg-sample-select"><i data-lucide="file-text" class="icon-inline"></i> Sample Phrase:</label>
+              <label for="pg-sample-select"><i data-lucide="file-text" class="icon-inline"></i> Sample Phrase / Demo:</label>
               <select id="pg-sample-select" class="pg-select">
                 <option value="custom">Custom Text</option>
                 <option value="headline" selected>Headline: "Build modern resilient interfaces with TypeFlow."</option>
+                <option value="progress">Progress Bar: "Deploying Assets [████████████████████░░░░░░░░░░] 67% (42/63 MB)"</option>
+                <option value="chart">Sparkline Chart: "Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s | Heap: ████████░░ 78%"</option>
+                <option value="pipeline">Pipeline: "[✓ Lint] ➔ [⚡ Build (ESM/CJS)] ➔ [▶ Test (48/48)] ➔ [🚀 Released]"</option>
+                <option value="braille">Braille Meter: "CPU Core Matrix: ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ [⡿⣿⢿⣻⣽⣾] Peak: 98.4%"</option>
                 <option value="html">HTML: "Deploy to &lt;strong&gt;Production&lt;/strong&gt; with &lt;span class='highlight'&gt;Zero Downtime&lt;/span&gt;."</option>
                 <option value="cyber">Cyber: "SYSTEM BREACH DETECTED // INITIALIZING COUNTERMEASURES"</option>
                 <option value="code">Code: "const session = await TypeFlow.stream(target, { speed: 20 });"</option>
@@ -194,12 +198,13 @@
               </div>
 
               <div class="pg-field">
-                <label for="pg-audio">Web Audio Keystrokes</label>
+                <label for="pg-audio">Audio Synchronization</label>
                 <select id="pg-audio" class="pg-select">
                   <option value="none" selected>none (Silent)</option>
-                  <option value="mechanical">mechanical (Switch clicks)</option>
-                  <option value="beep">beep (Terminal ping)</option>
-                  <option value="synth">synth (Cyber chirp)</option>
+                  <option value="mechanical">mechanical (Switch clicks - Web Audio)</option>
+                  <option value="beep">beep (Terminal ping - Web Audio)</option>
+                  <option value="synth">synth (Cyber chirp - Web Audio)</option>
+                  <option value="soundtrack">soundtrack (Dance Playful Night - MP3 Audio Track)</option>
                 </select>
               </div>
             </div>

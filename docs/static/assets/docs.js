@@ -1147,11 +1147,46 @@ if (pgStage && btnType) {
     updateCodeSnippet();
   });
 
+  let soundtrackAudio = null;
+  const syncSoundtrack = (play = true) => {
+    if (pgAudio?.value === 'soundtrack') {
+      if (!soundtrackAudio) {
+        soundtrackAudio = new Audio();
+        soundtrackAudio.src = new URL('audio/alexzavesa-dance-playful-night-510786.mp3', window.location.href).href;
+        soundtrackAudio.volume = 0.55;
+        soundtrackAudio.loop = true;
+      }
+      if (play) {
+        soundtrackAudio.play().catch(() => {});
+      } else {
+        soundtrackAudio.pause();
+        soundtrackAudio.currentTime = 0;
+      }
+    } else {
+      if (soundtrackAudio) {
+        soundtrackAudio.pause();
+        soundtrackAudio.currentTime = 0;
+      }
+    }
+  };
+
   // Sample Switcher
   pgSampleSelect?.addEventListener('change', () => {
     const val = pgSampleSelect.value;
     if (val === 'headline') {
       pgText.value = 'Build modern resilient interfaces with TypeFlow.';
+    } else if (val === 'progress') {
+      pgText.value = 'Deploying Assets [████████████████████░░░░░░░░░░] 67% (42/63 MB)';
+      if (pgFontFamily) pgFontFamily.value = 'JetBrains Mono';
+    } else if (val === 'chart') {
+      pgText.value = 'Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s | Heap: ████████░░ 78%';
+      if (pgFontFamily) pgFontFamily.value = 'JetBrains Mono';
+    } else if (val === 'pipeline') {
+      pgText.value = '[✓ Lint] ➔ [⚡ Build (ESM/CJS)] ➔ [▶ Test (48/48)] ➔ [🚀 Released]';
+      if (pgFontFamily) pgFontFamily.value = 'JetBrains Mono';
+    } else if (val === 'braille') {
+      pgText.value = 'CPU Core Matrix: ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏ [⡿⣿⢿⣻⣽⣾] Peak: 98.4%';
+      if (pgFontFamily) pgFontFamily.value = 'JetBrains Mono';
     } else if (val === 'html') {
       pgText.value = 'Deploy to <strong>Production</strong> with <span class="highlight">Zero Downtime</span>.';
     } else if (val === 'cyber') {
@@ -1159,6 +1194,7 @@ if (pgStage && btnType) {
     } else if (val === 'code') {
       pgText.value = 'const session = await TypeFlow.stream(target, { speed: 20 });';
     }
+    updateStageStyles();
     updateCodeSnippet();
   });
 
@@ -1166,14 +1202,18 @@ if (pgStage && btnType) {
   btnType.addEventListener('click', () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(true);
     setStatus('Typing...', true);
     updateStageStyles();
 
     const opts = getOptions();
+    if (opts.audio === 'soundtrack') delete opts.audio;
     opts.onComplete = (text) => {
+      syncSoundtrack(false);
       setStatus('Complete', false);
     };
     opts.onInterrupt = () => {
+      syncSoundtrack(false);
       setStatus('Interrupted', false);
     };
 
@@ -1184,13 +1224,17 @@ if (pgStage && btnType) {
   btnErase?.addEventListener('click', () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(true);
     setStatus('Erasing...', true);
 
     const opts = getOptions();
+    if (opts.audio === 'soundtrack') delete opts.audio;
     opts.onComplete = () => {
+      syncSoundtrack(false);
       setStatus('Erased', false);
     };
     opts.onInterrupt = () => {
+      syncSoundtrack(false);
       setStatus('Interrupted', false);
     };
 
@@ -1200,23 +1244,34 @@ if (pgStage && btnType) {
   // Action: Morph
   let morphIndex = 0;
   const morphPhrases = [
+    'Progress [████████░░] 80%',
+    'Progress [██████████] 100%',
+    'Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s',
     'TypeFlow is lightweight and fast.',
-    'TypeFlow is robust and resilient.',
-    'TypeFlow is modern and interactive.'
+    'TypeFlow is robust and resilient.'
   ];
   btnMorph?.addEventListener('click', async () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(true);
     setStatus('Morphing...', true);
     updateStageStyles();
 
     morphIndex = (morphIndex + 1) % morphPhrases.length;
     const nextPhrase = morphPhrases[morphIndex];
     const opts = getOptions();
+    if (opts.audio === 'soundtrack') delete opts.audio;
 
     activeController = TypeFlow.morph(pgStage, nextPhrase, {
       ...opts,
-      onComplete: () => setStatus('Morphed', false),
+      onComplete: () => {
+        syncSoundtrack(false);
+        setStatus('Morphed', false);
+      },
+      onInterrupt: () => {
+        syncSoundtrack(false);
+        setStatus('Interrupted', false);
+      }
     });
   });
 
@@ -1224,16 +1279,21 @@ if (pgStage && btnType) {
   btnStream?.addEventListener('click', async () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(true);
     pgStage.textContent = '';
     setStatus('Streaming LLM Tokens...', true);
     updateStageStyles();
 
+    const opts = getOptions();
+    if (opts.audio === 'soundtrack') delete opts.audio;
+
     const stream = TypeFlow.stream(pgStage, {
-      ...getOptions(),
+      ...opts,
       onChunk: (chunk) => {
         setStatus(`Streaming... (${pgStage.textContent.length} chars)`, true);
       },
       onComplete: () => {
+        syncSoundtrack(false);
         setStatus('Stream finished', false);
       },
     });
@@ -1257,22 +1317,30 @@ if (pgStage && btnType) {
   btnRotator?.addEventListener('click', () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(true);
     setStatus('Rotating...', true);
     updateStageStyles();
 
     const words = [
-      'Declarative animations.',
-      'Interruptible promises.',
-      'Pure ECMAScript zero dependencies.',
-      'Procedural Web Audio clicks.'
+      'Deploying Assets [████████████████████░░░░░░░░░░] 67%',
+      'Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s | Heap: ████████░░ 78%',
+      'Declarative animations with zero layout shift.',
+      'Procedural Web Audio clicks and MP3 sync.'
     ];
 
+    const opts = getOptions();
+    if (opts.audio === 'soundtrack') delete opts.audio;
+
     activeController = TypeFlow.rotate(pgStage, words, {
-      typeConfig:  getOptions(),
-      eraseConfig: getOptions(),
+      typeConfig:  opts,
+      eraseConfig: opts,
       holdDuration: 1400,
       pauseBetween: 250,
-      repeat: 3
+      repeat: 3,
+      onComplete: () => {
+        syncSoundtrack(false);
+        setStatus('Rotation Complete', false);
+      }
     });
   });
 
@@ -1280,6 +1348,7 @@ if (pgStage && btnType) {
   btnStop?.addEventListener('click', () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(false);
     TypeFlow.stop(pgStage);
     setStatus('Stopped', false);
   });
@@ -1288,6 +1357,7 @@ if (pgStage && btnType) {
   btnReset?.addEventListener('click', () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(false);
     if (pgPresetSelect) pgPresetSelect.value = 'custom';
     if (pgSampleSelect) pgSampleSelect.value = 'headline';
     if (pgText) pgText.value = 'Build modern resilient interfaces with TypeFlow.';
@@ -1311,6 +1381,7 @@ if (pgStage && btnType) {
   btnClear?.addEventListener('click', () => {
     activeController?.stop();
     activeStream?.stop();
+    syncSoundtrack(false);
     pgStage.replaceChildren();
     setStatus('Cleared', false);
   });
