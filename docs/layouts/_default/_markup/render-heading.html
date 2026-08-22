@@ -1,0 +1,4 @@
+<h{{ .Level }} id="{{ .Anchor }}"{{ with .Attributes }}{{ range $name, $value := . }}{{ if ne $name "id" }} {{ $name }}="{{ $value }}"{{ end }}{{ end }}{{ end }}>
+  {{ .Text | safeHTML }}
+  <a class="heading-anchor" href="#{{ .Anchor }}" aria-label="Link to {{ .PlainText }}">#</a>
+</h{{ .Level }}>

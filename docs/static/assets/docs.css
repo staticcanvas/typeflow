@@ -1210,6 +1210,28 @@ pre, code, kbd, samp {
   font-weight: 600;
   margin: var(--space-4) 0 var(--space-2);
   color: var(--tf-text-secondary);
+  scroll-margin-top: calc(var(--header-height) + 20px);
+}
+.heading-anchor {
+  display: inline-block;
+  margin-inline-start: 0.35em;
+  color: var(--tf-text-muted);
+  font-family: var(--tf-font-mono);
+  font-size: 0.8em;
+  font-weight: 500;
+  opacity: 0.45;
+  text-decoration: none;
+  transition: color 0.12s ease, opacity 0.12s ease;
+}
+.doc-content :is(h2, h3, h4, h5, h6):hover .heading-anchor,
+.heading-anchor:focus-visible {
+  color: var(--tf-accent);
+  opacity: 1;
+}
+.heading-anchor:focus-visible {
+  outline: 2px solid var(--tf-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 .doc-content p {
   margin-bottom: var(--space-4);
