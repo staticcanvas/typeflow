@@ -368,6 +368,9 @@
 
       </div>
     </div>
+    {{ with site.Data.playgroundSamples }}
+    <script id="playground-samples-data" type="application/json">{{ . | jsonify | safeJS }}</script>
+    {{ end }}
   </article>
 </div>
 {{ end }}

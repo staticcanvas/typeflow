@@ -1103,10 +1103,26 @@ if (pgStage && btnType) {
     }
   };
 
+  let pgData = null;
+  const pgDataEl = document.getElementById('playground-samples-data');
+  if (pgDataEl) {
+    try {
+      pgData = JSON.parse(pgDataEl.textContent);
+    } catch {}
+  }
+
   // Sample Switcher
   pgSampleSelect?.addEventListener('change', () => {
     const val = pgSampleSelect.value;
-    if (val === 'headline') {
+    if (pgData?.samples && pgData.samples[val]) {
+      const cfg = pgData.samples[val];
+      pgText.value = cfg.text || '';
+      if (cfg.fontFamily && pgFontFamily) pgFontFamily.value = cfg.fontFamily;
+      if (cfg.typeStyle && pgTypeStyle) pgTypeStyle.value = cfg.typeStyle;
+      if (cfg.direction && pgDirection) pgDirection.value = cfg.direction;
+      if (cfg.scrambleCharset && pgScrambleCharset) pgScrambleCharset.value = cfg.scrambleCharset;
+      if (typeof cfg.html === 'boolean' && pgHtml) pgHtml.checked = cfg.html;
+    } else if (val === 'headline') {
       pgText.value = 'Build modern resilient interfaces with TypeFlow.';
     } else if (val === 'progress') {
       pgText.value = 'Deploying Assets [████████████████████░░░░░░░░░░] 67% (42/63 MB)';
@@ -1141,7 +1157,7 @@ if (pgStage && btnType) {
 
     const opts = getOptions();
     if (opts.audio === 'soundtrack') delete opts.audio;
-    opts.onComplete = (text) => {
+    opts.onComplete = (_text) => {
       syncSoundtrack(false);
       setStatus('Complete', false);
     };
@@ -1176,7 +1192,7 @@ if (pgStage && btnType) {
 
   // Action: Morph
   let morphIndex = 0;
-  const morphPhrases = [
+  const defaultMorphPhrases = [
     'Progress [████████░░] 80%',
     'Progress [██████████] 100%',
     'Throughput:  ▂▃▄▅▆▇█ 94.2 MB/s',
@@ -1190,8 +1206,18 @@ if (pgStage && btnType) {
     setStatus('Morphing...', true);
     updateStageStyles();
 
-    morphIndex = (morphIndex + 1) % morphPhrases.length;
-    const nextPhrase = morphPhrases[morphIndex];
+    let activePool = defaultMorphPhrases;
+    const currentSample = pgSampleSelect?.value;
+    if (currentSample === 'progress' && pgData?.progressSteps?.length) {
+      activePool = pgData.progressSteps;
+    } else if (currentSample === 'chart' && pgData?.chartSteps?.length) {
+      activePool = pgData.chartSteps;
+    } else if (currentSample === 'pipeline' && pgData?.pipelineSteps?.length) {
+      activePool = pgData.pipelineSteps;
+    }
+
+    morphIndex = (morphIndex + 1) % activePool.length;
+    const nextPhrase = activePool[morphIndex];
     const opts = getOptions();
     if (opts.audio === 'soundtrack') delete opts.audio;
 
@@ -1199,7 +1225,7 @@ if (pgStage && btnType) {
       ...opts,
       onComplete: () => {
         syncSoundtrack(false);
-        setStatus('Morphed', false);
+        setStatus(`Morphed (${morphIndex + 1}/${activePool.length})`, false);
       },
       onInterrupt: () => {
         syncSoundtrack(false);
@@ -1222,7 +1248,7 @@ if (pgStage && btnType) {
 
     const stream = TypeFlow.stream(pgStage, {
       ...opts,
-      onChunk: (chunk) => {
+      onChunk: (_chunk) => {
         setStatus(`Streaming... (${pgStage.textContent.length} chars)`, true);
       },
       onComplete: () => {
@@ -1232,12 +1258,12 @@ if (pgStage && btnType) {
     });
     activeStream = stream;
 
-    const chunks = [
+    const chunks = pgData?.streamChunks || [
       'TypeFlow Stream Ingestion: ',
       'tokens arrive asynchronously ',
       'from server-sent events (SSE) ',
       'and render fluidly ',
-      'with zero DOM lag!'
+      'with zero DOM lag or layout shift!'
     ];
 
     for (let i = 0; i < chunks.length; i++) {
