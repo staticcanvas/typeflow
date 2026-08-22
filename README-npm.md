@@ -1,4 +1,4 @@
-![Lume Banner](https://r2os.staticcanvas.me/logos/typeflow/typeflow-logo.svg)
+![Lume Banner](https://r2os.staticcanvas.me/logos/typeflow/dist/webp/typeflow-logo-64x64.webp)
 
 # @staticcanvas/typeflow
 
@@ -193,29 +193,29 @@ TypeFlow.isTyping(target): boolean
 
 ## Development & NPM Scripts
 
-| Script | Command | Description |
-| :--- | :--- | :--- |
-| **`npm run dev`** | `vite` | Starts local Vite development server. |
-| **`npm run build`** | `vite build` | Compiles production ESM, CJS, and UMD bundles into `dist/`. |
-| **`npm test`** | `vitest run` | Runs full unit test suite (34 test cases). |
-| **`npm run benchmark`** | `node scripts/run-benchmark.mjs` | Runs 10k+ char synthetic benchmarks. |
-| **`npm run benchmark:md`** | `node scripts/run-benchmark.mjs --markdown` | Outputs formatted Markdown benchmark table. |
-| **`npm run check:quality`** | `npm run build && npm run check:size && npm run benchmark && npm test` | Runs the full QA validation pipeline. |
+| Script                      | Command                                                                | Description                                                 |
+| :-------------------------- | :--------------------------------------------------------------------- | :---------------------------------------------------------- |
+| **`npm run dev`**           | `vite`                                                                 | Starts local Vite development server.                       |
+| **`npm run build`**         | `vite build`                                                           | Compiles production ESM, CJS, and UMD bundles into `dist/`. |
+| **`npm test`**              | `vitest run`                                                           | Runs full unit test suite (34 test cases).                  |
+| **`npm run benchmark`**     | `node scripts/run-benchmark.mjs`                                       | Runs 10k+ char synthetic benchmarks.                        |
+| **`npm run benchmark:md`**  | `node scripts/run-benchmark.mjs --markdown`                            | Outputs formatted Markdown benchmark table.                 |
+| **`npm run check:quality`** | `npm run build && npm run check:size && npm run benchmark && npm test` | Runs the full QA validation pipeline.                       |
 
 ---
 
 ## Benchmarks
 
-| Benchmark Scenario | Payload | Execution Time | Memory Overhead |
-| :--- | :--- | :--- | :--- |
-| **Plain Text Parse & Segmentation** | 10,125 chars | **20.18 ms** | +2.6 MB heap |
-| **Safe HTML Parse & Allowlist Sanitize** | 10,170 chars | **145.71 ms** | <4.5 MB heap |
-| **Instant Erase & DOM Reset** | 10,000 chars | **4.89 ms** | <0.1 MB heap |
-| **Word Segmentation (`Intl.Segmenter`)** | 10,000 chars | **11.41 ms** | <0.1 MB heap |
-| **Trailing Fade Gradient Rendering** | 10,000 chars | **3.53 ms** | <0.2 MB heap |
-| **Directional Reveal Math (Center/RTL)** | 1,000 units | **< 1.00 ms** | 0 KB allocation |
-| **Smart Morph Diff Calculation** | Longest common prefix | **< 0.15 ms** | 0 KB allocation |
-| **Production ESM Bundle Footprint** | Minified + Gzip | **< 7.1 KB** | 0 runtime deps |
+| Benchmark Scenario                       | Payload               | Execution Time | Memory Overhead |
+| :--------------------------------------- | :-------------------- | :------------- | :-------------- |
+| **Plain Text Parse & Segmentation**      | 10,125 chars          | **20.18 ms**   | +2.6 MB heap    |
+| **Safe HTML Parse & Allowlist Sanitize** | 10,170 chars          | **145.71 ms**  | <4.5 MB heap    |
+| **Instant Erase & DOM Reset**            | 10,000 chars          | **4.89 ms**    | <0.1 MB heap    |
+| **Word Segmentation (`Intl.Segmenter`)** | 10,000 chars          | **11.41 ms**   | <0.1 MB heap    |
+| **Trailing Fade Gradient Rendering**     | 10,000 chars          | **3.53 ms**    | <0.2 MB heap    |
+| **Directional Reveal Math (Center/RTL)** | 1,000 units           | **< 1.00 ms**  | 0 KB allocation |
+| **Smart Morph Diff Calculation**         | Longest common prefix | **< 0.15 ms**  | 0 KB allocation |
+| **Production ESM Bundle Footprint**      | Minified + Gzip       | **< 7.1 KB**   | 0 runtime deps  |
 
 ---
 
