@@ -117,7 +117,6 @@ const DEFAULT_ALLOWED_ATTRS = {
   '*': new Set(['class']),
 };
 
-const CURSOR_SPACER = '\u00A0';
 const CURSOR_BLINK_INTERVAL = 530;
 const DEFAULT_FADE_DURATION = 250;
 
@@ -146,7 +145,11 @@ function getAudioContext() {
 function playKeystrokeSound(audioOption) {
   if (!audioOption) return;
   if (typeof audioOption === 'function') {
-    try { audioOption(); } catch {}
+    try {
+      audioOption();
+    } catch {
+      // Audio callbacks are optional and must not interrupt typing.
+    }
     return;
   }
   const type = typeof audioOption === 'string' ? audioOption : 'mechanical';
@@ -187,7 +190,9 @@ function playKeystrokeSound(audioOption) {
       osc.start(now);
       osc.stop(now + 0.02);
     }
-  } catch {}
+  } catch {
+    // Audio playback is best effort and may be unavailable in the browser.
+  }
 }
 
 // ============================================================
@@ -579,8 +584,8 @@ class TypeFlowEngine {
         extra.isErasing ?? false
       );
       const isTrailFade =
-        options.trailFade != null ||
-        options.trailingFadeLength != null ||
+        (options.trailFade !== null && options.trailFade !== undefined) ||
+        (options.trailingFadeLength !== null && options.trailingFadeLength !== undefined) ||
         options.typeStyle === 'fade-trail' ||
         options.eraseStyle === 'fade-trail';
       const trailLen =
@@ -1158,7 +1163,9 @@ class TypeFlowEngine {
       try {
         const single = resolveTarget(targets);
         if (single) elements = [single];
-      } catch {}
+      } catch {
+        // Ignore invalid targets while resolving a stagger collection.
+      }
     }
 
     if (elements.length === 0) {

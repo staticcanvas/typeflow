@@ -88,7 +88,7 @@ if (!isMarkdownMode && !isJsonMode) {
 }
 
 // Test 6: Bundle Size Analysis
-let bundleStats = { raw: 0, gzip: 0 };
+const bundleStats = { raw: 0, gzip: 0 };
 const bundlePath = 'dist/typeflow/dist/typeflow.min.js';
 if (existsSync(bundlePath)) {
   const bundle = readFileSync(bundlePath);

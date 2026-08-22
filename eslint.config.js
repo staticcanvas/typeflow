@@ -78,7 +78,15 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/**', 'dist/**', 'docs/**', 'coverage/**', '*.min.js'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'docs/**',
+      'public/**',
+      'context-source/**',
+      'coverage/**',
+      '*.min.js',
+    ],
   },
 
   // <--- 2. Add Prettier Config LAST

@@ -108,7 +108,7 @@ export class TypeFlowDebug {
           logger[level](message, data);
           return;
         }
-      } catch (err) {
+      } catch {
         // Fallback to console
       }
     }
