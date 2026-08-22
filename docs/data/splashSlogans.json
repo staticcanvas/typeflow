@@ -14,7 +14,7 @@
     "speed": 46
   },
   {
-    "slogan": "cybernetic matrix decrypt.",
+    "slogan": "Scramble animation.",
     "mode": "typeStyle: scramble · scrambleCharset: matrix",
     "typeStyle": "scramble",
     "scrambleCharset": "matrix",
@@ -29,7 +29,7 @@
     "speed": 45
   },
   {
-    "slogan": "real-time llm token streaming.",
+    "slogan": "real-time streaming.",
     "mode": "TypeFlow.stream() · zero DOM lag",
     "typeStyle": "word",
     "cursor": "▍",
@@ -43,7 +43,7 @@
     "eraseStyle": "end"
   },
   {
-    "slogan": "trailing fade dissolve.",
+    "slogan": "trailing fade dissolve motion.",
     "mode": "typeStyle: fade-trail · trailFade: 6",
     "typeStyle": "fade-trail",
     "trailFade": 6,

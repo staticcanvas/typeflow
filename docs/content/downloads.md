@@ -21,13 +21,13 @@ TypeFlow distribution bundles are available on NPM, JSR, and GitLab Generic Pack
 
 ### Distribution Archives
 
-- [typeflow-2.2.0.tar.gz](https://gitlab.com/staticcanvas/typeflow/-/packages)
-- [typeflow-2.2.0.zip](https://gitlab.com/staticcanvas/typeflow/-/packages)
+- [typeflow-v0.20.0.tar.gz](https://gitlab.com/staticcanvas/typeflow/-/packages)
+- [typeflow-v0.20.0.zip](https://gitlab.com/staticcanvas/typeflow/-/packages)
 
 ### CDN Direct Links
 
-- **ESM Bundle**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.2.0/dist/typeflow.esm.js`
-- **ESM Minified**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.2.0/dist/typeflow.esm.min.js`
-- **UMD Browser**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.2.0/dist/typeflow.js`
-- **UMD Minified**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.2.0/dist/typeflow.min.js`
-- **CommonJS**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@2.2.0/dist/typeflow.cjs`
+- **ESM Bundle**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@0.20.0/dist/typeflow.esm.js`
+- **ESM Minified**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@0.20.0/dist/typeflow.esm.min.js`
+- **UMD Browser**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@0.20.0/dist/typeflow.js`
+- **UMD Minified**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@0.20.0/dist/typeflow.min.js`
+- **CommonJS**: `https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@0.20.0/dist/typeflow.cjs`

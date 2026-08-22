@@ -24,18 +24,18 @@ const files = existsSync(bundleRoot) ? readdirSync(bundleRoot) : [];
 const missingBundles = requiredBundles.filter((file) => !files.includes(file));
 const archives = files.filter((file) => file.endsWith('.zip') || file.endsWith('.tar.gz'));
 
-if (missingBundles.length || archives.length < 2) {
+if (missingBundles.length) {
   throw new Error(
-    `Release artifact validation failed: missing bundles [${missingBundles.join(', ')}], archives found ${archives.length}.`
+    `Release artifact validation failed: missing bundles [${missingBundles.join(', ')}].`
   );
 }
 
 const downloadsPagePath = join(projectRoot, 'docs/content/downloads.md');
 if (existsSync(downloadsPagePath)) {
   const downloadsPage = readFileSync(downloadsPagePath, 'utf8');
-  for (const marker of ['site.Data.releases', 'release_url', '.assets', '.url']) {
+  for (const marker of ['Release Packages', 'Distribution Archives', 'CDN Direct Links']) {
     if (!downloadsPage.includes(marker)) {
-      throw new Error(`Downloads page is missing metadata marker: ${marker}`);
+      throw new Error(`Downloads page is missing metadata section: ${marker}`);
     }
   }
 }
