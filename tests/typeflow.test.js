@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { TypeFlow, seq, createTypeFlowReact, createTypeFlowVue } from '../src/typeflow.js';
+import {
+  TypeFlow,
+  seq,
+  createTypeFlowReact,
+  createTypeFlowVue,
+  createTypeFlowSvelte,
+  createTypeFlowSolid,
+  createTypeFlowAlpine,
+  defineTypeFlowElement,
+} from '../src/typeflow.js';
 
 describe('TypeFlow Comprehensive Test Suite', () => {
   let container;
@@ -498,6 +507,98 @@ describe('TypeFlow Comprehensive Test Suite', () => {
 
       const writer = TypeFlow.preset('writer');
       expect(writer.naturalCadence).toBe(true);
+    });
+  });
+
+  describe('Framework Adapters', () => {
+    it('integrates with Svelte via action lifecycle', async () => {
+      const svelteAction = createTypeFlowSvelte();
+      const node = document.createElement('h1');
+      document.body.appendChild(node);
+
+      const actionInstance = svelteAction(node, {
+        text: 'Svelte Action Test',
+        config: { speed: 1, respectReducedMotion: false, cursor: '' }
+      });
+
+      expect(typeof actionInstance.update).toBe('function');
+      expect(typeof actionInstance.destroy).toBe('function');
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(node.textContent).toBe('Svelte Action Test');
+
+      actionInstance.destroy();
+    });
+
+    it('integrates with Solid.js signal reactivity', async () => {
+      let effectCb = null;
+      let cleanupCb = null;
+
+      const mockSolid = {
+        createSignal: (v) => [() => v, (nv) => { v = nv; }],
+        createEffect: (fn) => { effectCb = fn; fn(); },
+        onCleanup: (fn) => { cleanupCb = fn; },
+      };
+
+      const useTypeFlow = createTypeFlowSolid(mockSolid);
+      const bindNode = useTypeFlow(() => 'Solid Signal Value', {
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+
+      const node = document.createElement('div');
+      bindNode(node);
+      effectCb();
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(node.textContent).toBe('Solid Signal Value');
+
+      cleanupCb?.();
+    });
+
+    it('integrates with Alpine.js directive', async () => {
+      let directiveHandler = null;
+      const mockAlpine = {
+        directive: (name, handler) => {
+          expect(name).toBe('typeflow');
+          directiveHandler = handler;
+        },
+      };
+
+      createTypeFlowAlpine(mockAlpine);
+      expect(typeof directiveHandler).toBe('function');
+
+      const el = document.createElement('span');
+      let effectCb = null;
+      let cleanupFn = null;
+
+      directiveHandler(
+        el,
+        { expression: 'msg', modifiers: [] },
+        {
+          evaluateLater: () => (cb) => cb({ text: 'Alpine Directive Text', config: { speed: 1, respectReducedMotion: false, cursor: '' } }),
+          effect: (fn) => { effectCb = fn; fn(); },
+          cleanup: (fn) => { cleanupFn = fn; },
+        }
+      );
+
+      await new Promise((r) => setTimeout(r, 50));
+      expect(el.textContent).toBe('Alpine Directive Text');
+      cleanupFn?.();
+    });
+
+    it('defines and mounts custom <type-flow> Web Component', async () => {
+      defineTypeFlowElement();
+      const customEl = document.createElement('type-flow');
+      customEl.setAttribute('text', 'Web Component Text');
+      customEl.setAttribute('speed', '1');
+      customEl.setAttribute('cursor', '');
+      document.body.appendChild(customEl);
+
+      await new Promise((r) => setTimeout(r, 60));
+      expect(customEl.textContent).toBe('Web Component Text');
+      customEl.remove();
     });
   });
 });

@@ -57,7 +57,7 @@
   --sidebar-width:     220px;
   --toc-width:         200px;
   --content-max:       780px;
-  --shell-max:         1280px;
+  --shell-max:         1440px;
   --sidebar-top-offset: calc(var(--header-height) + 24px);
 }
 
@@ -1047,10 +1047,22 @@ pre, code, kbd, samp {
   width: 100%;
 }
 
-/* Pages without a TOC (e.g. list pages, playground) */
+/* Pages without a TOC (e.g. list pages) */
 .doc-page.doc-page--no-toc {
   grid-template-columns: minmax(0, 1fr);
   max-width: var(--content-max);
+}
+
+/* Playground page expands to fill full container width since it has no TOC */
+.doc-page.doc-page--no-toc.doc-page--playground,
+.doc-page--playground,
+.doc-page:has(.playground-workbench) {
+  max-width: 100% !important;
+  width: 100%;
+}
+.doc-page--playground .doc-article {
+  max-width: 100%;
+  width: 100%;
 }
 
 /* ============================================================
@@ -1278,6 +1290,31 @@ td code {
   color: var(--tf-accent);
   font-size: 0.85em;
   border: 1px solid var(--tf-border-subtle);
+}
+
+/* Core Engine Methods & Heading Code in Pastel Orange */
+.doc-content h2 code,
+.doc-content h3 code,
+.doc-content h4 code,
+.api-engine-method {
+  color: #ff9f68;
+  background: rgba(255, 159, 104, 0.1);
+  border: 1px solid rgba(255, 159, 104, 0.25);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-weight: 600;
+  display: inline-block;
+  letter-spacing: -0.01em;
+}
+
+[data-theme="light"] .doc-content h2 code,
+[data-theme="light"] .doc-content h3 code,
+[data-theme="light"] .doc-content h4 code,
+[data-theme="light"] .api-engine-method {
+  color: #ea580c;
+  background: rgba(234, 88, 12, 0.08);
+  border: 1px solid rgba(234, 88, 12, 0.22);
 }
 
 /* Copy button on pre blocks */

@@ -55,7 +55,7 @@
         --header-height: 64px;
         --sidebar-width: 220px;
         --toc-width: 200px;
-        --shell-max: 1280px;
+        --shell-max: 1440px;
         --sidebar-top-offset: calc(var(--header-height) + 24px);
       }
       [data-theme="light"] {
@@ -203,6 +203,32 @@
       .doc-page.doc-page--no-toc {
         grid-template-columns: minmax(0, 1fr);
         max-width: 780px;
+      }
+      .doc-page.doc-page--no-toc.doc-page--playground,
+      .doc-page--playground {
+        max-width: 100% !important;
+      }
+      .doc-content h2 code,
+      .doc-content h3 code,
+      .doc-content h4 code,
+      .api-engine-method {
+        color: #ff9f68;
+        background: rgba(255, 159, 104, 0.1);
+        border: 1px solid rgba(255, 159, 104, 0.25);
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 600;
+        display: inline-block;
+        letter-spacing: -0.01em;
+      }
+      [data-theme="light"] .doc-content h2 code,
+      [data-theme="light"] .doc-content h3 code,
+      [data-theme="light"] .doc-content h4 code,
+      [data-theme="light"] .api-engine-method {
+        color: #ea580c;
+        background: rgba(234, 88, 12, 0.08);
+        border: 1px solid rgba(234, 88, 12, 0.22);
       }
       .doc-header {
         margin-bottom: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
@@ -456,14 +482,23 @@
         flex: 1;
         min-width: 0;
       }
+      @media (min-width: 1440px) {
+        .shell { padding-inline: clamp(2rem, 2.5vw, 4rem); }
+        .page-body { padding-inline: clamp(2rem, 2.5vw, 4rem); }
+      }
       @media (max-width: 1024px) {
         .doc-page { grid-template-columns: minmax(0, 1fr); }
         .doc-toc { display: none; }
       }
       @media (max-width: 768px) {
-        .page-body { grid-template-columns: 1fr; }
+        .shell { padding-inline: 14px; }
+        .page-body { grid-template-columns: 1fr; padding-inline: 14px; padding-block: 16px; }
         .sidebar { display: none; }
         .main-content { padding-left: 0; }
+      }
+      @media (max-width: 480px) {
+        .shell { padding-inline: 10px; }
+        .page-body { padding-inline: 10px; }
       }
     </style>
 

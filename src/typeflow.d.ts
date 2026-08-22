@@ -225,3 +225,24 @@ export declare function createTypeFlowSolid(
   config?: TypeFlowConfig
 ) => (element: T) => void;
 
+export interface AlpineLike {
+  directive: (
+    name: string,
+    handler: (
+      el: HTMLElement,
+      directive: { expression: string; modifiers: string[] },
+      utilities: {
+        evaluateLater: <T>(exp: string) => (callback: (val: T) => void) => void;
+        effect: (fn: () => void) => void;
+        cleanup: (fn: () => void) => void;
+      }
+    ) => void
+  ) => void;
+}
+
+export declare function createTypeFlowAlpine(Alpine: AlpineLike): void;
+
+export declare function defineTypeFlowElement(
+  customElementsRegistry?: CustomElementRegistry | null
+): void;
+

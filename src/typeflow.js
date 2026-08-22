@@ -1541,3 +1541,91 @@ export function createTypeFlowSolid(Solid) {
     };
   };
 }
+
+// ============================================================
+// Alpine.js Adapter
+// ============================================================
+
+export function createTypeFlowAlpine(Alpine) {
+  if (!Alpine || typeof Alpine.directive !== 'function') {
+    throw new Error('[TypeFlow] createTypeFlowAlpine requires an Alpine instance with directive() support.');
+  }
+
+  Alpine.directive('typeflow', (el, { expression }, { evaluateLater, effect, cleanup }) => {
+    const evaluate = evaluateLater(expression);
+    let controller = null;
+
+    effect(() => {
+      evaluate((value) => {
+        controller?.stop();
+        if (value === null || value === undefined) return;
+        const text = typeof value === 'object' && value !== null ? (value.text ?? '') : String(value);
+        const config = typeof value === 'object' && value !== null ? (value.config ?? {}) : {};
+        controller = TypeFlow.type(el, text, config);
+      });
+    });
+
+    if (typeof cleanup === 'function') {
+      cleanup(() => controller?.stop());
+    }
+  });
+}
+
+// ============================================================
+// Web Components / Custom Element Adapter
+// ============================================================
+
+export function defineTypeFlowElement(customElementsRegistry = typeof customElements !== 'undefined' ? customElements : null) {
+  if (!customElementsRegistry || customElementsRegistry.get('type-flow')) return;
+
+  class TypeFlowCustomElement extends HTMLElement {
+    #controller = null;
+
+    static get observedAttributes() {
+      return ['text', 'speed', 'direction', 'cursor', 'type-style', 'erase-style', 'scramble-charset', 'audio'];
+    }
+
+    connectedCallback() {
+      this.#render();
+    }
+
+    disconnectedCallback() {
+      this.#controller?.stop();
+    }
+
+    attributeChangedCallback(_name, oldValue, newValue) {
+      if (this.isConnected && oldValue !== newValue) {
+        this.#render();
+      }
+    }
+
+    #render() {
+      this.#controller?.stop();
+      const text = this.getAttribute('text') ?? this.textContent ?? '';
+      const speed = this.hasAttribute('speed') ? Number(this.getAttribute('speed')) : 40;
+      const direction = this.getAttribute('direction') || 'left';
+      const cursor = this.getAttribute('cursor') ?? '|';
+      const typeStyle = this.getAttribute('type-style') || 'char';
+      const eraseStyle = this.getAttribute('erase-style') || 'end';
+      const scrambleCharset = this.getAttribute('scramble-charset') || 'matrix';
+      const audio = this.getAttribute('audio') || undefined;
+
+      this.#controller = TypeFlow.type(this, text, {
+        speed,
+        direction,
+        cursor,
+        typeStyle,
+        eraseStyle,
+        scrambleCharset,
+        audio,
+      });
+    }
+
+    stop() {
+      this.#controller?.stop();
+    }
+  }
+
+  customElementsRegistry.define('type-flow', TypeFlowCustomElement);
+}
+

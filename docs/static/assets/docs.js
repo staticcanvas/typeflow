@@ -926,6 +926,8 @@ const pgFontSizeVal      = document.getElementById('pg-font-size-val');
 const pgFontFamily       = document.getElementById('pg-font-family');
 const pgTextAlign        = document.getElementById('pg-text-align');
 const pgCursorChar       = document.getElementById('pg-cursor-char');
+const pgGranularity      = document.getElementById('pg-granularity');
+const pgMode             = document.getElementById('pg-mode');
 const pgHtml             = document.getElementById('pg-html');
 const pgNaturalCadence   = document.getElementById('pg-natural-cadence');
 const pgCursorBlink      = document.getElementById('pg-cursor-blink');
@@ -987,6 +989,8 @@ if (pgStage && btnType) {
       eraseStyle: pgEraseStyle?.value || 'end',
       cursor: pgCursorChar?.value ?? '|',
       cursorBlink: pgCursorBlink?.checked ?? true,
+      granularity: pgGranularity?.value || 'grapheme',
+      mode: pgMode?.value || 'replace',
       html: pgHtml?.checked ?? true,
       naturalCadence: pgNaturalCadence?.checked ?? false,
       respectReducedMotion: pgReducedMotion?.checked ?? false,
@@ -1045,6 +1049,8 @@ if (pgStage && btnType) {
     if (cleanOpts.eraseStyle === 'end') delete cleanOpts.eraseStyle;
     if (cleanOpts.cursor === '|') delete cleanOpts.cursor;
     if (cleanOpts.cursorBlink === true) delete cleanOpts.cursorBlink;
+    if (cleanOpts.granularity === 'grapheme') delete cleanOpts.granularity;
+    if (cleanOpts.mode === 'replace') delete cleanOpts.mode;
     if (cleanOpts.html === true) delete cleanOpts.html;
     if (!cleanOpts.naturalCadence) delete cleanOpts.naturalCadence;
     if (!cleanOpts.respectReducedMotion) delete cleanOpts.respectReducedMotion;
@@ -1087,6 +1093,8 @@ if (pgStage && btnType) {
     pgFontFamily,
     pgTextAlign,
     pgCursorChar,
+    pgGranularity,
+    pgMode,
     pgHtml,
     pgNaturalCadence,
     pgCursorBlink,
