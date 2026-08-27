@@ -115,7 +115,12 @@
 
               <div class="pg-field" id="pg-rounds-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-scramble-rounds">Scramble Rounds</label>
+                  <label for="pg-scramble-rounds">Scramble Rounds
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Scramble Rounds" aria-describedby="tt-pg-scramble-rounds"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-scramble-rounds">Number of glyph iterations per character before it resolves to its final value.</span>
+                    </span>
+                  </label>
                   <span id="pg-scramble-rounds-val" class="pg-val-badge">2</span>
                 </div>
                 <input type="range" id="pg-scramble-rounds" min="1" max="8" value="2" class="pg-slider">
@@ -123,7 +128,12 @@
 
               <div class="pg-field" id="pg-fade-trail-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-fade-trail-len">Trailing Fade Length</label>
+                  <label for="pg-fade-trail-len">Trailing Fade Length
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Trailing Fade Length" aria-describedby="tt-pg-fade-trail-len"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-fade-trail-len">Number of trailing characters affected by the fade-trail opacity ramp.</span>
+                    </span>
+                  </label>
                   <span id="pg-fade-trail-len-val" class="pg-val-badge">4 chars</span>
                 </div>
                 <input type="range" id="pg-fade-trail-len" min="1" max="12" value="4" class="pg-slider">
@@ -131,7 +141,12 @@
 
               <div class="pg-field" id="pg-fade-trail-minop-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-fade-trail-min-op">Trail Min Opacity</label>
+                  <label for="pg-fade-trail-min-op">Trail Min Opacity
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Trail Min Opacity" aria-describedby="tt-pg-fade-trail-min-op"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-fade-trail-min-op">Minimum opacity trailing characters reach in the fade-trail effect before returning to full brightness.</span>
+                    </span>
+                  </label>
                   <span id="pg-fade-trail-min-op-val" class="pg-val-badge">0.18</span>
                 </div>
                 <input type="range" id="pg-fade-trail-min-op" min="0.05" max="0.60" step="0.05" value="0.18" class="pg-slider">
@@ -159,7 +174,12 @@
               
               <div class="pg-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-speed">Typing Speed</label>
+                  <label for="pg-speed">Typing Speed
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Typing Speed" aria-describedby="tt-pg-speed"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-speed">Milliseconds per character (or word, depending on granularity). Lower is faster.</span>
+                    </span>
+                  </label>
                   <span id="pg-speed-val" class="pg-val-badge">40 ms</span>
                 </div>
                 <input type="range" id="pg-speed" min="5" max="200" step="5" value="40" class="pg-slider">
@@ -167,7 +187,12 @@
 
               <div class="pg-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-speed-variance">Speed Variance (Jitter)</label>
+                  <label for="pg-speed-variance">Speed Variance (Jitter)
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Speed Variance" aria-describedby="tt-pg-speed-variance"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-speed-variance">Random +/- jitter in ms added per character for a less mechanical, more natural typing cadence.</span>
+                    </span>
+                  </label>
                   <span id="pg-speed-variance-val" class="pg-val-badge">0 ms</span>
                 </div>
                 <input type="range" id="pg-speed-variance" min="0" max="60" step="2" value="0" class="pg-slider">
@@ -175,7 +200,12 @@
 
               <div class="pg-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-delay">Initial Delay</label>
+                  <label for="pg-delay">Initial Delay
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Initial Delay" aria-describedby="tt-pg-delay"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-delay">Milliseconds to wait before the animation starts.</span>
+                    </span>
+                  </label>
                   <span id="pg-delay-val" class="pg-val-badge">0 ms</span>
                 </div>
                 <input type="range" id="pg-delay" min="0" max="1500" step="50" value="0" class="pg-slider">
@@ -183,7 +213,12 @@
 
               <div class="pg-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-stagger">Stagger Offset</label>
+                  <label for="pg-stagger">Stagger Offset
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Stagger Offset" aria-describedby="tt-pg-stagger"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-stagger">Delay in ms between the start of each element's animation when typing across multiple targets via TypeFlow.stagger().</span>
+                    </span>
+                  </label>
                   <span id="pg-stagger-val" class="pg-val-badge">0 ms</span>
                 </div>
                 <input type="range" id="pg-stagger" min="0" max="800" step="25" value="0" class="pg-slider">
@@ -191,7 +226,12 @@
 
               <div class="pg-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-fade-duration">Fade Duration</label>
+                  <label for="pg-fade-duration">Fade Duration
+                    <span class="tf-tooltip">
+                      <button type="button" class="tf-info-trigger" aria-label="About Fade Duration" aria-describedby="tt-pg-fade-duration"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-fade-duration">Fade-out duration in ms, used when Erase Style is set to fade.</span>
+                    </span>
+                  </label>
                   <span id="pg-fade-duration-val" class="pg-val-badge">250 ms</span>
                 </div>
                 <input type="range" id="pg-fade-duration" min="100" max="1000" step="50" value="250" class="pg-slider">
@@ -254,7 +294,12 @@
               </div>
 
               <div class="pg-field">
-                <label for="pg-granularity">Segmentation Granularity</label>
+                <label for="pg-granularity">Segmentation Granularity
+                  <span class="tf-tooltip">
+                    <button type="button" class="tf-info-trigger" aria-label="About Segmentation Granularity" aria-describedby="tt-pg-granularity"><i data-lucide="info"></i></button>
+                    <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-granularity">Unit used to segment text: grapheme (character clusters, emoji-safe) or word.</span>
+                  </span>
+                </label>
                 <select id="pg-granularity" class="pg-select">
                   <option value="grapheme" selected>grapheme (Character clusters / emoji safe)</option>
                   <option value="word">word (Full words)</option>
@@ -262,7 +307,12 @@
               </div>
 
               <div class="pg-field">
-                <label for="pg-mode">Container Mode</label>
+                <label for="pg-mode">Container Mode
+                  <span class="tf-tooltip">
+                    <button type="button" class="tf-info-trigger" aria-label="About Container Mode" aria-describedby="tt-pg-mode"><i data-lucide="info"></i></button>
+                    <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-mode">replace clears the target element first; append preserves its existing children.</span>
+                  </span>
+                </label>
                 <select id="pg-mode" class="pg-select">
                   <option value="replace" selected>replace (Clear existing nodes)</option>
                   <option value="append">append (Preserve prefix content)</option>
@@ -279,7 +329,12 @@
             </label>
             <label class="pg-toggle-label">
               <input type="checkbox" id="pg-natural-cadence" class="pg-checkbox">
-              <span><i data-lucide="sparkles" class="icon-inline"></i> Natural Cadence</span>
+              <span><i data-lucide="sparkles" class="icon-inline"></i> Natural Cadence
+                <span class="tf-tooltip">
+                  <button type="button" class="tf-info-trigger" aria-label="About Natural Cadence" aria-describedby="tt-pg-natural-cadence"><i data-lucide="info"></i></button>
+                  <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-natural-cadence">Adds natural micro-pauses at punctuation (. , ! ?) and word breaks.</span>
+                </span>
+              </span>
             </label>
             <label class="pg-toggle-label">
               <input type="checkbox" id="pg-cursor-blink" class="pg-checkbox" checked>
@@ -287,41 +342,77 @@
             </label>
             <label class="pg-toggle-label">
               <input type="checkbox" id="pg-reduced-motion" class="pg-checkbox">
-              <span><i data-lucide="activity" class="icon-inline"></i> Reduced Motion Guard</span>
+              <span><i data-lucide="activity" class="icon-inline"></i> Reduced Motion Guard
+                <span class="tf-tooltip">
+                  <button type="button" class="tf-info-trigger" aria-label="About Reduced Motion Guard" aria-describedby="tt-pg-reduced-motion"><i data-lucide="info"></i></button>
+                  <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-reduced-motion">Skips the animation entirely when the visitor's OS has prefers-reduced-motion: reduce enabled.</span>
+                </span>
+              </span>
             </label>
             <label class="pg-toggle-label">
               <input type="checkbox" id="pg-metrics-toggle" class="pg-checkbox">
-              <span><i data-lucide="gauge" class="icon-inline"></i> Metrics HUD</span>
+              <span><i data-lucide="gauge" class="icon-inline"></i> Metrics HUD
+                <span class="tf-tooltip">
+                  <button type="button" class="tf-info-trigger" aria-label="About Metrics HUD" aria-describedby="tt-pg-metrics-toggle"><i data-lucide="info"></i></button>
+                  <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-metrics-toggle">Shows a floating performance HUD (frame time, chars/sec) while the animation runs.</span>
+                </span>
+              </span>
             </label>
             <label class="pg-toggle-label">
               <input type="checkbox" id="pg-debug-toggle" class="pg-checkbox">
-              <span><i data-lucide="bug" class="icon-inline"></i> Debug Tracing</span>
+              <span><i data-lucide="bug" class="icon-inline"></i> Debug Tracing
+                <span class="tf-tooltip">
+                  <button type="button" class="tf-info-trigger" aria-label="About Debug Tracing" aria-describedby="tt-pg-debug-toggle"><i data-lucide="info"></i></button>
+                  <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-debug-toggle">Enables verbose console tracing of internal animation steps.</span>
+                </span>
+              </span>
             </label>
           </div>
 
           <!-- Action Buttons -->
           <div class="pg-actions-bar">
-            <button type="button" id="pg-btn-type" class="button button-primary">
-              <i data-lucide="play"></i> Type
-            </button>
-            <button type="button" id="pg-btn-erase" class="button button-secondary">
-              <i data-lucide="eraser"></i> Erase
-            </button>
-            <button type="button" id="pg-btn-morph" class="button button-secondary" title="Morphs current text to a new candidate phrase">
-              <i data-lucide="git-compare"></i> Morph
-            </button>
-            <button type="button" id="pg-btn-stream" class="button button-secondary" title="Simulates real-time LLM token streaming">
-              <i data-lucide="radio"></i> Stream
-            </button>
-            <button type="button" id="pg-btn-rotator" class="button button-secondary" title="Runs cyclical rotator animation">
-              <i data-lucide="refresh-cw"></i> Rotate
-            </button>
-            <button type="button" id="pg-btn-stop" class="button button-danger">
-              <i data-lucide="square"></i> Stop
-            </button>
-            <button type="button" id="pg-btn-reset" class="button button-ghost">
-              <i data-lucide="rotate-ccw"></i> Reset
-            </button>
+            <span class="tf-tooltip">
+              <button type="button" id="pg-btn-type" class="button button-primary" aria-describedby="tt-pg-btn-type">
+                <i data-lucide="play"></i> Type
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-type">Runs TypeFlow.type() on the stage using the current configuration.</span>
+            </span>
+            <span class="tf-tooltip">
+              <button type="button" id="pg-btn-erase" class="button button-secondary" aria-describedby="tt-pg-btn-erase">
+                <i data-lucide="eraser"></i> Erase
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-erase">Runs TypeFlow.erase() using the selected Erase Style.</span>
+            </span>
+            <span class="tf-tooltip">
+              <button type="button" id="pg-btn-morph" class="button button-secondary" aria-describedby="tt-pg-btn-morph">
+                <i data-lucide="git-compare"></i> Morph
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-morph">Morphs current text to a new candidate phrase</span>
+            </span>
+            <span class="tf-tooltip">
+              <button type="button" id="pg-btn-stream" class="button button-secondary" aria-describedby="tt-pg-btn-stream">
+                <i data-lucide="radio"></i> Stream
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-stream">Simulates real-time LLM token streaming</span>
+            </span>
+            <span class="tf-tooltip">
+              <button type="button" id="pg-btn-rotator" class="button button-secondary" aria-describedby="tt-pg-btn-rotator">
+                <i data-lucide="refresh-cw"></i> Rotate
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-rotator">Runs cyclical rotator animation</span>
+            </span>
+            <span class="tf-tooltip">
+              <button type="button" id="pg-btn-stop" class="button button-danger" aria-describedby="tt-pg-btn-stop">
+                <i data-lucide="square"></i> Stop
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-stop">Immediately stops any running animation via .stop()</span>
+            </span>
+            <span class="tf-tooltip">
+              <button type="button" id="pg-btn-reset" class="button button-ghost" aria-describedby="tt-pg-btn-reset">
+                <i data-lucide="rotate-ccw"></i> Reset
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-reset">Stops the animation and resets all controls to their default values.</span>
+            </span>
           </div>
 
         </div>
@@ -336,15 +427,24 @@
               <span class="pg-meta-pill" id="pg-meta-font">24px · Inter</span>
             </div>
             <div class="pg-preview-actions">
-              <button type="button" id="pg-btn-metrics" class="button button-ghost button-sm" title="Toggle floating Performance Metrics HUD">
-                <i data-lucide="gauge"></i> Metrics HUD
-              </button>
-              <button type="button" id="pg-btn-debug" class="button button-ghost button-sm" title="Toggle Console Debug Tracing">
-                <i data-lucide="bug"></i> Debug
-              </button>
-              <button type="button" id="pg-btn-clear" class="button button-ghost button-sm" title="Clear stage content">
-                <i data-lucide="trash-2"></i> Clear
-              </button>
+              <span class="tf-tooltip tf-tooltip--below">
+                <button type="button" id="pg-btn-metrics" class="button button-ghost button-sm" aria-describedby="tt-pg-btn-metrics">
+                  <i data-lucide="gauge"></i> Metrics HUD
+                </button>
+                <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-metrics">Toggle floating Performance Metrics HUD</span>
+              </span>
+              <span class="tf-tooltip tf-tooltip--below">
+                <button type="button" id="pg-btn-debug" class="button button-ghost button-sm" aria-describedby="tt-pg-btn-debug">
+                  <i data-lucide="bug"></i> Debug
+                </button>
+                <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-debug">Toggle Console Debug Tracing</span>
+              </span>
+              <span class="tf-tooltip tf-tooltip--below">
+                <button type="button" id="pg-btn-clear" class="button button-ghost button-sm" aria-describedby="tt-pg-btn-clear">
+                  <i data-lucide="trash-2"></i> Clear
+                </button>
+                <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-clear">Clear stage content</span>
+              </span>
             </div>
           </div>
 
@@ -359,9 +459,12 @@
             <div class="pg-code-title">
               <i data-lucide="file-code" class="icon-inline"></i> Generated Configuration Code
             </div>
-            <button type="button" id="pg-btn-copy-code" class="button button-secondary button-sm">
-              <i data-lucide="copy"></i> Copy Code
-            </button>
+            <span class="tf-tooltip tf-tooltip--below">
+              <button type="button" id="pg-btn-copy-code" class="button button-secondary button-sm" aria-describedby="tt-pg-btn-copy-code">
+                <i data-lucide="copy"></i> Copy Code
+              </button>
+              <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-btn-copy-code">Copies the generated configuration code snippet to your clipboard.</span>
+            </span>
           </div>
           <pre class="pg-code-pre"><code id="pg-code-snippet" class="language-javascript"></code></pre>
         </div>

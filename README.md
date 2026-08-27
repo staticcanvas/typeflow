@@ -1,12 +1,27 @@
-![Lume Banner](https://r2os.staticcanvas.me/logos/typeflow/dist/webp/typeflow-logo-64x64.webp)
+<div align="left">
 
-**TypeFlow** a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites, with performance and flexibility in mind.
+![TypeFlow Banner](https://r2os.staticcanvas.me/logos/typeflow/dist/webp/typeflow-logo-64x64.webp)
 
-[![gitlab-license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%23626262&color=%23ffffff&logoColor=%23ff5f00)](https://gitlab.com/staticcanvas/typeflow)
-[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%23626262&color=%23ffffff&logoColor=%23ff5f00)](https://gitlab.com/staticcanvas/typeflow)
-[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%23626262&color=%23ffffff&logoColor=%23ff5f00)](https://gitlab.com/staticcanvas/typeflow)
-[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&labelColor=%23626262&color=%23ffffff&logoColor=%23ff5f00)](https://jsr.io/%40staticcanvas/typeflow)
-[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/typeflow?style=flat-square&logo=jsdelivr&labelColor=%23626262&color=%23ffffff&logoColor=%23ff5f00)](https://cdn.jsdelivr.net/package/npm/typeflow)
+[![license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow)
+[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/pipelines)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.27.0/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![documentation](https://img.shields.io/badge/docs-online-0087af?style=flat-square&logo=gitbook&logoColor=ffffff)](https://staticcanvas.gitlab.io/typeflow)
+[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/work_items?sort=created_date&state=opened&first_page_size=20)
+
+[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/releases/permalink/latest)
+[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/typeflow?sort=semver&style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/tags)
+
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/typeflow)
+[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/typeflow)
+
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://jsr.io/%40staticcanvas/typeflow)
+[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/typeflow?style=flat-square&logo=jsdelivr&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/typeflow)
+
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.27.0/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/develop/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+
+> **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
+
+</div>
 
 ## **Overview**
 
@@ -15,14 +30,14 @@ TypeFlow delivers zero-dependency text animation with precise frame control, ric
 <details>
 <summary><strong>📚Table of Contents</strong></summary>
 
-- [**Overview**](#overview)
-- [**Features**](#features)
-- [**Arcutecture**](#arcutecture)
-- [**Installation**](#installation)
+- [Overview](#overview)
+- [Features](#features)
+- [Arcutecture](#arcutecture)
+- [Installation](#installation)
   - [NPM](#npm)
   - [JSR](#jsr)
   - [CDN](#cdn)
-- [**Usage**](#usage)
+- [Usage](#usage)
   - [Basic Typing & Erasing](#basic-typing-erasing)
   - [Multi-Directional Typing & Scramble Charsets](#multi-directional-typing-scramble-charsets)
   - [Smart Morph Diffing](#smart-morph-diffing)
@@ -40,19 +55,19 @@ TypeFlow delivers zero-dependency text animation with precise frame control, ric
     - [Web Components](#web-components)
     - [Angular](#angular)
 - [Companion Extensions](#companion-extensions)
-- [**API Reference**](#api-reference)
-  - [`TypeFlowConfig`](#typeflowconfig)
-  - [`TypeFlowController`](#typeflowcontroller)
+- [API Reference](#api-reference)
+  - [TypeFlowConfig](#typeflowconfig)
+  - [TypeFlowController](#typeflowcontroller)
   - [Core Engine Methods](#core-engine-methods)
-- [**Development & NPM Scripts**](#development-npm-scripts)
-- [**Extending TypeFlow & Developer Guide**](#extending-typeflow-developer-guide)
+- [Development & NPM Scripts](#development-npm-scripts)
+- [Extending TypeFlow & Developer Guide](#extending-typeflow-developer-guide)
   - [1. Custom Audio Synthesizers & Keystroke Callbacks](#1-custom-audio-synthesizers-keystroke-callbacks)
   - [2. Custom Scramble Charset & Character Pools](#2-custom-scramble-charset-character-pools)
   - [3. Writing Custom Sequence Step Helpers](#3-writing-custom-sequence-step-helpers)
   - [4. Creating Custom Framework Adapters](#4-creating-custom-framework-adapters)
-- [**Benchmarks**](#benchmarks)
+- [Benchmarks](#benchmarks)
   - [Synthetic Benchmarks (Node.js & Modern V8 Engines)](#synthetic-benchmarks-nodejs-modern-v8-engines)
-  - [**License**](#license)
+  - [License](#license)
 
 </details>
 
