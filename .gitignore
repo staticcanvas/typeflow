@@ -52,3 +52,7 @@ branding/dist
 
 # merge request templates
 mr.md
+
+# rivet
+/rivet/
+.rivet/

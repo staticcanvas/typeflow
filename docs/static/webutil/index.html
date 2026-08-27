@@ -64,9 +64,18 @@
         <h2>1. Basic Typing & Erasing</h2>
         <div class="stage-box" id="test-stage-1"></div>
         <div class="button-bar">
-          <button type="button" class="button button-primary" id="btn-t1-type">Type</button>
-          <button type="button" class="button button-secondary" id="btn-t1-erase">Erase (Start)</button>
-          <button type="button" class="button button-danger" id="btn-t1-stop">Stop</button>
+          <span class="tf-tooltip">
+            <button type="button" class="button button-primary" id="btn-t1-type" aria-describedby="tt-t1-type">Type</button>
+            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t1-type">Runs TypeFlow.type() with speed: 30</span>
+          </span>
+          <span class="tf-tooltip">
+            <button type="button" class="button button-secondary" id="btn-t1-erase" aria-describedby="tt-t1-erase">Erase (Start)</button>
+            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t1-erase">Runs TypeFlow.erase() with eraseStyle: 'start'</span>
+          </span>
+          <span class="tf-tooltip">
+            <button type="button" class="button button-danger" id="btn-t1-stop" aria-describedby="tt-t1-stop">Stop</button>
+            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t1-stop">Stops the currently running controller via .stop()</span>
+          </span>
         </div>
       </section>
 
@@ -74,7 +83,10 @@
         <h2>2. Sequence Runner</h2>
         <div class="stage-box" id="test-stage-2"></div>
         <div class="button-bar">
-          <button type="button" class="button button-primary" id="btn-t2-seq">Run Sequence</button>
+          <span class="tf-tooltip">
+            <button type="button" class="button button-primary" id="btn-t2-seq" aria-describedby="tt-t2-seq">Run Sequence</button>
+            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t2-seq">Chains seq.type &rarr; seq.pause(600) &rarr; seq.erase(fade) &rarr; seq.type via TypeFlow.sequence()</span>
+          </span>
         </div>
       </section>
     </div>
