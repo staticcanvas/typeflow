@@ -585,7 +585,7 @@
   <body data-package-version="{{ $version }}" data-search-index="{{ "index.json" | relURL }}?v={{ $version }}">
 
     {{/* ── Site Header ──────────────────────────────────────────── */}}
-    <header class="site-header">
+    <header class="site-header" data-pagefind-ignore>
       <div class="shell header-inner">
         <a class="brand" href="{{ "" | relURL }}" aria-label="typeflow.js home">
           <img src="{{ "assets/branding/typeflow-logo.svg" | relURL }}" alt="" width="30" height="30">
@@ -615,14 +615,14 @@
     {{/* ── Page Body: sidebar + main (3-col grid via CSS) ──────── */}}
     {{ if or .IsHome .Params.fullWidth }}
     <div class="shell" style="flex:1; padding-block: clamp(1rem, 0.75rem + 1vw, 2rem);">
-      <main id="main-content" class="main-content" style="padding-left:0; padding-bottom: 0;">
+      <main id="main-content" class="main-content" style="padding-left:0; padding-bottom: 0;" data-pagefind-body>
         {{ block "main" . }}{{ end }}
       </main>
     </div>
     {{ else }}
     <div class="page-body">
       {{/* Left sidebar nav */}}
-      <aside class="sidebar" id="site-sidebar" data-sidebar aria-label="Documentation navigation">
+      <aside class="sidebar" id="site-sidebar" data-sidebar aria-label="Documentation navigation" data-pagefind-ignore>
         <nav>
           {{ range site.Menus.main }}
           {{ if not .Parent }}
@@ -644,14 +644,14 @@
       </aside>
 
       {{/* Main content + TOC (rendered by child templates) */}}
-      <main id="main-content" class="main-content">
+      <main id="main-content" class="main-content" data-pagefind-body>
         {{ block "main" . }}{{ end }}
       </main>
     </div>
     {{ end }}
 
     {{/* ── Site Footer ──────────────────────────────────────────── */}}
-    <footer class="site-footer">
+    <footer class="site-footer" data-pagefind-ignore>
       <div class="shell footer-grid">
         <div class="footer-brand">
           <a class="brand" href="{{ "" | relURL }}">
