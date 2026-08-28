@@ -4,10 +4,6 @@
 public/
 docs/data/package.json
 docs/data/releases.json
-docs/static/webutil/libs/
-docs/static/webutil/assets/
-*.map
-
 
 # Build locks & cache
 .hugo_build.lock
@@ -53,6 +49,11 @@ branding/dist
 # merge request templates
 mr.md
 
-# rivet
+# Repository-local rivet checkout managed by rivet.ps1
 /rivet/
-.rivet/
+
+# Repository-local hawk checkout
+/hawk/
+
+# hawk dev-loop output (npm run dev:typeflow, from hawk/) — regenerated, not the real site's libs
+docs/static/webutil/libs/hawk/
