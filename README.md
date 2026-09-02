@@ -4,12 +4,12 @@
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.27.0/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.27.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
 [![documentation](https://img.shields.io/badge/docs-online-0087af?style=flat-square&logo=gitbook&logoColor=ffffff)](https://staticcanvas.gitlab.io/typeflow)
 [![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
 [![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/releases/permalink/latest)
-[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/typeflow?sort=semver&style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/tags)
+[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/tags)
 
 [![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/typeflow)
 [![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/typeflow)
@@ -22,6 +22,14 @@
 > **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 
 </div>
+
+> [!note]
+> TypeFlow is in active development, core functionality has been completed but theere are still features to be added, bugs and polish to be done.
+
+---
+
+> 🔹 Read the full documentation [here](https://staticcanvas.gitlab.io/typeflow/) \
+> 🔹 Use the playground [here](https://staticcanvas.gitlab.io/typeflow/playground/)
 
 ## **Overview**
 

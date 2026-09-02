@@ -1,12 +1,13 @@
-![Lume Banner](https://r2os.staticcanvas.me/logos/typeflow/dist/webp/typeflow-logo-64x64.webp)
+<img src="https://gitlab.com/staticcanvas/typeflow/-/raw/develop/branding/typeflow-logo.svg" width="64" height="64" alt="TypeFlow logo" />
 
-# @staticcanvas/typeflow
+# **@staticcanvas/typeflow**
 
-A lightweight, interruptible, framework-agnostic typewriter animation library. Zero dependencies, safe HTML tag balancing, `Intl.Segmenter` powered grapheme/word units, bidirectional erasing, sequence orchestration, and framework adapters.
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&color=%230087af)](https://www.npmjs.com/package/@staticcanvas/typeflow)
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&color=%230087af)](https://jsr.io/%40staticcanvas/typeflow)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.27.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![license](https://img.shields.io/npm/l/@staticcanvas/typeflow?style=flat-square&color=%230087af)](https://gitlab.com/staticcanvas/typeflow)
 
-[![npm version](https://img.shields.io/npm/v/@staticcanvas/typeflow.svg)](https://www.npmjs.com/package/@staticcanvas/typeflow)
-[![license](https://img.shields.io/npm/l/@staticcanvas/typeflow.svg)](https://gitlab.com/staticcanvas/typeflow)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@staticcanvas/typeflow)](https://bundlephobia.com/package/@staticcanvas/typeflow)
+> **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 
 ---
 
