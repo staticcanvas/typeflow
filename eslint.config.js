@@ -84,6 +84,7 @@ export default [
       'public/**',
       'docs/**',
       'coverage/**',
+      'context-source/source_versions/**',
       'editors/zed-lirl/grammar.js',
       '*.min.js',
     ],

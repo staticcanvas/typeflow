@@ -65,7 +65,7 @@ test:
   script:
     - echo "🔵 Running tests..."
     - npm ci
-    - npm test
+    - npm run test
   allow_failure: false
 
 # ------------------------------------------------------
