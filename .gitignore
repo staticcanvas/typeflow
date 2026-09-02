@@ -51,9 +51,4 @@ mr.md
 
 # Repository-local rivet checkout managed by rivet.ps1
 /rivet/
-
-# Repository-local hawk checkout
-/hawk/
-
-# hawk dev-loop output (npm run dev:typeflow, from hawk/) — regenerated, not the real site's libs
-docs/static/webutil/libs/hawk/
+.rivet
