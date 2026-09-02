@@ -59,6 +59,7 @@
     "benchmark:json": "node --expose-gc scripts/run-benchmark.mjs --json",
     "check:size": "node scripts/check-bundle-size.mjs",
     "validate:docs-data": "node scripts/validate-doc-data.mjs",
+    "validate:doc-links": "hugo --source docs --gc && node scripts/validate-doc-links.mjs",
     "release:docs:preview": "pwsh -NoProfile -File scripts/update-release-docs.ps1",
     "release:docs": "pwsh -NoProfile -File scripts/update-release-docs.ps1 -Apply",
     "release:docs:rebuild:preview": "pwsh -NoProfile -File scripts/update-release-docs.ps1 -Rebuild",

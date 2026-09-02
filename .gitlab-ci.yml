@@ -167,6 +167,7 @@ validate:release:
         }
       '
     - hugo --source docs --gc --minify
+    - node scripts/validate-doc-links.mjs
   allow_failure: false
 
 # ------------------------------------------------------
