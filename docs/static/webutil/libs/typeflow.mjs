@@ -1,4 +1,4 @@
-/*! typeflow v0.1.0 | https://staticcanvas.gitlab.io/typeflow | MIT */
+/*! typeflow v0.27.0 | https://staticcanvas.gitlab.io/typeflow | MIT */
 var e=Object.defineProperty,t=Object.defineProperties,n=Object.getOwnPropertyDescriptors,r=Object.getOwnPropertySymbols,l=Object.prototype.hasOwnProperty,a=Object.prototype.propertyIsEnumerable,o=e=>{throw TypeError(e)},i=(t,n,r)=>n in t?e(t,n,{enumerable:!0,configurable:!0,writable:!0,value:r}):t[n]=r,s=(e,t)=>{for(var n in t||(t={}))l.call(t,n)&&i(e,n,t[n]);if(r)for(var n of r(t))a.call(t,n)&&i(e,n,t[n]);return e},c=(e,r)=>t(e,n(r)),u=(e,t,n)=>i(e,"symbol"!=typeof t?t+"":t,n),d=(e,t,n)=>t.has(e)||o("Cannot "+n),p=(e,t,n)=>(d(e,t,"read from private field"),n?n.call(e):t.get(e)),m=(e,t,n)=>t.has(e)?o("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,n),f=(e,t,n)=>(d(e,t,"access private method"),n),h=(e,t,n)=>new Promise((r,l)=>{var a=e=>{try{i(n.next(e))}catch(e){l(e)}},o=e=>{try{i(n.throw(e))}catch(e){l(e)}},i=e=>e.done?r(e.value):Promise.resolve(e.value).then(a,o);i((n=n.apply(e,t)).next())});
 /**
  * TypeFlow - A lightweight, interruptible, framework-agnostic typewriter library
