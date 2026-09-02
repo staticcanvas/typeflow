@@ -102,10 +102,25 @@ disableKinds = ['taxonomy', 'term']
     pageRef = '/guides/accessibility/'
     weight = 35
   [[menu.main]]
+    name = 'Extensions'
+    parent = 'guides'
+    pageRef = '/guides/extensions/'
+    weight = 36
+  [[menu.main]]
     name = 'Sound & Audio'
     parent = 'guides'
     pageRef = '/guides/audio-soundtracks/'
     weight = 37
+  [[menu.main]]
+    name = 'Reveal, Erase & Caret Index'
+    parent = 'guides'
+    pageRef = '/guides/reveal-erase-caret-index/'
+    weight = 38
+  [[menu.main]]
+    name = 'Syntax Highlighting'
+    parent = 'guides'
+    pageRef = '/guides/syntax-highlighting/'
+    weight = 39
   [[menu.main]]
     name = 'API reference'
     pageRef = '/api/'
