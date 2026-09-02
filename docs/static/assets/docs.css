@@ -1553,6 +1553,35 @@ td code {
   border: 1px solid rgba(var(--tf-accent-method-rgb), 0.22);
 }
 
+/* Reveal/erase/caret index: live demo boxes and "Try in Playground" links */
+.index-try-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--tf-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.index-try-link:hover,
+.index-try-link:focus-visible {
+  text-decoration: underline;
+}
+.index-demo {
+  margin: var(--space-3) 0;
+  padding: 14px 16px;
+  border: 1px solid var(--tf-border-subtle);
+  border-radius: 8px;
+  background: var(--tf-bg-canvas);
+  font-family: var(--tf-font-mono);
+  font-size: 1rem;
+  line-height: 1.5;
+  min-height: 1.6em;
+  color: var(--tf-text-primary);
+  overflow-wrap: break-word;
+}
+
 /* Copy button on pre blocks */
 .copy-wrap {
   position: relative;

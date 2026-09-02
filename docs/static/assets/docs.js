@@ -607,6 +607,106 @@ if (heroSloganEl) {
   }
 }
 
+// ─── Reveal/Erase/Caret Index Live Demos ──────────────────────────────────────
+
+/**
+ * Drives every `[data-tf-demo]` element on the page (used by the reveal/
+ * erase/caret index guide): reads a JSON config from the element's own
+ * `data-tf-demo` attribute, types the configured text in, holds, erases it,
+ * and repeats. Each element keeps its literal text content as a no-JS/
+ * pre-hydration fallback.
+ */
+function initIndexRevealEraseDemos() {
+  const demoEls = document.querySelectorAll('[data-tf-demo]');
+  if (!demoEls.length) return;
+
+  demoEls.forEach((el) => {
+    let config;
+    try {
+      config = JSON.parse(el.dataset.tfDemo);
+    } catch {
+      return;
+    }
+    const text = config.text || el.textContent.trim();
+    el.textContent = text;
+
+    const shared = {
+      direction: config.direction || 'left',
+      scrambleCharset: config.scrambleCharset || 'matrix',
+      scrambleRounds: config.scrambleRounds ?? 2,
+      trailFade: config.trailFade,
+      html: config.html,
+      speed: config.speed ?? 45,
+      cursor: config.cursor ?? '|',
+      cursorBlink: true,
+      respectReducedMotion: true,
+      wordOrder: config.wordOrder,
+      wordLayout: config.wordLayout,
+      wordFadeDuration: config.wordFadeDuration,
+      wordStagger: config.wordStagger,
+      wordSeed: config.wordSeed,
+      wordMotionDistance: config.wordMotionDistance,
+      wordMotionDepth: config.wordMotionDepth,
+      wordMotionScale: config.wordMotionScale,
+      wordMotionPerspective: config.wordMotionPerspective,
+      wordMotionEasing: config.wordMotionEasing,
+    };
+
+    const steps = [
+      seq.type(el, text, { ...shared, typeStyle: config.typeStyle || 'char' }),
+      seq.pause(1800),
+      seq.erase(el, { ...shared, eraseStyle: config.eraseStyle || 'end' }),
+      seq.pause(500),
+    ];
+
+    TypeFlow.sequence(steps, { repeat: Infinity });
+  });
+}
+
+initIndexRevealEraseDemos();
+
+/**
+ * Drives every `[data-tf-caret-demo]` element: reads a JSON config
+ * (`{ text, steps: [{ op, args }] }`) from the element's own attribute,
+ * runs each Caret operation in order with a pause between, then resets and
+ * repeats. Lazily imports the `@staticcanvas/typeflow/caret` bundle only
+ * when at least one such element is present on the page.
+ */
+async function initIndexCaretDemos() {
+  const demoEls = document.querySelectorAll('[data-tf-caret-demo]');
+  if (!demoEls.length) return;
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+  const { Caret } = await import('../webutil/libs/typeflow-caret.esm.js');
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  demoEls.forEach(async (el) => {
+    let config;
+    try {
+      config = JSON.parse(el.dataset.tfCaretDemo);
+    } catch {
+      return;
+    }
+
+    while (document.contains(el)) {
+      const caret = new Caret(el, { text: config.text, cursor: '|' });
+      await sleep(900);
+      for (const step of config.steps || []) {
+        if (step.op === 'insert') {
+          await caret.insert(...(step.args || []), { speed: 45 }).promise;
+        } else {
+          caret[step.op]?.(...(step.args || []));
+        }
+        await sleep(750);
+      }
+      await sleep(1600);
+      caret.destroy();
+    }
+  });
+}
+
+initIndexCaretDemos();
+
 // ─── Hero Staggered Terminal Demo ─────────────────────────────────────────────
 
 /**
@@ -1564,10 +1664,56 @@ if (pgStage && btnType) {
     setDebugActive(next);
   });
 
+  /**
+   * Applies a configuration passed via URL query params (e.g. from the
+   * reveal/erase/caret index's "Try in Playground" links) to the form
+   * fields, so a deep link reproduces the exact demoed animation.
+   * @returns {boolean} Whether any recognized param was present.
+   */
+  const applyPlaygroundConfigFromURL = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (![...params.keys()].length) return false;
+
+    const setField = (el, key, eventType) => {
+      if (!el || !params.has(key)) return;
+      el.value = params.get(key);
+      el.dispatchEvent(new Event(eventType, { bubbles: true }));
+    };
+    const setChecked = (el, key) => {
+      if (!el || !params.has(key)) return;
+      el.checked = params.get(key) === 'true';
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    setField(pgText, 'text', 'change');
+    setField(pgDirection, 'direction', 'change');
+    setField(pgTypeStyle, 'typeStyle', 'change');
+    setField(pgEraseStyle, 'eraseStyle', 'change');
+    setField(pgWordOrder, 'wordOrder', 'change');
+    setField(pgWordLayout, 'wordLayout', 'change');
+    setField(pgScrambleCharset, 'scrambleCharset', 'change');
+    setField(pgGranularity, 'granularity', 'change');
+    setField(pgMode, 'mode', 'change');
+    setField(pgCursorChar, 'cursor', 'change');
+    setField(pgSpeed, 'speed', 'input');
+    setField(pgStagger, 'wordStagger', 'input');
+    setField(pgFadeDuration, 'wordFadeDuration', 'input');
+    setField(pgScrambleRounds, 'scrambleRounds', 'input');
+    setField(pgFadeTrailLen, 'trailFadeLength', 'input');
+    setField(pgFadeTrailMinOp, 'trailFadeMinOpacity', 'input');
+    setChecked(pgHtml, 'html');
+    setChecked(pgCursorBlink, 'cursorBlink');
+    setChecked(pgReducedMotion, 'respectReducedMotion');
+
+    return true;
+  };
+
   // Initial load execution
+  const configuredFromURL = applyPlaygroundConfigFromURL();
   updateStageStyles();
   updateCodeSnippet();
   activeController = TypeFlow.type(pgStage, pgText.value, getOptions());
+  if (configuredFromURL) pgStage.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 // ─── Client-Side Search Engine & Two-Column Modal ─────────────────────────────
