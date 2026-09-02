@@ -9,8 +9,11 @@ disableKinds = ['taxonomy', 'term']
 [params]
   version = '2.3.0'
   description = 'Lightweight, interruptible typewriter animation library with HTML sanitization, erase modes, and sequence orchestration.'
+  author = 'StaticCanvas'
   repository = 'https://gitlab.com/staticcanvas/typeflow'
   github = 'https://github.com/staticcanvas/typeflow'
+  npm = 'https://www.npmjs.com/package/@staticcanvas/typeflow'
+  jsr = 'https://jsr.io/@staticcanvas/typeflow'
 
 [markup]
   [markup.goldmark.renderer]
@@ -22,7 +25,35 @@ disableKinds = ['taxonomy', 'term']
     tabWidth = 2
 
 [outputs]
-  home = ['HTML', 'JSON']
+  home = ['HTML', 'JSON', 'Markdown', 'LLMS', 'LLMSFULL']
+  page = ['HTML', 'Markdown']
+  section = ['HTML', 'Markdown']
+
+[mediaTypes]
+  [mediaTypes.'text/markdown']
+    suffixes = ['md']
+
+[outputFormats]
+  [outputFormats.Markdown]
+    mediaType = 'text/markdown'
+    baseName = 'index'
+    isPlainText = true
+    notAlternative = true
+  [outputFormats.LLMS]
+    mediaType = 'text/plain'
+    baseName = 'llms'
+    isPlainText = true
+    notAlternative = true
+  [outputFormats.LLMSFULL]
+    mediaType = 'text/plain'
+    baseName = 'llms-full'
+    isPlainText = true
+    notAlternative = true
+
+[sitemap]
+  changeFreq = 'weekly'
+  priority = 0.5
+  filename = 'sitemap.xml'
 
 [[module.mounts]]
   source = 'static'

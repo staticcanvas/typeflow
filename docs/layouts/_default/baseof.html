@@ -492,29 +492,7 @@
       }
     </style>
 
-    {{ $pageTitle := cond .IsHome "TypeFlow — JavaScript Typewriter Animation Library" (printf "%s · TypeFlow" .Title) }}
-    {{ $pageDescription := .Description | default site.Params.description }}
-    {{ $is404 := eq .Kind "404" }}
-    {{ $robots := cond $is404 "noindex, nofollow" "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" }}
-    <meta name="description" content="{{ $pageDescription }}">
-    <meta name="robots" content="{{ $robots }}">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="theme-color" content="#090d16" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
-    <title>{{ $pageTitle }}</title>
-    {{ if not $is404 }}<link rel="canonical" href="{{ .Permalink }}">{{ end }}
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="TypeFlow documentation">
-    <meta property="og:locale" content="en_AU">
-    <meta property="og:title" content="{{ $pageTitle }}">
-    <meta property="og:description" content="{{ $pageDescription }}">
-    <meta property="og:url" content="{{ .Permalink }}">
-    <meta property="og:image" content="{{ "assets/branding/typeflow-banner.svg" | absURL }}">
-    <meta property="og:image:alt" content="TypeFlow JavaScript typewriter library">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $pageTitle }}">
-    <meta name="twitter:description" content="{{ $pageDescription }}">
-    <script type="application/ld+json">{{ dict "@context" "https://schema.org" "@type" "SoftwareApplication" "name" "TypeFlow" "description" $pageDescription "applicationCategory" "DeveloperApplication" "operatingSystem" "Any" "url" .Permalink "softwareVersion" $version "isAccessibleForFree" true "license" (printf "%s/-/blob/develop/LICENSE" site.Params.repository) "codeRepository" site.Params.repository "sameAs" (slice site.Params.repository site.Params.github) | jsonify | safeJS }}</script>
+    {{ partial "seo.html" . }}
 
     <link rel="icon" type="image/svg+xml" href="{{ "assets/branding/typeflow-logo.svg" | relURL }}">
 

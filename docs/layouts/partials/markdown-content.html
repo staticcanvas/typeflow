@@ -1,0 +1,8 @@
+{{- $version := site.Data.package.version | default site.Params.version -}}
+{{- $baseURL := strings.TrimSuffix "/" site.Home.Permalink -}}
+{{- $installBlock := printf "```bash\nnpm install @staticcanvas/typeflow@%s\n# pnpm add @staticcanvas/typeflow@%s\n# npx jsr add @staticcanvas/typeflow@%s\n```" $version $version $version -}}
+{{- $content := .RawContent -}}
+{{- $content = replace $content "{{< package-version >}}" $version -}}
+{{- $content = replace $content "{{< code-tabs >}}" $installBlock -}}
+{{- $content = replaceRE `\{\{< relref "([^"]+)" >\}\}` (printf "%s$1/" $baseURL) $content -}}
+{{- $content -}}

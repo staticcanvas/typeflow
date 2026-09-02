@@ -1,0 +1,15 @@
+# TypeFlow complete documentation
+
+> Consolidated source documentation for `@staticcanvas/typeflow`. Canonical site: {{ site.Home.Permalink }}
+
+{{ range site.RegularPages.ByTitle }}
+## {{ .Title }}
+
+Source: {{ .Permalink }}
+
+{{ .Description }}
+
+{{ partial "markdown-content.html" . }}
+
+---
+{{ end }}
