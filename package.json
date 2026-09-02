@@ -1,42 +1,27 @@
 {
   "name": "@staticcanvas/typeflow",
-  "version": "0.27.0",
-  "description": "A lightweight, interruptible, framework-agnostic typewriter animation library.",
+  "version": "0.1.0",
+  "description": "Typeflow library.",
   "type": "module",
   "main": "./dist/typeflow.cjs",
   "module": "./dist/typeflow.mjs",
   "browser": "./dist/typeflow.js",
+  "types": "./src/typeflow.d.ts",
   "exports": {
     ".": {
-      "types": "./src/typeflow.d.ts",
       "import": "./dist/typeflow.mjs",
       "require": "./dist/typeflow.cjs",
       "default": "./dist/typeflow.js"
     },
     "./metrics": {
-      "types": "./src/typeflow-metrics.d.ts",
-      "import": "./src/typeflow-metrics.js",
-      "default": "./src/typeflow-metrics.js"
+      "import": "./dist/typeflow-metrics.mjs",
+      "require": "./dist/typeflow-metrics.cjs",
+      "default": "./dist/typeflow-metrics.js"
     },
     "./debug": {
-      "types": "./src/typeflow-debug.d.ts",
-      "import": "./src/typeflow-debug.js",
-      "default": "./src/typeflow-debug.js"
-    },
-    "./webaudio": {
-      "types": "./src/typeflow-webaudio.d.ts",
-      "import": "./src/typeflow-webaudio.js",
-      "default": "./src/typeflow-webaudio.js"
-    },
-    "./keystroke": {
-      "types": "./src/typeflow-keystroke.d.ts",
-      "import": "./src/typeflow-keystroke.js",
-      "default": "./src/typeflow-keystroke.js"
-    },
-    "./extchars": {
-      "types": "./src/typeflow-extchars.d.ts",
-      "import": "./src/typeflow-extchars.js",
-      "default": "./src/typeflow-extchars.js"
+      "import": "./dist/typeflow-debug.mjs",
+      "require": "./dist/typeflow-debug.cjs",
+      "default": "./dist/typeflow-debug.js"
     },
     "./package.json": "./package.json"
   },
@@ -44,7 +29,7 @@
     "dist",
     "src",
     "branding",
-    "README-npm.md",
+    "README.md",
     "LICENSE",
     "jsr.jsonc"
   ],
@@ -53,32 +38,32 @@
     "serve:demo": "vite --open docs/static/webutil/index.html",
     "docs:build": "npm run build && hugo --source docs",
     "docs:serve": "npm run build && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
-    "build": "vite build",
+    "build": "vite build && npm_config_mode=metrics vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "benchmark": "node scripts/run-benchmark.mjs",
-    "benchmark:md": "node scripts/run-benchmark.mjs --markdown",
-    "benchmark:markdown": "node scripts/run-benchmark.mjs --markdown",
-    "benchmark:json": "node scripts/run-benchmark.mjs --json",
+    "test:bun": "bun test",
+    "test:coverage:bun": "bun test --coverage",
     "check:size": "node scripts/check-bundle-size.mjs",
     "validate:release": "node scripts/validate-release.mjs",
-    "check:quality": "npm run build && npm run check:size && npm run benchmark && npm test"
+    "check:quality": "npm run build && npm run check:size && npm test"
   },
   "keywords": [
-    "typewriter",
-    "typing-effect",
-    "typeflow",
-    "animation",
-    "ui-component",
-    "vanilla-js",
     "staticcanvas",
     "esm"
   ],
   "author": "Garvey K. Snow",
   "license": "MIT",
+  "peerDependencies": {
+    "@staticcanvas/logcad": "^0.6.0"
+  },
+  "peerDependenciesMeta": {
+    "@staticcanvas/logcad": {
+      "optional": true
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://gitlab.com/staticcanvas/typeflow.git"
@@ -94,14 +79,10 @@
     "eslint": "^9.20.0",
     "eslint-config-prettier": "^10.0.1",
     "globals": "^15.14.0",
-    "hugo-extended": "^0.164.0",
     "jsdom": "^26.0.0",
     "prettier": "^3.5.0",
     "rollup-plugin-copy": "^3.5.0",
     "vite": "^6.1.0",
     "vitest": "^3.0.5"
-  },
-  "overrides": {
-    "adm-zip": "0.6.0"
   }
 }

@@ -8,6 +8,7 @@ const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'));
 const packageName = pkg.name.split('/').pop();
 const packageDist = `dist/${packageName}`;
 const bundleDist = `${packageDist}/dist`;
+const globalName = packageName.replace(/(?:^|[-_])(\w)/g, (_, c) => c.toUpperCase());
 
 const banner = `/*! ${packageName} v${pkg.version} | ${pkg.homepage} | ${pkg.license} */`;
 
@@ -25,22 +26,10 @@ function stageWebUtilityAssets() {
       if (existsSync(resolve(bundleDist))) {
         cpSync(resolve(bundleDist), destination, { recursive: true });
       }
-      const srcDir = resolve('src');
-      [
-        'typeflow-metrics.js',
-        'typeflow-debug.js',
-        'typeflow-webaudio.js',
-        'typeflow-keystroke.js',
-        'typeflow-extchars.js',
-      ].forEach((file) => {
-        if (existsSync(resolve(srcDir, file))) {
-          cpSync(resolve(srcDir, file), resolve(destination, file));
-        }
-      });
       const brandingDestination = resolve('docs/static/webutil/assets/branding');
       mkdirSync(brandingDestination, { recursive: true });
-      if (existsSync(resolve('branding/typeflow-logo.svg'))) {
-        cpSync(resolve('branding/typeflow-logo.svg'), resolve(brandingDestination, 'typeflow-logo.svg'));
+      if (existsSync(resolve(`branding/${packageName}-logo.svg`))) {
+        cpSync(resolve(`branding/${packageName}-logo.svg`), resolve(brandingDestination, `${packageName}-logo.svg`));
       }
       const docsData = resolve('docs/data');
       mkdirSync(docsData, { recursive: true });
@@ -58,7 +47,7 @@ export default defineConfig({
     target: 'es2015',
     lib: {
       entry: resolve(`src/${packageName}.js`),
-      name: 'TypeFlow',
+      name: globalName,
       fileName: packageName,
     },
     minify: false,
@@ -66,7 +55,7 @@ export default defineConfig({
       output: [
         {
           format: 'umd',
-          name: 'TypeFlow',
+          name: globalName,
           dir: bundleDist,
           entryFileNames: `${packageName}.js`,
           exports: 'named',
@@ -74,7 +63,7 @@ export default defineConfig({
         },
         {
           format: 'umd',
-          name: 'TypeFlow',
+          name: globalName,
           dir: bundleDist,
           entryFileNames: `${packageName}.min.js`,
           exports: 'named',
@@ -82,7 +71,7 @@ export default defineConfig({
         },
         {
           format: 'umd',
-          name: 'TypeFlow',
+          name: globalName,
           dir: bundleDist,
           entryFileNames: `${packageName}.cjs`,
           exports: 'named',
@@ -110,18 +99,17 @@ export default defineConfig({
     },
   },
   test: {
-    environment: 'jsdom',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.js'],
-      exclude: ['**/node_modules/**', 'tests/**'],
+      exclude: ['**/node_modules/**', 'tests/**', `src/${packageName}-metrics.js`, `src/${packageName}-debug.js`],
     },
   },
   plugins: [
     copy({
       targets: [
-        { src: 'readme-npm.md', dest: packageDist, rename: 'README.md' },
+        { src: 'README-npm.md', dest: packageDist, rename: 'README.md' },
         {
           src: 'package.json',
           dest: packageDist,
