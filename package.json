@@ -1,6 +1,6 @@
 {
   "name": "@staticcanvas/typeflow",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "description": "Typeflow library.",
   "type": "module",
   "main": "./dist/typeflow.cjs",
@@ -46,9 +46,20 @@
     "test:coverage": "vitest run --coverage",
     "test:bun": "bun test",
     "test:coverage:bun": "bun test --coverage",
+    "test:e2e": "npm run build && playwright test",
+    "test:e2e:ui": "npm run build && playwright test --ui",
+    "benchmark": "node --expose-gc scripts/run-benchmark.mjs",
+    "benchmark:quick": "node --expose-gc scripts/run-benchmark.mjs --quick",
+    "benchmark:md": "node --expose-gc scripts/run-benchmark.mjs --markdown",
+    "benchmark:json": "node --expose-gc scripts/run-benchmark.mjs --json",
     "check:size": "node scripts/check-bundle-size.mjs",
+    "validate:docs-data": "node scripts/validate-doc-data.mjs",
+    "release:docs:preview": "pwsh -NoProfile -File scripts/update-release-docs.ps1",
+    "release:docs": "pwsh -NoProfile -File scripts/update-release-docs.ps1 -Apply",
+    "release:docs:rebuild:preview": "pwsh -NoProfile -File scripts/update-release-docs.ps1 -Rebuild",
+    "release:docs:rebuild": "pwsh -NoProfile -File scripts/update-release-docs.ps1 -Rebuild -Apply",
     "validate:release": "node scripts/validate-release.mjs",
-    "check:quality": "npm run build && npm run check:size && npm test"
+    "check:quality": "npm run validate:docs-data && npm run build && npm run check:size && npm test"
   },
   "keywords": [
     "staticcanvas",
@@ -74,6 +85,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
+    "@playwright/test": "^1.62.1",
     "@rollup/plugin-terser": "^1.0.0",
     "@vitest/coverage-v8": "^3.2.7",
     "eslint": "^9.20.0",

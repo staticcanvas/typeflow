@@ -1,188 +1,229 @@
-import { JSDOM } from 'jsdom';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { arch, cpus, platform, release } from 'node:os';
 import { performance } from 'node:perf_hooks';
-import { readFileSync, existsSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
+import { JSDOM } from 'jsdom';
 
-const isMarkdownMode = process.argv.includes('--markdown') || process.argv.includes('-m') || process.argv.includes('--md');
-const isJsonMode = process.argv.includes('--json') || process.argv.includes('-j');
+const args = new Set(process.argv.slice(2));
+const isMarkdownMode = args.has('--markdown') || args.has('-m') || args.has('--md');
+const isJsonMode = args.has('--json') || args.has('-j');
+const isQuickMode = args.has('--quick');
+const numericArg = (name, fallback) => {
+  const raw = [...args].find((value) => value.startsWith(`${name}=`))?.split('=')[1];
+  const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
+const sampleCount = numericArg('--samples', isQuickMode ? 3 : 7);
+const warmupCount = numericArg('--warmup', isQuickMode ? 1 : 2);
+const payloadTiers = [10_000, 50_000, 100_000];
+const concurrencyTiers = isQuickMode ? [1, 10, 50, 100] : [1, 10, 25, 50, 100, 250, 500, 1_000];
 
-const dom = new JSDOM('<!DOCTYPE html><html><body><div id="target"></div></body></html>');
-global.window = dom.window;
-global.document = dom.window.document;
-global.Node = dom.window.Node;
-global.requestAnimationFrame = (fn) => setTimeout(fn, 0);
-global.window.matchMedia = (query) => ({
+const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true });
+globalThis.window = dom.window;
+globalThis.document = dom.window.document;
+globalThis.Node = dom.window.Node;
+globalThis.requestAnimationFrame = (callback) => setTimeout(() => callback(performance.now()), 0);
+globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
+globalThis.window.matchMedia = (query) => ({
   matches: query.includes('prefers-reduced-motion'),
   media: query,
   onchange: null,
-  addListener: () => {},
-  removeListener: () => {},
-  addEventListener: () => {},
-  removeEventListener: () => {},
+  addListener() {},
+  removeListener() {},
+  addEventListener() {},
+  removeEventListener() {},
   dispatchEvent: () => true,
 });
 
 const { TypeFlow } = await import(new URL('../src/typeflow.js', import.meta.url).href);
-const target = document.getElementById('target');
+const targets = new Set();
+const createTarget = () => {
+  const target = document.createElement('div');
+  document.body.append(target);
+  targets.add(target);
+  return target;
+};
+const clearTargets = () => {
+  TypeFlow.stopAll();
+  targets.forEach((target) => target.remove());
+  targets.clear();
+};
 
-if (!isMarkdownMode && !isJsonMode) {
-  console.log('----------------------------------------------------');
-  console.log('TypeFlow 10,000+ Character & Engine Benchmark Suite');
-  console.log('----------------------------------------------------');
-}
+const percentile = (sorted, fraction) => sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * fraction) - 1)];
+const summarize = (values) => {
+  const sorted = [...values].sort((left, right) => left - right);
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const variance = values.reduce((sum, value) => sum + ((value - mean) ** 2), 0) / values.length;
+  const middle = Math.floor(sorted.length / 2);
+  return {
+    minimum: sorted[0],
+    median: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2,
+    p95: percentile(sorted, 0.95),
+    maximum: sorted.at(-1),
+    standardDeviation: Math.sqrt(variance),
+  };
+};
 
-// Test 1: Plain Text 10,000 Characters Parse & Tree Creation
-const text10k = 'The quick brown fox jumps over the lazy dog. '.repeat(225); // 10,125 chars
-const startMem = process.memoryUsage().heapUsed;
-
-const t0 = performance.now();
-const ctrl1 = TypeFlow.type(target, text10k, { speed: 1, delay: 0, cursorBlink: false, respectReducedMotion: true });
-await ctrl1.promise;
-const t1 = performance.now();
-const plainTextTime = t1 - t0;
-const endMem = process.memoryUsage().heapUsed;
-const memDeltaKB = Math.max(0, ((endMem - startMem) / 1024)).toFixed(2);
-
-if (!isMarkdownMode && !isJsonMode) {
-  console.log(`[1] 10,125 Char Plain Text Processing: ${plainTextTime.toFixed(2)} ms (Mem: +${memDeltaKB} KB)`);
-}
-
-// Test 2: HTML Text 10,000 Characters with Nested Sanitization
-const html10k = '<span>The <strong>quick</strong> brown <em class="accent">fox</em> jumps over <code>the lazy dog</code>. </span>'.repeat(90); // ~10,170 chars
-const t2 = performance.now();
-const ctrl2 = TypeFlow.type(target, html10k, { html: true, speed: 1, delay: 0, cursorBlink: false, respectReducedMotion: true });
-await ctrl2.promise;
-const t3 = performance.now();
-const htmlTextTime = t3 - t2;
-if (!isMarkdownMode && !isJsonMode) {
-  console.log(`[2] 10,170 Char Safe HTML Parse & Sanitize: ${htmlTextTime.toFixed(2)} ms`);
-}
-
-// Test 3: Instant Erase (10k chars)
-const t4 = performance.now();
-await TypeFlow.erase(target, { eraseStyle: 'instant', cursorBlink: false }).promise;
-const t5 = performance.now();
-const instantEraseTime = t5 - t4;
-if (!isMarkdownMode && !isJsonMode) {
-  console.log(`[3] 10,000 Char Instant Erase: ${instantEraseTime.toFixed(2)} ms`);
-}
-
-// Test 4: Word-Level Segmentation (10k chars)
-const t6 = performance.now();
-const ctrl4 = TypeFlow.type(target, text10k, { typeStyle: 'word', speed: 1, delay: 0, cursorBlink: false, respectReducedMotion: true });
-await ctrl4.promise;
-const t7 = performance.now();
-const wordSegTime = t7 - t6;
-if (!isMarkdownMode && !isJsonMode) {
-  console.log(`[4] 10,000 Char Word-Level Segmentation: ${wordSegTime.toFixed(2)} ms`);
-}
-
-// Test 5: Trailing Fade Gradient (10k chars)
-const t8 = performance.now();
-const ctrl5 = TypeFlow.type(target, text10k, { typeStyle: 'fade-trail', trailFade: 4, speed: 1, delay: 0, cursorBlink: false, respectReducedMotion: true });
-await ctrl5.promise;
-const t9 = performance.now();
-const trailFadeTime = t9 - t8;
-if (!isMarkdownMode && !isJsonMode) {
-  console.log(`[5] 10,000 Char Trailing Fade Gradient: ${trailFadeTime.toFixed(2)} ms`);
-}
-
-// Test 6: Bundle Size Analysis
-const bundleStats = { raw: 0, gzip: 0 };
-const bundlePath = 'dist/typeflow/dist/typeflow.min.js';
-if (existsSync(bundlePath)) {
-  const bundle = readFileSync(bundlePath);
-  bundleStats.raw = bundle.byteLength;
-  bundleStats.gzip = gzipSync(bundle).byteLength;
-  if (!isMarkdownMode && !isJsonMode) {
-    console.log(`[6] Production Bundle Footprint: ${bundleStats.raw} bytes raw / ${bundleStats.gzip} bytes gzip`);
+const measure = async ({ scenario, tier, units = 'characters', operation }) => {
+  for (let index = 0; index < warmupCount; index += 1) {
+    await operation();
+    clearTargets();
   }
+
+  const durations = [];
+  const heapDeltas = [];
+  for (let index = 0; index < sampleCount; index += 1) {
+    globalThis.gc?.();
+    const heapBefore = process.memoryUsage().heapUsed;
+    const startedAt = performance.now();
+    await operation();
+    durations.push(performance.now() - startedAt);
+    heapDeltas.push((process.memoryUsage().heapUsed - heapBefore) / 1024);
+    clearTargets();
+  }
+
+  return {
+    scenario,
+    tier,
+    units,
+    samples: sampleCount,
+    durationMs: summarize(durations),
+    heapDeltaKiB: summarize(heapDeltas),
+  };
+};
+
+const plainPayload = (length) => 'TypeFlow reveals accessible text without changing its final content. '.repeat(Math.ceil(length / 66)).slice(0, length);
+const htmlUnit = '<span>TypeFlow <strong>reveals</strong> <em class="accent">safe HTML</em>.</span>';
+const htmlPayload = (minimumLength) => htmlUnit.repeat(Math.ceil(minimumLength / htmlUnit.length));
+const immediate = { speed: 0, delay: 0, cursor: '', cursorBlink: false, respectReducedMotion: true };
+const results = [];
+
+for (const tier of payloadTiers) {
+  const plain = plainPayload(tier);
+  const html = htmlPayload(tier);
+
+  results.push(await measure({
+    scenario: 'plain-text-final-render',
+    tier: plain.length,
+    operation: async () => {
+      const target = createTarget();
+      await TypeFlow.type(target, plain, immediate).promise;
+      if (target.textContent !== plain) throw new Error('plain-text benchmark produced incorrect output');
+    },
+  }));
+
+  results.push(await measure({
+    scenario: 'word-segmentation-final-render',
+    tier: plain.length,
+    operation: async () => {
+      const target = createTarget();
+      await TypeFlow.type(target, plain, { ...immediate, typeStyle: 'word' }).promise;
+      if (target.textContent !== plain) throw new Error('word benchmark produced incorrect output');
+    },
+  }));
+
+  results.push(await measure({
+    scenario: 'safe-html-parse-and-final-render',
+    tier: html.length,
+    operation: async () => {
+      const target = createTarget();
+      await TypeFlow.type(target, html, { ...immediate, html: true }).promise;
+      if (!target.querySelector('strong')) throw new Error('HTML benchmark lost allowed markup');
+    },
+  }));
+
+  results.push(await measure({
+    scenario: 'morph-final-render',
+    tier: plain.length,
+    operation: async () => {
+      const target = createTarget();
+      target.textContent = `Before: ${plain}`;
+      await TypeFlow.morph(target, `After: ${plain}`, immediate).promise;
+      if (target.textContent !== `After: ${plain}`) throw new Error('morph benchmark produced incorrect output');
+    },
+  }));
+
+  results.push(await measure({
+    scenario: 'instant-erase',
+    tier: plain.length,
+    operation: async () => {
+      const target = createTarget();
+      target.textContent = plain;
+      await TypeFlow.erase(target, { eraseStyle: 'instant', cursorBlink: false }).promise;
+      if (target.textContent !== '') throw new Error('erase benchmark did not clear its target');
+    },
+  }));
 }
 
-TypeFlow.stopAll();
+for (const tier of concurrencyTiers) {
+  const text = plainPayload(80);
+  results.push(await measure({
+    scenario: 'concurrent-short-instances',
+    tier,
+    units: 'instances',
+    operation: async () => {
+      const controllers = Array.from({ length: tier }, () => TypeFlow.type(createTarget(), text, immediate));
+      const completed = await Promise.all(controllers.map(({ promise }) => promise));
+      if (!completed.every((result) => result.completed)) throw new Error('concurrent benchmark did not complete');
+    },
+  }));
+}
 
-// Engine Verifications
-const tRevealR = document.createElement('div');
-document.body.appendChild(tRevealR);
-await TypeFlow.type(tRevealR, 'Right to Left', { direction: 'right', speed: 1, respectReducedMotion: false, cursor: '' }).promise;
+const bundlePath = new URL('../dist/typeflow/dist/typeflow.min.js', import.meta.url);
+const bundle = existsSync(bundlePath) ? readFileSync(bundlePath) : null;
+const commit = (() => {
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  } catch {
+    return null;
+  }
+})();
+const cpu = cpus();
+const report = {
+  schemaVersion: 1,
+  benchmarkKind: 'synthetic-jsdom',
+  generatedAt: new Date().toISOString(),
+  commit,
+  environment: {
+    node: process.version,
+    jsdom: dom.window.navigator.userAgent,
+    platform: platform(),
+    release: release(),
+    architecture: arch(),
+    cpuModel: cpu[0]?.model ?? 'unknown',
+    logicalCpuCount: cpu.length,
+    sampleCount,
+    warmupCount,
+    garbageCollectionExposed: typeof globalThis.gc === 'function',
+  },
+  limitations: [
+    'JSDOM results compare engine work and do not measure browser layout, paint, frame rate, GPU compositing, or supported production capacity.',
+    'Concurrent-instance results are synthetic completion costs; active-instance limits require the separate real-browser benchmark.',
+  ],
+  bundle: bundle ? { rawBytes: bundle.byteLength, gzipBytes: gzipSync(bundle).byteLength } : null,
+  results,
+};
 
-const tRevealC = document.createElement('div');
-document.body.appendChild(tRevealC);
-await TypeFlow.type(tRevealC, 'Center Outward', { direction: 'center', speed: 1, respectReducedMotion: false, cursor: '' }).promise;
-const revealedCenterText = tRevealC.textContent;
-
-await TypeFlow.erase(tRevealC, { eraseStyle: 'center', speed: 1, respectReducedMotion: false, cursor: '' }).promise;
-const erasedCenterText = tRevealC.textContent;
-
-const tMorph = document.createElement('div');
-document.body.appendChild(tMorph);
-tMorph.textContent = 'TypeFlow Fast';
-await TypeFlow.morph(tMorph, 'TypeFlow Lightweight', { speed: 1, respectReducedMotion: false, cursor: '' }).promise;
-
-const tStream = document.createElement('div');
-document.body.appendChild(tStream);
-const stream = TypeFlow.stream(tStream, { speed: 1, respectReducedMotion: false, cursor: '' });
-stream.push('Token 1 ');
-stream.push('Token 2 ');
-stream.push('Token 3');
-await new Promise((r) => setTimeout(r, 60));
-
-const cp = TypeFlow.preset('cyberpunk', { speed: 20 });
-
-const stag1 = document.createElement('div');
-const stag2 = document.createElement('div');
-document.body.appendChild(stag1);
-document.body.appendChild(stag2);
-await TypeFlow.stagger([stag1, stag2], ['Alpha', 'Beta'], { speed: 1, stagger: 0, cursor: '', respectReducedMotion: true }).promise;
-
-if (isMarkdownMode) {
-  const kbGzip = (bundleStats.gzip / 1024).toFixed(1);
-  console.log(`### Synthetic Benchmarks
-
-| Benchmark Scenario | Payload Size | Execution Time | Memory Delta | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Plain Text Parse & Segmentation** | 10,125 characters | **${plainTextTime.toFixed(2)} ms** | +${memDeltaKB} KB heap | PASS |
-| **Safe HTML Parse & Sanitize** | 10,170 characters (nested tags) | **${htmlTextTime.toFixed(2)} ms** | <4.5 MB heap | PASS |
-| **Instant Erase & DOM Reset** | 10,000 characters | **${instantEraseTime.toFixed(2)} ms** | <0.1 MB heap | PASS |
-| **Word-Level Segmentation** | 10,000 characters (\`Intl.Segmenter\`) | **${wordSegTime.toFixed(2)} ms** | <0.1 MB heap | PASS |
-| **Trailing Fade Gradient Rendering** | 10,000 characters (sliding opacity) | **${trailFadeTime.toFixed(2)} ms** | <0.2 MB heap | PASS |
-| **Directional Reveal Math (Center/RTL)** | 1,000 units | **< 1.00 ms** | 0 KB allocation | PASS |
-| **Smart Morph Diff Calculation** | Longest common prefix diffing | **< 0.15 ms** | 0 KB allocation | PASS |
-| **Production ESM Bundle Footprint** | Minified + Gzipped | **< ${kbGzip} KB** | 0 runtime deps | PASS |
-`);
-} else if (isJsonMode) {
-  console.log(JSON.stringify({
-    plainTextTimeMs: plainTextTime,
-    memDeltaKB: Number(memDeltaKB),
-    htmlTextTimeMs: htmlTextTime,
-    instantEraseTimeMs: instantEraseTime,
-    wordSegTimeMs: wordSegTime,
-    trailFadeTimeMs: trailFadeTime,
-    bundleRawBytes: bundleStats.raw,
-    bundleGzipBytes: bundleStats.gzip,
-  }, null, 2));
+const format = (value) => Number(value).toFixed(2);
+if (isJsonMode) {
+  console.log(JSON.stringify(report, null, 2));
+} else if (isMarkdownMode) {
+  console.log(`## Synthetic JSDOM benchmark\n\nThis table reports median and p95 engine completion time across ${sampleCount} measured samples after ${warmupCount} warm-up runs. It does not represent browser frame-rate or production capacity.\n\n| Scenario | Tier | Median | p95 | Median heap delta |\n| :--- | ---: | ---: | ---: | ---: |`);
+  for (const result of results) {
+    console.log(`| ${result.scenario} | ${result.tier.toLocaleString()} ${result.units} | ${format(result.durationMs.median)} ms | ${format(result.durationMs.p95)} ms | ${format(result.heapDeltaKiB.median)} KiB |`);
+  }
+  console.log(`\nEnvironment: Node ${report.environment.node}; ${report.environment.platform} ${report.environment.release}; ${report.environment.cpuModel}; commit ${commit ?? 'unavailable'}.`);
 } else {
-  console.log('----------------------------------------------------');
-  console.log('Verifying Directional Reveal & Erase Engines:');
-  console.log('[PASS] Direction right:', tRevealR.textContent);
-  console.log('[PASS] Direction center:', revealedCenterText);
-  console.log('[PASS] Erase center:', erasedCenterText === '' ? '(empty)' : erasedCenterText);
-  console.log('----------------------------------------------------');
-  console.log('Verifying Smart Morph Diff Typing:');
-  console.log('[PASS] Morph result:', tMorph.textContent);
-  console.log('----------------------------------------------------');
-  console.log('Verifying Stream Ingestion:');
-  console.log('[PASS] Stream result:', tStream.textContent);
-  console.log('----------------------------------------------------');
-  console.log('Verifying Presets:');
-  console.log('[PASS] Cyberpunk preset:', cp.typeStyle, cp.scrambleCharset, cp.audio);
-  console.log('----------------------------------------------------');
-  console.log('Verifying Stagger Multi-Target Engine:');
-  console.log('[PASS] Stagger result:', `${stag1.textContent} | ${stag2.textContent}`);
-  console.log('----------------------------------------------------');
-  console.log('ALL VERIFICATIONS COMPLETED SUCCESSFULLY!');
-  console.log('----------------------------------------------------');
-  console.log('Tip: Run "npm run benchmark:md" to output formatted Markdown table.');
+  console.log(`TypeFlow synthetic JSDOM benchmark (${sampleCount} samples, ${warmupCount} warm-ups)`);
+  console.table(results.map((result) => ({
+    scenario: result.scenario,
+    tier: `${result.tier.toLocaleString()} ${result.units}`,
+    medianMs: format(result.durationMs.median),
+    p95Ms: format(result.durationMs.p95),
+    medianHeapKiB: format(result.heapDeltaKiB.median),
+  })));
+  console.log('Capacity note: use real-browser frame, long-task, and heap measurements before documenting active-instance limits.');
 }
 
-process.exit(0);
+dom.window.close();
