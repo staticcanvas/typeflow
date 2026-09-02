@@ -11,6 +11,11 @@ docs/data/releases.json
 coverage/
 *.tmp
 
+# Playwright e2e artifacts
+/playwright-report/
+/test-results/
+/blob-report/
+
 # Ignore environment variable files
 *.env
 .dev.vars*

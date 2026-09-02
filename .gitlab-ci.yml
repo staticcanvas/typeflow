@@ -69,6 +69,26 @@ test:
   allow_failure: false
 
 # ------------------------------------------------------
+# End-to-end stage (Playwright, against the built Hugo docs site)
+# ------------------------------------------------------
+e2e:
+  stage: test
+  needs: []
+  script:
+    - echo "🟠 Running Playwright end-to-end tests..."
+    - npm ci
+    - npx playwright install --with-deps chromium
+    - npm run build
+    - npx playwright test
+  artifacts:
+    when: on_failure
+    paths:
+      - playwright-report/
+      - test-results/
+    expire_in: 1 week
+  allow_failure: false
+
+# ------------------------------------------------------
 # Coverage stage
 # ------------------------------------------------------
 coverage:
