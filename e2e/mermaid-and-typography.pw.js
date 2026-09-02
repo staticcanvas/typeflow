@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const MERMAID_PAGES = ['/guides/extensions/', '/guides/syntax-highlighting/'];
+const MERMAID_PAGES = ['/guides/extensions/'];
 
 for (const path of MERMAID_PAGES) {
   test.describe(`Mermaid diagram rendering on ${path}`, () => {

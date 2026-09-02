@@ -112,15 +112,10 @@ disableKinds = ['taxonomy', 'term']
     pageRef = '/guides/audio-soundtracks/'
     weight = 37
   [[menu.main]]
-    name = 'Reveal, Erase & Caret Index'
+    name = 'Effects Index'
     parent = 'guides'
     pageRef = '/guides/reveal-erase-caret-index/'
     weight = 38
-  [[menu.main]]
-    name = 'Syntax Highlighting'
-    parent = 'guides'
-    pageRef = '/guides/syntax-highlighting/'
-    weight = 39
   [[menu.main]]
     name = 'API reference'
     pageRef = '/api/'
