@@ -4,6 +4,7 @@ import { TypeFlowDebug } from '../src/typeflow-debug.js';
 import { TypeFlowWebAudio, createKeystrokeAudio } from '../src/typeflow-webaudio.js';
 import { TypeFlowKeystroke, calculateKeyDistance } from '../src/typeflow-keystroke.js';
 import { TypeFlowExtChars, EXT_CHARSETS, getExtendedCharset } from '../src/typeflow-extchars.js';
+import { TypeFlowCaret, Caret } from '../src/typeflow-caret.js';
 
 describe('TypeFlow Companion Extensions Suite', () => {
   describe('TypeFlowMetrics', () => {
@@ -138,6 +139,132 @@ describe('TypeFlow Companion Extensions Suite', () => {
     it('allows custom charset registration', () => {
       TypeFlowExtChars.registerCharset('custom-alien', '⏣⌬⏢⏥⏦');
       expect(TypeFlowExtChars.getCharset('custom-alien')).toBe('⏣⌬⏢⏥⏦');
+    });
+  });
+
+  describe('TypeFlowCaret', () => {
+    let container;
+
+    beforeEach(() => {
+      container = document.createElement('div');
+      document.body.appendChild(container);
+    });
+
+    it('initializes from the target text content and reports position/length', () => {
+      container.textContent = 'Hello world';
+      const caret = new TypeFlowCaret(container, { cursor: '' });
+      expect(caret.text).toBe('Hello world');
+      expect(caret.length).toBe(11);
+      expect(caret.position).toBe(11);
+    });
+
+    it('jump() moves to an absolute index and clamps out-of-range values', () => {
+      const caret = Caret(container, { text: 'Hello world', cursor: '' });
+      caret.jump(5);
+      expect(caret.position).toBe(5);
+      caret.jump(999);
+      expect(caret.position).toBe(11);
+      caret.jump(-5);
+      expect(caret.position).toBe(0);
+    });
+
+    it('move() shifts the caret by a relative delta', () => {
+      const caret = Caret(container, { text: 'Hello world', position: 5, cursor: '' });
+      caret.move(-5);
+      expect(caret.position).toBe(0);
+      caret.move(3);
+      expect(caret.position).toBe(3);
+    });
+
+    it('renders the cursor glyph at the caret position, not just at the end', () => {
+      const caret = Caret(container, { text: 'Hello world', cursor: '|', cursorBlink: false });
+      caret.jump(5);
+      expect(container.textContent).toBe('Hello| world');
+    });
+
+    it('deleteChar() removes backward (Backspace) and forward (Delete)', () => {
+      const caret = Caret(container, { text: 'Hello world', position: 5, cursor: '' });
+      caret.deleteChar('backward');
+      expect(caret.text).toBe('Hell world');
+      expect(caret.position).toBe(4);
+
+      caret.deleteChar('forward');
+      expect(caret.text).toBe('Hellworld');
+      expect(caret.position).toBe(4);
+    });
+
+    it('deleteWord() removes the adjacent whitespace-delimited word', () => {
+      const backward = Caret(container, { text: 'git commit -m wip', position: 17, cursor: '' });
+      backward.deleteWord('backward');
+      expect(backward.text).toBe('git commit -m ');
+      expect(backward.position).toBe(14);
+
+      const second = document.createElement('div');
+      document.body.appendChild(second);
+      const forward = Caret(second, { text: 'git commit -m wip', position: 4, cursor: '' });
+      forward.deleteWord('forward');
+      expect(forward.text).toBe('git -m wip');
+      expect(forward.position).toBe(4);
+    });
+
+    it('insert() types new text at the caret position, shifting the rest right', async () => {
+      const caret = Caret(container, { text: 'git commit', cursor: '' });
+      caret.jump(4);
+      const result = await caret.insert('push --force ', { speed: 1, respectReducedMotion: false }).promise;
+      expect(result.completed).toBe(true);
+      expect(caret.text).toBe('git push --force commit');
+      expect(caret.position).toBe(17);
+    });
+
+    it('insert() completes instantly under prefers-reduced-motion', async () => {
+      const caret = Caret(container, { text: 'git ', cursor: '', respectReducedMotion: true });
+      const originalMatchMedia = window.matchMedia;
+      window.matchMedia = vi.fn().mockImplementation((query) => ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+      try {
+        const result = await caret.insert('status').promise;
+        expect(result.completed).toBe(true);
+        expect(caret.text).toBe('git status');
+      } finally {
+        window.matchMedia = originalMatchMedia;
+      }
+    });
+
+    it('insert() can be stopped mid-animation without rejecting the promise', async () => {
+      const caret = Caret(container, { text: '', cursor: '' });
+      const controller = caret.insert('a very long string to type slowly', { speed: 50, respectReducedMotion: false });
+      controller.stop();
+      const result = await controller.promise;
+      expect(result.completed).toBe(false);
+    });
+
+    it('starting a new insert() on the same caret interrupts the previous one', async () => {
+      const caret = Caret(container, { text: '', cursor: '' });
+      const first = caret.insert('first slow insert', { speed: 50, respectReducedMotion: false });
+      const second = caret.insert('second', { speed: 1, respectReducedMotion: false });
+      const [firstResult, secondResult] = await Promise.all([first.promise, second.promise]);
+      expect(firstResult.completed).toBe(false);
+      expect(secondResult.completed).toBe(true);
+      expect(caret.text).toBe('second');
+    });
+
+    it('defers to a page-global TypeFlow.stop() when starting, if one is present', () => {
+      const stop = vi.fn();
+      window.TypeFlow = { stop };
+      try {
+        Caret(container, { text: 'hi', cursor: '' });
+        expect(stop).toHaveBeenCalledWith(container);
+      } finally {
+        delete window.TypeFlow;
+      }
     });
   });
 });

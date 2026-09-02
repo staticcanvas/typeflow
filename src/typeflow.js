@@ -653,6 +653,19 @@ function calculateCadencePause(text, count) {
 }
 
 /**
+ * Builds a `<span class="tf-cursor">` blinking-cursor element. Shared by the
+ * character/window renderer, word-motion renderer, and the {@link Caret} API.
+ */
+function createCursorSpan(cursorChar, isHidden = false) {
+  const span = document.createElement('span');
+  span.className = 'tf-cursor';
+  span.setAttribute('aria-hidden', 'true');
+  span.textContent = cursorChar;
+  if (isHidden) span.style.visibility = 'hidden';
+  return span;
+}
+
+/**
  * Core animation engine that manages all active TypeFlow instances.
  *
  * Each target element may have at most one active animation at a time.
@@ -706,17 +719,6 @@ class TypeFlowEngine {
       if (timeoutId !== null) clearTimeout(timeoutId);
       this.clearCursorInterval(el);
       timeoutId = null;
-    };
-
-    const createCursorSpan = (cursorChar, isHidden = false) => {
-      const span = document.createElement('span');
-      span.className = 'tf-cursor';
-      span.setAttribute('aria-hidden', 'true');
-      span.textContent = cursorChar;
-      if (isHidden) {
-        span.style.visibility = 'hidden';
-      }
-      return span;
     };
 
     const render = (unitCount, cursorChar, scrambleActive = false, cursorHidden = false) => {
@@ -893,10 +895,7 @@ class TypeFlowEngine {
     };
     const appendCursor = () => {
       if (!options.cursor) return;
-      const cursor = document.createElement('span');
-      cursor.className = 'tf-cursor';
-      cursor.setAttribute('aria-hidden', 'true');
-      cursor.textContent = options.cursor;
+      const cursor = createCursorSpan(options.cursor);
       el.appendChild(cursor);
       if (options.cursorBlink) {
         let visible = true;

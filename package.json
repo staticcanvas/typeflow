@@ -23,6 +23,11 @@
       "require": "./dist/typeflow-debug.cjs",
       "default": "./dist/typeflow-debug.js"
     },
+    "./caret": {
+      "import": "./dist/typeflow-caret.mjs",
+      "require": "./dist/typeflow-caret.cjs",
+      "default": "./dist/typeflow-caret.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -38,7 +43,7 @@
     "serve:demo": "vite --open docs/static/webutil/index.html",
     "docs:build": "npm run build && hugo --source docs",
     "docs:serve": "npm run build && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
-    "build": "vite build && npm_config_mode=metrics vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js",
+    "build": "vite build && npm_config_mode=metrics vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=caret vite build --config vite.optional.config.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
