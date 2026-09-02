@@ -57,8 +57,9 @@
     "typeStyle": "word-fade",
     "eraseStyle": "word-fade",
     "wordOrder": "left-to-right",
-    "wordFadeDuration": 260,
-    "speed": 55,
+    "wordFadeDuration": 420,
+    "wordStagger": 260,
+    "speed": 45,
     "cursor": "|"
   },
   {
@@ -66,8 +67,9 @@
     "mode": "typeStyle: zoom-in-space · perspective transform",
     "typeStyle": "zoom-in-space",
     "eraseStyle": "zoom-in-space",
-    "wordFadeDuration": 260,
-    "speed": 60,
+    "wordFadeDuration": 420,
+    "wordStagger": 260,
+    "speed": 45,
     "cursor": "|"
   },
   {
