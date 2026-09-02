@@ -27,6 +27,7 @@ workflow:
       when: never
     - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+-release(?:\+[a-zA-Z0-9.-]+)?$/'
+      when: on_success
     - when: never
 
 .release_on_semver_tag:
@@ -80,7 +81,7 @@ coverage:
     - npm ci
     - npm run test:coverage
     - command -v codecov
-    - codecov --verbose upload-process --disable-search --fail-on-error -t "$CODECOV_API_KEY" -n "lume-${CI_COMMIT_SHORT_SHA}" -F unit -f coverage/lcov.info
+    - codecov --verbose upload-process --disable-search --fail-on-error -t "$CODECOV_API_KEY" -n "${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}" -F unit -f coverage/lcov.info
   allow_failure: false
 
 # ------------------------------------------------------
@@ -375,15 +376,8 @@ generate:generic:release:metadata:
       # Generate Release Notes
       Write-Host "🟢 Generating release notes..."
       $Release_notes = Get-ReleaseNotes -AheadOnly -FeatureNotes -BreakingChanges -FeatureAdditions -Notes -FeatureUpdates -CommitLink -CommitLinkPrefix gitlab -NameSpace $env:CI_PROJECT_NAMESPACE
-      if (-not [string]::IsNullOrWhiteSpace($Release_notes)) {
-        $Release_notes | Out-File -FilePath "$OutputDir/release-notes.md" -Encoding utf8
-        Write-Host "✅ Release notes generated at $OutputDir/release-notes.md"
-      } elseif (Test-Path "release-notes.md") {
-        Copy-Item -Path "release-notes.md" -Destination "$OutputDir/release-notes.md" -Force
-        Write-Host "✅ Copied root release-notes.md to $OutputDir/release-notes.md"
-      } else {
-        Write-Host "⚠️ No release notes generated and no root release-notes.md found."
-      }
+      $Release_notes | Out-File -FilePath "$OutputDir/release-notes.md" -Encoding utf8
+      Write-Host "✅ Release notes generated at $OutputDir/release-notes.md"
 
       EOF
 
@@ -461,6 +455,8 @@ release:gitlab:
       # 3. Create the description string
       # IMPORTANT: EOF must NOT be quoted so that variables like ${PROJECT_VERSION} expand.
       DESCRIPTION=$(cat <<EOF
+
+      ## **Notes**
 
       ${RELEASE_NOTES}
 
