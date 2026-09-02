@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+
 - **Framework Integrations**:
   - Runtime adapter factories for React, Vue 3, Svelte actions, Solid.js signals, and Alpine.js directives.
   - Native `<type-flow>` Web Component support for declarative use across browser applications and framework templates.

@@ -15,8 +15,8 @@
  */
 
 import { TypeFlow, seq } from '../webutil/libs/typeflow.esm.js';
-import { TypeFlowMetrics } from '../webutil/libs/typeflow-metrics.js';
-import { TypeFlowDebug } from '../webutil/libs/typeflow-debug.js';
+import { TypeFlowMetrics } from '../webutil/libs/typeflow-metrics.esm.js';
+import { TypeFlowDebug } from '../webutil/libs/typeflow-debug.esm.js';
 
 const root = document.documentElement;
 

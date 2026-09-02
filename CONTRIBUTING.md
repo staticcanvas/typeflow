@@ -1,30 +1,30 @@
-# Contributing to TypeFlow
+# Contributing to Lume
 
-Thank you for contributing to TypeFlow! We welcome pull requests, bug fixes, architecture documentation, and feature proposals.
+Thank you for contributing to Lume! We welcome merge requests, bug fixes, architecture documentation, and feature proposals.
 
 ---
 
 ## 1. Core Architecture & Maintainability Principles
 
-To ensure TypeFlow remains lightweight, robust, and maintainable across long-term evolution, all contributions must adhere to the following core practices:
+To ensure Lume remains lightweight, robust, and maintainable across long-term evolution, all contributions must adhere to the following core practices:
 
 1. **Single Source of Truth (SOT) Architecture**:
-   - All styling tokens, color palettes, spacing metrics, and elevation curves must be defined in centralized CSS custom properties (`--tf-*`). Never introduce hardcoded magic numbers or duplicate color constants across stylesheets.
+   - All styling tokens, color palettes, spacing metrics, and elevation curves must be defined in centralized CSS custom properties (`--lume-*`). Never introduce hardcoded magic numbers or duplicate color constants across stylesheets.
 
 2. **Zero Runtime Dependencies for Core Engine**:
-   - The core TypeFlow engine bundle (`dist/typeflow.esm.js`, `dist/typeflow.min.js`) must strictly maintain **zero runtime dependencies** ($0$ NPM dependencies). Specialized subpath modules (such as Web Audio synthesizers or metrics telemetry) must be decoupled as opt-in extensions.
+   - The core Lume engine bundle (`dist/lume.esm.js`, `dist/lume.min.js`, `dist/lume.cjs`) must strictly maintain **zero runtime dependencies** ($0$ NPM dependencies). Specialized subpath modules (such as metrics telemetry or debugging) must be decoupled as opt-in extensions.
 
-3. **Non-Destructive AST Windowing**:
-   - Never slice or mutate HTML strings using regular expressions during the typing/erasing loop. All tree slicing, tag preservation, and character masking must operate over DOM Node trees and AST interval ranges (`revealWindowFragment`) to guarantee zero malformed tags and 100% safe rendering.
+3. **Collision-Safe & Viewport-Bounded Positioning**:
+   - All tooltip positioning must calculate safe bounding rects, accommodate custom scrolling containers, and handle boundary clipping without layout thrashing.
 
 4. **Dual-Target Monospace & Web Readability**:
    - Code formatting, component layouts, and documentation must render with equal visual clarity across both standard graphical web browsers and strict monospace terminal/TUI environments.
 
 5. **Zero Cumulative Layout Shift (CLS = 0.00)**:
-   - Dynamic typing must never trigger container reflows. Layout containers, typography metrics, and floating cursors must use fixed geometry, tabular numerals, or reservation containers to maintain absolute layout stability.
+   - Tooltip show/hide animations must never trigger container reflows. Floating tooltips must use fixed/absolute positioning with computed transform offsets.
 
 6. **Strict WCAG 2.2 Accessibility Compliance**:
-   - Honor `prefers-reduced-motion` unconditionally across all animation loops. Decorative cursors must always be tagged `aria-hidden="true"`, and live text regions must never spam screen readers during intermediate keystrokes.
+   - Honor `prefers-reduced-motion` unconditionally across all animation presets. Ensure dynamic `aria-describedby` / `aria-details` relationships and proper keyboard `Escape` dismissals.
 
 7. **Editorial Factuality & Clean Technical Documentation**:
    - Technical documentation, architecture guides, and API references must maintain absolute factuality, precision, and zero-emoji editorial rigor. Use Unicode geometric symbols (`■`, `◆`, `▶`) when visual hierarchy is required.
@@ -33,7 +33,7 @@ To ensure TypeFlow remains lightweight, robust, and maintainable across long-ter
 
 ## 2. AI-Assisted Code Policy
 
-AI-assisted and LLM-generated code is **explicitly welcome** in the TypeFlow codebase under the following strict conditions:
+AI-assisted and LLM-generated code is **explicitly welcome** in the Lume codebase under the following strict conditions:
 
 1. **Meticulous Human Planning & Review**: All AI-assisted changes must be thoroughly reviewed line-by-line by the developer before creating a merge request or committing. Do not submit unreviewed raw model outputs.
 2. **Comprehensive Test Coverage**: Any new behavior or bug fix must include corresponding unit tests in `tests/` that pass with 100% reliability.
@@ -42,7 +42,7 @@ AI-assisted and LLM-generated code is **explicitly welcome** in the TypeFlow cod
    - Architectural design rationale and trade-offs considered.
    - Proof of test and build verification (`npm run build && npm run docs:build && npm test`).
    - Confirmation of zero breaking changes or explicit migration steps.
-4. **Adherence to Code Standards**: Code must maintain zero runtime dependencies for the core bundle, follow clean ES module patterns, preserve TypeScript type definitions in `src/typeflow.d.ts`, and satisfy performance and accessibility constraints.
+4. **Adherence to Code Standards**: Code must maintain zero runtime dependencies for the core bundle, follow clean ES module patterns, preserve TypeScript type definitions in `src/lume.d.ts`, and satisfy performance and accessibility constraints.
 
 ---
 
@@ -55,31 +55,50 @@ AI-assisted and LLM-generated code is **explicitly welcome** in the TypeFlow cod
 
 ### Initial Setup
 ```bash
-git clone https://github.com/staticcanvas/typeflow.git
-cd typeflow
+git clone https://gitlab.com/staticcanvas/lume.git
+cd lume
 npm install
 ```
 
 ### Common Commands
 ```bash
-# Run unit test suite
-npm test
+# Start local Vite development server
+npm run dev
 
-# Build production bundles (dist/typeflow.esm.js, typeflow.cjs, typeflow.min.js)
+# Start local server with interactive demo harness
+npm run serve:demo
+
+# Build production bundles (core, metrics, and debug modules)
 npm run build
 
-# Build documentation portal
-npm run docs:build
+# Run unit test suite via Vitest
+npm test
 
-# Run local documentation dev server
-npm run docs:dev
+# Run unit tests with code coverage
+npm run test:coverage
+
+# Validate bundle size against 6 KiB gzip budget
+npm run check:size
+
+# Run full quality verification (build + check:size + test)
+npm run check:quality
+
+# Lint and format codebase
+npm run lint
+npm run format
+
+# Run local documentation dev server (fetches release data + serves Hugo)
+npm run docs:serve
+
+# Build static documentation portal
+npm run docs:build
 ```
 
 ---
 
 ## 4. Git & Commit Conventions
 
-TypeFlow strictly enforces **Conventional Commits** on all branches. Ongoing development occurs on the `develop` branch.
+Lume strictly enforces **Conventional Commits** on all branches. Ongoing development occurs on the `develop` branch.
 
 ### Commit Message Format
 ```text
@@ -99,18 +118,18 @@ TypeFlow strictly enforces **Conventional Commits** on all branches. Ongoing dev
 - `chore`: Version bumps, package scripts, or repository maintenance.
 
 ### Examples
-- `feat(engine): add scramble rounds configuration option`
-- `fix(ui): prevent cursor layout shift on mobile viewports`
-- `docs(adapters): add Alpine.js and Web Components integration guides`
+- `feat(position): add custom boundary container support`
+- `fix(collision): flip direction when restricted by viewport top edge`
+- `docs(themes): add twenty documented theme presets`
 
 ---
 
-## 5. Pull Request Checklist
+## 5. Merge Request Checklist
 
-Before submitting a pull request, ensure that:
-- [ ] All 48 unit tests pass via `npm test`.
+Before submitting a merge request, ensure that:
+- [ ] All unit tests pass via `npm test`.
 - [ ] Production bundles compile cleanly via `npm run build`.
 - [ ] Hugo documentation site builds with zero errors via `npm run docs:build`.
-- [ ] TypeScript declaration file (`src/typeflow.d.ts`) is updated for any new methods or options.
+- [ ] TypeScript declaration file (`src/lume.d.ts`) is updated for any new methods or options.
 - [ ] Zero runtime dependencies are introduced to the core package.
 - [ ] Commit history follows Conventional Commit standards.
