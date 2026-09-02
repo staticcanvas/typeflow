@@ -42,6 +42,70 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       expect(container.textContent).toBe('Streaming word by word');
     });
 
+    it('fades words without changing their final layout text', async () => {
+      const controller = TypeFlow.type(container, 'Stable word positions', {
+        typeStyle: 'word-fade',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+
+      expect(container.textContent).toBe('Stable word positions');
+      const words = [...container.querySelectorAll('.tf-word-fade')];
+      expect(words).toHaveLength(3);
+      expect(words.every((word) => word.style.opacity === '0')).toBe(true);
+      expect(words.map((word) => word.dataset.tfWordOrder)).toEqual(['0', '1', '2']);
+
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Stable word positions');
+      expect(container.querySelector('.tf-word-fade')).toBeNull();
+    });
+
+    it('supports reverse and deterministic random word-fade order', () => {
+      const reverse = TypeFlow.type(container, 'one two three', {
+        typeStyle: 'word-fade',
+        wordOrder: 'right-to-left',
+        delay: 100,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      expect([...container.querySelectorAll('.tf-word-fade')].map((word) => word.dataset.tfWordOrder)).toEqual(['2', '1', '0']);
+      reverse.stop();
+
+      const second = document.createElement('div');
+      document.body.appendChild(second);
+      const firstRandom = TypeFlow.type(container, 'one two three four', {
+        typeStyle: 'word-fade', wordOrder: 'random', wordSeed: 'fixture', delay: 100, respectReducedMotion: false, cursor: ''
+      });
+      const secondRandom = TypeFlow.type(second, 'one two three four', {
+        typeStyle: 'word-fade', wordOrder: 'random', wordSeed: 'fixture', delay: 100, respectReducedMotion: false, cursor: ''
+      });
+      const orderFor = (element) => [...element.querySelectorAll('.tf-word-fade')].map((word) => word.dataset.tfWordOrder);
+      expect(orderFor(container)).toEqual(orderFor(second));
+      firstRandom.stop();
+      secondRandom.stop();
+    });
+
+    it('preserves sanitized HTML and supports hidden word placeholders', async () => {
+      const controller = TypeFlow.type(container, 'Safe <strong>word fade</strong>', {
+        html: true,
+        typeStyle: 'word-fade',
+        wordLayout: 'placeholder',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      expect([...container.querySelectorAll('.tf-word-fade')].every((word) => word.style.visibility === 'hidden')).toBe(true);
+      await controller.promise;
+      expect(container.querySelector('strong')?.textContent).toBe('word fade');
+      expect(container.textContent).toBe('Safe word fade');
+    });
+
     it('handles naturalCadence punctuation pauses without error', async () => {
       const controller = TypeFlow.type(container, 'Hello. Welcome, friend!', {
         speed: 1,
@@ -75,6 +139,100 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       controller.stop();
       const result = await controller.promise;
       expect(result.completed).toBe(false);
+    });
+  });
+
+  describe('Spatial Word-Motion Reveal & Erase (float-in-*, zoom-in-space)', () => {
+    it.each([
+      ['float-in-top', 'translateY(0)'],
+      ['float-in-bottom', 'translateY(0)'],
+      ['float-in-left', 'translateX(0)'],
+      ['float-in-right', 'translateX(0)'],
+      ['zoom-in-space', 'translateZ(0) scale(1)'],
+    ])('types with %s reveal, ending on clean final DOM', async (typeStyle, visibleTransform) => {
+      const controller = TypeFlow.type(container, 'Stable spatial words', {
+        typeStyle,
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: '',
+      });
+
+      const words = [...container.querySelectorAll('.tf-word-fade')];
+      expect(words).toHaveLength(3);
+      expect(words.every((word) => word.style.display === 'inline-block')).toBe(true);
+      expect(words.every((word) => word.style.opacity === '0')).toBe(true);
+      expect(words.every((word) => word.style.transform !== '' && word.style.transform !== visibleTransform)).toBe(true);
+
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Stable spatial words');
+      expect(container.querySelector('.tf-word-fade')).toBeNull();
+      expect(container.style.perspective).toBe('');
+    });
+
+    it('erases with a float-in-* style and restores the preserved baseline', async () => {
+      const typed = await TypeFlow.type(container, 'Baseline kept here', {
+        mode: 'append',
+        respectReducedMotion: false,
+        cursor: '',
+      }).promise;
+      expect(typed.completed).toBe(true);
+
+      const controller = TypeFlow.erase(container, {
+        eraseStyle: 'float-in-bottom',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        respectReducedMotion: false,
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('');
+    });
+
+    it('sets a CSS perspective on the target only while zoom-in-space is active', () => {
+      const controller = TypeFlow.type(container, 'Depth reveal', {
+        typeStyle: 'zoom-in-space',
+        wordStagger: 100,
+        wordFadeDuration: 100,
+        delay: 100,
+        respectReducedMotion: false,
+        cursor: '',
+      });
+      expect(container.style.perspective).not.toBe('');
+      expect(container.style.transformStyle).toBe('preserve-3d');
+      controller.stop();
+      expect(container.style.perspective).toBe('');
+    });
+
+    it('respects prefers-reduced-motion by rendering the final text instantly', async () => {
+      const originalMatchMedia = window.matchMedia;
+      window.matchMedia = vi.fn().mockImplementation((query) => ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+
+      try {
+        const controller = TypeFlow.type(container, 'Reduced motion text', {
+          typeStyle: 'float-in-top',
+          respectReducedMotion: true,
+          cursor: '',
+        });
+        const result = await controller.promise;
+        expect(result.completed).toBe(true);
+        expect(container.textContent).toBe('Reduced motion text');
+        expect(container.querySelector('.tf-word-fade')).toBeNull();
+        expect(container.style.perspective).toBe('');
+      } finally {
+        window.matchMedia = originalMatchMedia;
+      }
     });
   });
 
@@ -201,6 +359,23 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       });
       const result = await controller.promise;
       expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('');
+    });
+
+    it('erases words with stable layout in configured order', async () => {
+      container.textContent = 'fade these words';
+      const controller = TypeFlow.erase(container, {
+        eraseStyle: 'word-fade',
+        wordOrder: 'right-to-left',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      expect(container.textContent).toBe('fade these words');
+      expect([...container.querySelectorAll('.tf-word-fade')].map((word) => word.dataset.tfWordOrder)).toEqual(['2', '1', '0']);
+      expect((await controller.promise).completed).toBe(true);
       expect(container.textContent).toBe('');
     });
 
@@ -602,4 +777,3 @@ describe('TypeFlow Comprehensive Test Suite', () => {
     });
   });
 });
-

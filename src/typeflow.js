@@ -119,6 +119,24 @@ const DEFAULT_ALLOWED_ATTRS = {
 
 const CURSOR_BLINK_INTERVAL = 530;
 const DEFAULT_FADE_DURATION = 250;
+const DEFAULT_WORD_FADE_DURATION = 280;
+const DEFAULT_WORD_STAGGER = 70;
+// Shared spatial-motion tokens reused by every `float-in-*` and `zoom-in-space`
+// reveal/erase variant so distance, depth, and perspective stay consistent.
+const DEFAULT_MOTION_DISTANCE = 24;
+const DEFAULT_MOTION_DEPTH = 160;
+const DEFAULT_MOTION_SCALE = 0.82;
+const DEFAULT_MOTION_PERSPECTIVE = 600;
+const DEFAULT_MOTION_EASING = 'ease';
+
+const WORD_MOTION_STYLES = new Set([
+  'word-fade',
+  'float-in-top',
+  'float-in-bottom',
+  'float-in-left',
+  'float-in-right',
+  'zoom-in-space',
+]);
 
 // ============================================================
 // Web Audio Micro-Synthesizer
@@ -476,6 +494,12 @@ function normalizeTypeStyle(style) {
   if (s === 'word' || s === 'words' || s === 'stream') return 'word';
   if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random') return 'scramble';
   if (s === 'fade-trail' || s === 'trail' || s === 'trailing' || s === 'soft') return 'fade-trail';
+  if (s === 'word-fade' || s === 'fade-words' || s === 'wordfade') return 'word-fade';
+  if (s === 'float-in-top' || s === 'float-top' || s === 'float-down') return 'float-in-top';
+  if (s === 'float-in-bottom' || s === 'float-bottom' || s === 'float-up') return 'float-in-bottom';
+  if (s === 'float-in-left' || s === 'float-left') return 'float-in-left';
+  if (s === 'float-in-right' || s === 'float-right') return 'float-in-right';
+  if (s === 'zoom-in-space' || s === 'zoom-in' || s === 'zoom-space') return 'zoom-in-space';
   return 'char';
 }
 
@@ -487,8 +511,128 @@ function normalizeEraseStyle(style) {
   if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random') return 'scramble';
   if (s === 'fade-trail' || s === 'trail' || s === 'trailing' || s === 'soft') return 'fade-trail';
   if (s === 'fade' || s === 'dissolve' || s === 'crossfade') return 'fade';
+  if (s === 'word-fade' || s === 'fade-words' || s === 'wordfade') return 'word-fade';
+  if (s === 'float-in-top' || s === 'float-top' || s === 'float-down') return 'float-in-top';
+  if (s === 'float-in-bottom' || s === 'float-bottom' || s === 'float-up') return 'float-in-bottom';
+  if (s === 'float-in-left' || s === 'float-left') return 'float-in-left';
+  if (s === 'float-in-right' || s === 'float-right') return 'float-in-right';
+  if (s === 'zoom-in-space' || s === 'zoom-in' || s === 'zoom-space') return 'zoom-in-space';
   if (s === 'instant' || s === 'clear' || s === 'reset' || s === 'immediate') return 'instant';
   return 'end';
+}
+
+function normalizeWordOrder(order) {
+  const value = String(order ?? 'left-to-right').toLowerCase();
+  if (value === 'right-to-left' || value === 'reverse' || value === 'rtl') return 'right-to-left';
+  if (value === 'random' || value === 'shuffle') return 'random';
+  return 'left-to-right';
+}
+
+function createSeededRandom(seed) {
+  if (seed === undefined || seed === null) return Math.random;
+  const text = String(seed);
+  let state = 2166136261;
+  for (let index = 0; index < text.length; index += 1) {
+    state ^= text.charCodeAt(index);
+    state = Math.imul(state, 16777619);
+  }
+  return () => {
+    state += 0x6d2b79f5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function orderWordIndexes(length, order, seed) {
+  const indexes = Array.from({ length }, (_, index) => index);
+  if (normalizeWordOrder(order) === 'right-to-left') return indexes.reverse();
+  if (normalizeWordOrder(order) !== 'random') return indexes;
+
+  const random = createSeededRandom(seed);
+  for (let index = indexes.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [indexes[index], indexes[swapIndex]] = [indexes[swapIndex], indexes[index]];
+  }
+  return indexes;
+}
+
+function segmentWords(text) {
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    return Array.from(new Intl.Segmenter(undefined, { granularity: 'word' }).segment(text));
+  }
+  return (text.match(/\s+|\S+/g) ?? []).map((segment) => ({
+    segment,
+    isWordLike: !/^\s+$/u.test(segment),
+  }));
+}
+
+/**
+ * Resolves the hidden/visible transform pair for a spatial word-motion style.
+ * Returns `null` for the plain `word-fade` style, which is opacity-only and
+ * needs no transform (so words keep `display: inline` and normal text flow).
+ */
+function getWordMotionTransforms(motionKind, options) {
+  const distance = Math.max(0, Number(options.wordMotionDistance ?? DEFAULT_MOTION_DISTANCE) || 0);
+  const depth = Math.max(0, Number(options.wordMotionDepth ?? DEFAULT_MOTION_DEPTH) || 0);
+  const scale = Math.min(1, Math.max(0.01, Number(options.wordMotionScale ?? DEFAULT_MOTION_SCALE) || DEFAULT_MOTION_SCALE));
+
+  switch (motionKind) {
+    case 'float-in-top': return { hidden: `translateY(-${distance}px)`, visible: 'translateY(0)' };
+    case 'float-in-bottom': return { hidden: `translateY(${distance}px)`, visible: 'translateY(0)' };
+    case 'float-in-left': return { hidden: `translateX(-${distance}px)`, visible: 'translateX(0)' };
+    case 'float-in-right': return { hidden: `translateX(${distance}px)`, visible: 'translateX(0)' };
+    case 'zoom-in-space': return { hidden: `translateZ(-${depth}px) scale(${scale})`, visible: 'translateZ(0) scale(1)' };
+    default: return null;
+  }
+}
+
+function buildWordMotionTree(source, layout = 'opacity', motionKind = 'word-fade') {
+  const doc = source?.ownerDocument || (typeof document !== 'undefined' ? document : null);
+  if (!doc) return { fragment: null, words: [] };
+  const fragment = doc.createDocumentFragment();
+  const words = [];
+  // Transform has no effect on `display: inline` boxes, so transformed
+  // variants promote each word wrapper to `inline-block`.
+  const needsTransform = motionKind !== 'word-fade';
+
+  const walk = (sourceNode, targetNode) => {
+    sourceNode.childNodes.forEach((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        for (const part of segmentWords(child.textContent ?? '')) {
+          if (/^\s+$/u.test(part.segment)) {
+            targetNode.appendChild(doc.createTextNode(part.segment));
+            continue;
+          }
+
+          if (part.isWordLike === false && words.length > 0 && words.at(-1).parentNode === targetNode) {
+            words.at(-1).appendChild(doc.createTextNode(part.segment));
+            continue;
+          }
+
+          const wrapper = doc.createElement('span');
+          wrapper.className = 'tf-word-fade';
+          wrapper.dataset.tfWordIndex = String(words.length);
+          wrapper.textContent = part.segment;
+          wrapper.style.display = needsTransform ? 'inline-block' : 'inline';
+          wrapper.style.opacity = '0';
+          wrapper.style.willChange = needsTransform ? 'opacity, transform' : 'opacity';
+          wrapper.setAttribute('aria-hidden', 'true');
+          if (layout === 'placeholder') wrapper.style.visibility = 'hidden';
+          words.push(wrapper);
+          targetNode.appendChild(wrapper);
+        }
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const clone = child.cloneNode(false);
+        targetNode.appendChild(clone);
+        walk(child, clone);
+      }
+    });
+  };
+
+  walk(source, fragment);
+  return { fragment, words };
 }
 
 function prefersReducedMotion() {
@@ -688,6 +832,154 @@ class TypeFlowEngine {
     return controller;
   }
 
+  animateWordMotion(el, sourceTree, options, extra = {}) {
+    this.clearCursorInterval(el);
+    this.active.get(el)?.stop();
+    if (options.ariaLive) el.setAttribute('aria-live', options.ariaLive);
+
+    const prefix = extra.prefix ?? [];
+    const isErasing = extra.isErasing === true;
+    const motionKind = extra.motionKind ?? 'word-fade';
+    const layout = options.wordLayout === 'placeholder' ? 'placeholder' : 'opacity';
+    const duration = Math.max(0, Number(options.wordFadeDuration ?? DEFAULT_WORD_FADE_DURATION) || 0);
+    const stagger = Math.max(0, Number(options.wordStagger ?? options.speed ?? DEFAULT_WORD_STAGGER) || 0);
+    const transforms = getWordMotionTransforms(motionKind, options);
+    const needsPerspective = motionKind === 'zoom-in-space';
+    const { fragment, words } = buildWordMotionTree(sourceTree, layout, motionKind);
+    const order = orderWordIndexes(words.length, options.wordOrder, options.wordSeed);
+    order.forEach((wordIndex, sequenceIndex) => {
+      words[wordIndex].dataset.tfWordOrder = String(sequenceIndex);
+    });
+    const timers = new Set();
+    let frameId = null;
+    let settled = false;
+    let resolveFn = null;
+
+    const easing = typeof options.wordMotionEasing === 'string' && options.wordMotionEasing.trim()
+      ? options.wordMotionEasing.trim()
+      : DEFAULT_MOTION_EASING;
+
+    words.forEach((word) => {
+      word.style.transition = transforms
+        ? `opacity ${duration}ms ${easing}, transform ${duration}ms ${easing}`
+        : `opacity ${duration}ms ${easing}`;
+      if (transforms) word.style.transform = transforms.hidden;
+      if (isErasing) {
+        word.style.opacity = '1';
+        word.style.visibility = 'visible';
+        word.removeAttribute('aria-hidden');
+        if (transforms) word.style.transform = transforms.visible;
+      }
+    });
+    if (needsPerspective) {
+      el.style.perspective = `${Math.max(0, Number(options.wordMotionPerspective ?? DEFAULT_MOTION_PERSPECTIVE) || 0)}px`;
+      el.style.transformStyle = 'preserve-3d';
+    }
+    el.replaceChildren(...prefix, fragment);
+    el.setAttribute('aria-busy', 'true');
+
+    const schedule = (callback, delay) => {
+      const id = setTimeout(() => {
+        timers.delete(id);
+        callback();
+      }, delay);
+      timers.add(id);
+    };
+    const clearScheduledWork = () => {
+      timers.forEach((id) => clearTimeout(id));
+      timers.clear();
+      if (frameId !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frameId);
+      frameId = null;
+    };
+    const appendCursor = () => {
+      if (!options.cursor) return;
+      const cursor = document.createElement('span');
+      cursor.className = 'tf-cursor';
+      cursor.setAttribute('aria-hidden', 'true');
+      cursor.textContent = options.cursor;
+      el.appendChild(cursor);
+      if (options.cursorBlink) {
+        let visible = true;
+        const intervalId = setInterval(() => {
+          visible = !visible;
+          cursor.style.visibility = visible ? 'visible' : 'hidden';
+        }, CURSOR_BLINK_INTERVAL);
+        intervalId.unref?.();
+        this.cursorIntervals.set(el, intervalId);
+      }
+    };
+    const settle = (completed) => {
+      if (settled) return;
+      settled = true;
+      clearScheduledWork();
+      this.active.delete(el);
+      el.removeAttribute('aria-busy');
+      if (needsPerspective) {
+        el.style.removeProperty('perspective');
+        el.style.removeProperty('transform-style');
+      }
+
+      if (completed) {
+        if (isErasing) {
+          el.replaceChildren(...prefix);
+          options.onComplete?.('');
+        } else {
+          el.replaceChildren(...prefix, sourceTree.cloneNode(true));
+          appendCursor();
+          options.onComplete?.(extra.resultText ?? '');
+        }
+      } else {
+        words.forEach((word) => { word.style.willChange = 'auto'; });
+        options.onInterrupt?.();
+      }
+      resolveFn?.({ completed, text: isErasing ? '' : (extra.resultText ?? '') });
+    };
+    const controller = {
+      stop: () => settle(false),
+      promise: new Promise((resolve) => { resolveFn = resolve; }),
+    };
+    this.active.set(el, controller);
+
+    if (options.respectReducedMotion === true && prefersReducedMotion()) {
+      settle(true);
+      return controller;
+    }
+
+    options.onStart?.();
+    const begin = () => {
+      frameId = requestAnimationFrame(() => {
+        frameId = null;
+        if (words.length === 0) {
+          settle(true);
+          return;
+        }
+        let sequenceIndex = 0;
+        const revealNextWord = () => {
+          const word = words[order[sequenceIndex]];
+          if (options.audio) playKeystrokeSound(options.audio);
+          if (isErasing) {
+            word.style.opacity = '0';
+            if (transforms) word.style.transform = transforms.hidden;
+            word.setAttribute('aria-hidden', 'true');
+          } else {
+            word.style.visibility = 'visible';
+            word.removeAttribute('aria-hidden');
+            word.style.opacity = '1';
+            if (transforms) word.style.transform = transforms.visible;
+          }
+
+          sequenceIndex += 1;
+          if (sequenceIndex < words.length) schedule(revealNextWord, stagger);
+          else schedule(() => settle(true), duration);
+        };
+        revealNextWord();
+      });
+    };
+
+    schedule(begin, Math.max(0, Number(options.delay) || 0));
+    return controller;
+  }
+
   eraseFade(el, erasableLive, baseline, options) {
     this.clearCursorInterval(el);
     this.active.get(el)?.stop();
@@ -800,6 +1092,15 @@ class TypeFlowEngine {
     if (options.mode === 'append') this.baselines.set(el, prefix);
     else this.baselines.delete(el);
 
+    if (WORD_MOTION_STYLES.has(options.typeStyle)) {
+      return this.animateWordMotion(el, sourceTree, options, {
+        prefix,
+        resultText: sourceText,
+        isErasing: false,
+        motionKind: options.typeStyle,
+      });
+    }
+
     return this.animate(el, sourceTree, totalUnits, options, 0, totalUnits, sourceText, {
       prefix,
       blinkOnFinish: true,
@@ -822,6 +1123,14 @@ class TypeFlowEngine {
     const sourceTree = document.createDocumentFragment();
     erasableLive.forEach((n) => sourceTree.appendChild(n.cloneNode(true)));
     const totalUnits = countTextUnits(sourceTree, options.granularity);
+
+    if (WORD_MOTION_STYLES.has(options.eraseStyle)) {
+      return this.animateWordMotion(el, sourceTree, options, {
+        prefix: baseline,
+        isErasing: true,
+        motionKind: options.eraseStyle,
+      });
+    }
 
     return this.animate(el, sourceTree, totalUnits, options, totalUnits, 0, '', {
       prefix: baseline,

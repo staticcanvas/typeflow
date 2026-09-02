@@ -25,8 +25,46 @@ export interface TypeFlowConfig {
   mode?: "replace" | "append";
   /** Reveal direction for typing: 'left' (standard LTR), 'right' (RTL), 'center' (middle-outward expand). Default: 'left' */
   direction?: "left" | "right" | "center";
-  /** Reveal style for typing: 'char' (standard), 'word', 'scramble' (matrix decrypt), 'fade-trail' (soft trailing opacity ramp). Default: 'char' */
-  typeStyle?: "char" | "word" | "scramble" | "fade-trail";
+  /**
+   * Reveal style for typing. Default: 'char'
+   * - 'word-fade'      renders the final layout, then fades words into place
+   * - 'float-in-top'   words fade in while sliding down from above
+   * - 'float-in-bottom' words fade in while sliding up from below
+   * - 'float-in-left'  words fade in while sliding in from the left
+   * - 'float-in-right' words fade in while sliding in from the right
+   * - 'zoom-in-space'  words fade in while scaling up from depth (perspective transform)
+   */
+  typeStyle?:
+    | "char"
+    | "word"
+    | "scramble"
+    | "fade-trail"
+    | "word-fade"
+    | "float-in-top"
+    | "float-in-bottom"
+    | "float-in-left"
+    | "float-in-right"
+    | "zoom-in-space";
+  /** Word reveal/erase order used by `word-fade` and the spatial word-motion styles. Default: 'left-to-right'. */
+  wordOrder?: "left-to-right" | "right-to-left" | "random";
+  /** Stable-layout strategy used by `word-fade` and the spatial word-motion styles. Default: 'opacity'. */
+  wordLayout?: "opacity" | "placeholder";
+  /** Opacity/transform transition duration for each word in milliseconds. Default: 280. */
+  wordFadeDuration?: number;
+  /** Delay between consecutive word transitions in milliseconds. Defaults to `speed`. */
+  wordStagger?: number;
+  /** Optional seed for reproducible random word ordering. */
+  wordSeed?: string | number;
+  /** Translate distance in pixels for `float-in-*` word-motion styles. Default: 24. */
+  wordMotionDistance?: number;
+  /** translateZ depth in pixels for the `zoom-in-space` word-motion style. Default: 160. */
+  wordMotionDepth?: number;
+  /** Starting scale (0-1) for the `zoom-in-space` word-motion style. Default: 0.82. */
+  wordMotionScale?: number;
+  /** CSS perspective in pixels applied to the target element for `zoom-in-space`. Default: 600. */
+  wordMotionPerspective?: number;
+  /** CSS timing function for `float-in-*` and `zoom-in-space` word transitions. Default: 'ease'. */
+  wordMotionEasing?: string;
   /** Soft trailing opacity gradient length in characters (e.g. 3) or boolean during reveal/erase. */
   trailFade?: number | boolean;
   /** Built-in scramble charset preset name. */
@@ -56,8 +94,24 @@ export interface TypeFlowConfig {
    * - 'fade-trail' dissolves trailing characters with a soft opacity ramp
    * - 'instant'    clears immediately, no animation
    * - 'fade'       CSS opacity fade-out, then clears
+   * - 'word-fade'  fades words without changing their layout positions
+   * - 'float-in-*' fades words out while sliding them top/bottom/left/right
+   * - 'zoom-in-space' fades words out while shrinking them back into depth
    */
-  eraseStyle?: "end" | "start" | "center" | "scramble" | "fade-trail" | "instant" | "fade";
+  eraseStyle?:
+    | "end"
+    | "start"
+    | "center"
+    | "scramble"
+    | "fade-trail"
+    | "instant"
+    | "fade"
+    | "word-fade"
+    | "float-in-top"
+    | "float-in-bottom"
+    | "float-in-left"
+    | "float-in-right"
+    | "zoom-in-space";
   /** Erase-only: duration in ms for eraseStyle 'fade'. Default: 250 */
   duration?: number;
   /**
@@ -245,4 +299,3 @@ export declare function createTypeFlowAlpine(Alpine: AlpineLike): void;
 export declare function defineTypeFlowElement(
   customElementsRegistry?: CustomElementRegistry | null
 ): void;
-
