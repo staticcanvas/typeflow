@@ -27,11 +27,11 @@ TypeFlow is built with a hyper-optimized core engine (<7.2 KB gzipped). For deve
 
 ```mermaid
 graph LR
-    A[Core Engine: @staticcanvas/typeflow] --> B[@staticcanvas/typeflow/metrics]
-    A --> C[@staticcanvas/typeflow/debug]
-    A --> D[@staticcanvas/typeflow/webaudio]
-    A --> E[@staticcanvas/typeflow/keystroke]
-    A --> F[@staticcanvas/typeflow/extchars]
+    A["Core Engine: @staticcanvas/typeflow"] --> B["@staticcanvas/typeflow/metrics"]
+    A --> C["@staticcanvas/typeflow/debug"]
+    A --> D["@staticcanvas/typeflow/webaudio"]
+    A --> E["@staticcanvas/typeflow/keystroke"]
+    A --> F["@staticcanvas/typeflow/extchars"]
 ```
 
 ---

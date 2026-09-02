@@ -72,7 +72,30 @@
                   <option value="word">word (Word-by-word streaming)</option>
                   <option value="scramble">scramble (Matrix decrypt)</option>
                   <option value="fade-trail">fade-trail (Soft trailing opacity ramp)</option>
+                  <option value="word-fade">word-fade (Stable-layout word opacity)</option>
+                  <option value="float-in-top">float-in-top (Words slide down into place)</option>
+                  <option value="float-in-bottom">float-in-bottom (Words slide up into place)</option>
+                  <option value="float-in-left">float-in-left (Words slide in from the left)</option>
+                  <option value="float-in-right">float-in-right (Words slide in from the right)</option>
+                  <option value="zoom-in-space">zoom-in-space (Words zoom in from depth)</option>
                   <option value="stream">stream (Simulated LLM token flow)</option>
+                </select>
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-word-order">Word Fade Order</label>
+                <select id="pg-word-order" class="pg-select">
+                  <option value="left-to-right" selected>left-to-right (Document order)</option>
+                  <option value="right-to-left">right-to-left (Reverse order)</option>
+                  <option value="random">random (Seeded shuffle)</option>
+                </select>
+              </div>
+
+              <div class="pg-field">
+                <label for="pg-word-layout">Word Fade Layout</label>
+                <select id="pg-word-layout" class="pg-select">
+                  <option value="opacity" selected>opacity (Stable final layout)</option>
+                  <option value="placeholder">placeholder (Hidden original words)</option>
                 </select>
               </div>
 
@@ -159,7 +182,12 @@
                   <option value="start">start (Left erosion)</option>
                   <option value="center">center (Center-inward shrink)</option>
                   <option value="smart">smart (Smart diff morphing)</option>
-                  <option value="word">word (Word-by-word erasure)</option>
+                  <option value="word-fade">word-fade (Stable-layout word fade)</option>
+                  <option value="float-in-top">float-in-top (Words slide up and out)</option>
+                  <option value="float-in-bottom">float-in-bottom (Words slide down and out)</option>
+                  <option value="float-in-left">float-in-left (Words slide out to the left)</option>
+                  <option value="float-in-right">float-in-right (Words slide out to the right)</option>
+                  <option value="zoom-in-space">zoom-in-space (Words zoom out into depth)</option>
                   <option value="scramble">scramble (Matrix decrypt)</option>
                   <option value="fade-trail">fade-trail (Soft trailing opacity dissolve)</option>
                   <option value="fade">fade (CSS opacity fade)</option>

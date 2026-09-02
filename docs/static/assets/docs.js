@@ -42,63 +42,80 @@ if (themeToggleBtn) {
 
 // ─── Mermaid.js Integration ───────────────────────────────────────────────────
 
+const MERMAID_MODULE_URL = 'https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.esm.min.mjs';
+let mermaidModulePromise;
+let mermaidRenderSequence = 0;
+const mermaidSources = new WeakMap();
+
+/**
+ * Loads Mermaid only when a diagram is present. The exact version is pinned so
+ * documentation builds do not silently acquire a different renderer.
+ * @returns {Promise<object|null>}
+ */
+async function loadMermaid() {
+  if (!document.querySelector('pre code.language-mermaid, div.mermaid, .mermaid-diagram')) return null;
+  mermaidModulePromise ||= import(MERMAID_MODULE_URL).then((module) => module.default || module);
+
+  try {
+    return await mermaidModulePromise;
+  } catch (error) {
+    console.error('TypeFlow docs: Mermaid could not be loaded.', error);
+    return null;
+  }
+}
+
 /**
  * Builds a Mermaid theme variables object matched to the TypeFlow docs palette.
  * @param {'dark'|'light'} theme
  * @returns {object} Mermaid themeVariables config
  */
 function getMermaidThemeVars(theme) {
-  const dark = theme !== 'light';
+  const styles = getComputedStyle(root);
+  const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
+  const canvas = token('--tf-bg-canvas', theme === 'light' ? '#f8fafc' : '#090d16');
+  const surface = token('--tf-bg-surface', theme === 'light' ? '#ffffff' : '#0f172a');
+  const elevated = token('--tf-bg-surface-elevated', theme === 'light' ? '#f1f5f9' : '#1e293b');
+  const border = token('--tf-border-default', theme === 'light' ? '#cbd5e1' : '#253347');
+  const strongBorder = token('--tf-border-strong', theme === 'light' ? '#94a3b8' : '#334155');
+  const text = token('--tf-text-primary', theme === 'light' ? '#0f172a' : '#f1f5f9');
+  const secondaryText = token('--tf-text-secondary', theme === 'light' ? '#475569' : '#a8b4c5');
+  const accent = token('--tf-accent', theme === 'light' ? '#0284c7' : '#38bdf8');
+  const orange = token('--tf-nav-active', theme === 'light' ? '#c2410c' : '#ffb07c');
+  const mono = token('--tf-font-mono', 'ui-monospace, monospace');
+
   return {
-    // Base backgrounds
-    background:          dark ? '#090d16' : '#f8fafc',
-    mainBkg:             dark ? '#0f172a' : '#ffffff',
-    nodeBorder:          dark ? '#253347' : '#cbd5e1',
-    clusterBkg:          dark ? '#1e293b' : '#f1f5f9',
-    titleColor:          dark ? '#f1f5f9' : '#0f172a',
-    edgeLabelBackground: dark ? '#1e293b' : '#f1f5f9',
-
-    // Text
-    nodeTextColor:       dark ? '#f1f5f9' : '#0f172a',
-    textColor:           dark ? '#94a3b8' : '#475569',
-    labelTextColor:      dark ? '#f1f5f9' : '#0f172a',
-
-    // Primary accent (sky blue)
-    primaryColor:        dark ? '#0c2340' : '#e0f2fe',
-    primaryBorderColor:  dark ? '#38bdf8' : '#0284c7',
-    primaryTextColor:    dark ? '#38bdf8' : '#0284c7',
-
-    // Secondary accent (orange)
-    secondaryColor:      dark ? '#2a1200' : '#fff7ed',
-    secondaryBorderColor:dark ? '#fb923c' : '#ea580c',
-    secondaryTextColor:  dark ? '#fb923c' : '#ea580c',
-
-    // Tertiary accent (purple)
-    tertiaryColor:       dark ? '#1a0e2e' : '#faf5ff',
-    tertiaryBorderColor: dark ? '#a78bfa' : '#7c3aed',
-    tertiaryTextColor:   dark ? '#a78bfa' : '#7c3aed',
-
-    // Lines / borders
-    lineColor:           dark ? '#334155' : '#94a3b8',
-    activationBorderColor: dark ? '#38bdf8' : '#0284c7',
-    activationBkgColor:  dark ? '#0c2340' : '#e0f2fe',
-
-    // Sequence diagram participants
-    actorBkg:            dark ? '#0f172a' : '#ffffff',
-    actorBorder:         dark ? '#253347' : '#cbd5e1',
-    actorTextColor:      dark ? '#f1f5f9' : '#0f172a',
-    actorLineColor:      dark ? '#334155' : '#94a3b8',
-
-    // Signals / notes
-    signalColor:         dark ? '#94a3b8' : '#475569',
-    signalTextColor:     dark ? '#f1f5f9' : '#0f172a',
-    noteBkgColor:        dark ? '#1e293b' : '#f1f5f9',
-    noteBorderColor:     dark ? '#253347' : '#e2e8f0',
-    noteTextColor:       dark ? '#94a3b8' : '#475569',
-
-    // Fonts
-    fontFamily:          "'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace",
-    fontSize:            '13px',
+    background: canvas,
+    mainBkg: surface,
+    nodeBorder: border,
+    clusterBkg: elevated,
+    titleColor: text,
+    edgeLabelBackground: elevated,
+    nodeTextColor: text,
+    textColor: secondaryText,
+    labelTextColor: text,
+    primaryColor: surface,
+    primaryBorderColor: accent,
+    primaryTextColor: text,
+    secondaryColor: elevated,
+    secondaryBorderColor: orange,
+    secondaryTextColor: orange,
+    tertiaryColor: canvas,
+    tertiaryBorderColor: strongBorder,
+    tertiaryTextColor: secondaryText,
+    lineColor: strongBorder,
+    activationBorderColor: accent,
+    activationBkgColor: elevated,
+    actorBkg: surface,
+    actorBorder: border,
+    actorTextColor: text,
+    actorLineColor: strongBorder,
+    signalColor: secondaryText,
+    signalTextColor: text,
+    noteBkgColor: elevated,
+    noteBorderColor: border,
+    noteTextColor: secondaryText,
+    fontFamily: mono,
+    fontSize: '13px',
   };
 }
 
@@ -109,7 +126,7 @@ function getMermaidThemeVars(theme) {
  * @param {'dark'|'light'} [theme]
  */
 async function initMermaid(theme) {
-  const mermaid = window.mermaid;
+  const mermaid = await loadMermaid();
   if (!mermaid) return;
 
   theme = theme || root.dataset.theme || 'dark';
@@ -125,69 +142,85 @@ async function initMermaid(theme) {
     gantt: { useMaxWidth: false },
   });
 
-  // Hugo renders ```mermaid as <pre><code class="language-mermaid">
-  // Mermaid itself also reads <div class="mermaid"> — handle both.
+  // Hugo renders ```mermaid as <pre><code class="language-mermaid">. Keep the
+  // original block in place until Mermaid has loaded, which is the no-JS and
+  // network-failure fallback.
   const codeBlocks = document.querySelectorAll('pre code.language-mermaid');
 
   for (const code of codeBlocks) {
     const pre = code.closest('pre');
-    if (!pre || pre.dataset.mermaidProcessed) continue;
-    pre.dataset.mermaidProcessed = '1';
+    if (!pre) continue;
 
     const definition = code.textContent.trim();
-    const wrapper = document.createElement('div');
+    const wrapper = document.createElement('figure');
     wrapper.className = 'mermaid-diagram';
+    wrapper.setAttribute('aria-label', 'TypeFlow architecture diagram');
     wrapper.innerHTML = `
       <div class="mermaid-toolbar">
         <span class="mermaid-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="m9 9 3 3 3-3"/><path d="M12 12v6"/></svg> Diagram</span>
-        <button type="button" class="mermaid-copy-btn" title="Copy source"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
+        <button type="button" class="mermaid-copy-btn" aria-label="Copy Mermaid source"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
       </div>
-      <div class="mermaid-render" id="mermaid-${Math.random().toString(36).slice(2)}"></div>
+      <div class="mermaid-render" id="mermaid-${++mermaidRenderSequence}" role="img" aria-label="Rendered Mermaid diagram" tabindex="0"></div>
+      <details class="mermaid-source">
+        <summary>View diagram source</summary>
+        <pre><code></code></pre>
+      </details>
     `;
 
-    const renderTarget = wrapper.querySelector('.mermaid-render');
-    const copyBtn = wrapper.querySelector('.mermaid-copy-btn');
-
+    wrapper.querySelector('.mermaid-source code').textContent = definition;
+    mermaidSources.set(wrapper, definition);
     pre.replaceWith(wrapper);
 
-    try {
-      const { svg } = await mermaid.render(renderTarget.id, definition);
-      renderTarget.innerHTML = svg;
-      // Make SVG responsive
-      const svgEl = renderTarget.querySelector('svg');
-      if (svgEl) {
-        svgEl.removeAttribute('width');
-        svgEl.removeAttribute('height');
-        if (!svgEl.getAttribute('viewBox')) {
-          svgEl.setAttribute('viewBox', `0 0 ${svgEl.getAttribute('width') || 800} ${svgEl.getAttribute('height') || 400}`);
-        }
-        svgEl.style.maxWidth = '100%';
-        svgEl.style.height = 'auto';
-      }
-    } catch (err) {
-      renderTarget.innerHTML = `<pre class="mermaid-error">⚠ Diagram parse error:\n${err.message}</pre>`;
-    }
-
-    // Copy button
+    const copyBtn = wrapper.querySelector('.mermaid-copy-btn');
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(definition);
-        copyBtn.textContent = '✓ Copied';
+        copyBtn.textContent = 'Copied';
         setTimeout(() => { copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`; }, 1800);
       } catch {}
     });
   }
 
-  // Also process any raw <div class="mermaid"> blocks (e.g. from shortcodes)
-  const rawDivs = document.querySelectorAll('div.mermaid:not([data-mermaid-processed])');
-  if (rawDivs.length) {
-    rawDivs.forEach(el => { el.dataset.mermaidProcessed = '1'; });
-    mermaid.run({ nodes: [...rawDivs] });
+  // Re-render existing wrappers on every theme change using the retained source.
+  for (const wrapper of document.querySelectorAll('.mermaid-diagram')) {
+    const renderTarget = wrapper.querySelector('.mermaid-render');
+    const definition = mermaidSources.get(wrapper);
+    if (!renderTarget || !definition) continue;
+
+    try {
+      // Mermaid's own render() looks up this id in the live document and
+      // deletes any element it finds there as internal bookkeeping, so the
+      // id passed here must never match a permanent element (the render
+      // target keeps its own id from creation and is never touched).
+      const renderId = `mermaid-render-pass-${++mermaidRenderSequence}`;
+      const { svg, bindFunctions } = await mermaid.render(renderId, definition);
+      renderTarget.innerHTML = svg;
+      bindFunctions?.(renderTarget);
+      const svgEl = renderTarget.querySelector('svg');
+      if (svgEl) {
+        svgEl.removeAttribute('width');
+        svgEl.removeAttribute('height');
+        svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      }
+    } catch (error) {
+      renderTarget.replaceChildren();
+      const failure = document.createElement('pre');
+      failure.className = 'mermaid-error';
+      failure.textContent = `Diagram parse error:\n${error instanceof Error ? error.message : String(error)}`;
+      renderTarget.append(failure);
+    }
+  }
+
+  // Raw Mermaid containers are supported for shortcodes. Their source remains
+  // in the element until Mermaid replaces it, so they retain a non-JS fallback.
+  const rawDivs = [...document.querySelectorAll('div.mermaid:not([data-mermaid-processed])')];
+  if (rawDivs.length > 0) {
+    rawDivs.forEach((element) => { element.dataset.mermaidProcessed = 'true'; });
+    await mermaid.run({ nodes: rawDivs });
   }
 }
 
-// Boot Mermaid once the module is loaded — use a small delay so mermaid.esm is ready
-window.addEventListener('load', () => setTimeout(() => initMermaid(), 80));
+initMermaid();
 
 // ─── Mobile Sidebar Toggle ───────────────────────────────────────────────────
 
@@ -268,7 +301,6 @@ if ('startViewTransition' in document) {
     document.querySelectorAll('.sidebar-link').forEach((l) => {
       const lHref = l.getAttribute('href');
       const isCurrent = lHref && (href === lHref || href.startsWith(lHref.replace(/\/$/, '') + '/'));
-      l.classList.toggle('active', isCurrent);
       if (isCurrent) l.setAttribute('aria-current', 'page');
       else l.removeAttribute('aria-current');
     });
@@ -440,6 +472,7 @@ document.querySelectorAll('[data-code-tabs]').forEach((tabset) => {
  */
 const heroSloganEl = document.getElementById('hero-slogan');
 const heroModeText = document.getElementById('hero-mode-text');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 if (heroSloganEl) {
   const setMode = (label) => {
@@ -449,11 +482,13 @@ if (heroSloganEl) {
   };
 
   let sloganSteps = [];
+  let staticSlogan = null;
   const slogansDataEl = document.getElementById('splash-slogans-data');
   if (slogansDataEl) {
     try {
       const parsedSlogans = JSON.parse(slogansDataEl.textContent);
       if (Array.isArray(parsedSlogans) && parsedSlogans.length > 0) {
+        staticSlogan = parsedSlogans[0];
         parsedSlogans.forEach((item) => {
           sloganSteps.push(
             seq.call(() => setMode(item.mode || item.slogan)),
@@ -487,6 +522,10 @@ if (heroSloganEl) {
 
   // Fallback defaults if json data is absent
   if (sloganSteps.length === 0) {
+    staticSlogan = {
+      slogan: 'typewriter animations.',
+      mode: 'typeStyle: char · eraseStyle: end (backspace)',
+    };
     sloganSteps = [
       seq.call(() => setMode('typeStyle: char · eraseStyle: end (backspace)')),
       seq.type(heroSloganEl, 'typewriter animations.', {
@@ -540,7 +579,12 @@ if (heroSloganEl) {
     ];
   }
 
-  TypeFlow.sequence(sloganSteps, { repeat: Infinity });
+  if (reduceMotion && staticSlogan) {
+    heroSloganEl.textContent = staticSlogan.slogan;
+    setMode(staticSlogan.mode);
+  } else {
+    TypeFlow.sequence(sloganSteps, { repeat: Infinity });
+  }
 }
 
 // ─── Hero Staggered Terminal Demo ─────────────────────────────────────────────
@@ -588,7 +632,11 @@ if (line1 && line2 && line3) {
     });
   };
 
-  runTerminalStagger();
+  if (reduceMotion) {
+    terminalLines.forEach((line, index) => { line.textContent = terminalTexts[index]; });
+  } else {
+    runTerminalStagger();
+  }
 }
 
 // ─── Lucide Icons Initialization ─────────────────────────────────────────────
@@ -817,6 +865,8 @@ const pgSampleSelect     = document.getElementById('pg-sample-select');
 const pgText             = document.getElementById('pg-text');
 const pgDirection        = document.getElementById('pg-direction');
 const pgTypeStyle        = document.getElementById('pg-type-style');
+const pgWordOrder        = document.getElementById('pg-word-order');
+const pgWordLayout       = document.getElementById('pg-word-layout');
 const pgScrambleCharset  = document.getElementById('pg-scramble-charset');
 const pgScrambleColor    = document.getElementById('pg-scramble-color');
 const pgScrambleRounds   = document.getElementById('pg-scramble-rounds');
@@ -938,6 +988,16 @@ if (pgStage && btnType) {
       opts.trailMinOpacity = minOp;
     }
 
+    const WORD_MOTION_STYLES = new Set([
+      'word-fade', 'float-in-top', 'float-in-bottom', 'float-in-left', 'float-in-right', 'zoom-in-space',
+    ]);
+    if (WORD_MOTION_STYLES.has(pgTypeStyle?.value) || WORD_MOTION_STYLES.has(pgEraseStyle?.value)) {
+      opts.wordOrder = pgWordOrder?.value || 'left-to-right';
+      opts.wordLayout = pgWordLayout?.value || 'opacity';
+      opts.wordFadeDuration = Number(pgFadeDuration?.value ?? 280);
+      if (pgStagger && Number(pgStagger.value) > 0) opts.wordStagger = Number(pgStagger.value);
+    }
+
     if (pgStagger && Number(pgStagger.value) > 0) {
       opts.stagger = Number(pgStagger.value);
     }
@@ -954,19 +1014,95 @@ if (pgStage && btnType) {
   };
 
   const highlightJavaScript = (code) => {
-    const escaped = code
+    const escape = (value) => value
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+    const token = (kind, value) => `<span class="token-${kind}">${escape(value)}</span>`;
+    const declarations = new Set(['class', 'const', 'function', 'import', 'let', 'var']);
+    const keywords = new Set([
+      'as', 'async', 'await', 'break', 'case', 'catch', 'continue', 'default',
+      'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'from',
+      'if', 'in', 'instanceof', 'new', 'of', 'return', 'static', 'switch',
+      'throw', 'try', 'typeof', 'void', 'while', 'with', 'yield',
+    ]);
+    const constants = new Set(['false', 'Infinity', 'NaN', 'null', 'true', 'undefined']);
+    let output = '';
+    let index = 0;
 
-    return escaped
-      .replace(/(['"`])(.*?)\1/g, '<span class="token-string">$1$2$1</span>')
-      .replace(/\b(import|from|const|let|var|return|function|async|await|new|export|default|if|else)\b/g, '<span class="token-keyword">$1</span>')
-      .replace(/\b(true|false|null|undefined)\b/g, '<span class="token-boolean">$1</span>')
-      .replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
-      .replace(/(["']?[a-zA-Z0-9_$]+["']?)(?=\s*:)/g, '<span class="token-property">$1</span>')
-      .replace(/\b(type|erase|morph|stream|sequence|rotate|stagger|fit|stop|preset)\b(?=\s*\()/g, '<span class="token-function">$1</span>')
-      .replace(/\b(TypeFlow)\b/g, '<span class="token-class">$1</span>');
+    while (index < code.length) {
+      const rest = code.slice(index);
+
+      if (rest.startsWith('//')) {
+        const length = rest.indexOf('\n') === -1 ? rest.length : rest.indexOf('\n');
+        output += token('comment', rest.slice(0, length));
+        index += length;
+        continue;
+      }
+      if (rest.startsWith('/*')) {
+        const close = rest.indexOf('*/', 2);
+        const length = close === -1 ? rest.length : close + 2;
+        output += token('comment', rest.slice(0, length));
+        index += length;
+        continue;
+      }
+
+      const quote = code[index];
+      if (quote === "'" || quote === '"' || quote === '`') {
+        let end = index + 1;
+        while (end < code.length) {
+          if (code[end] === '\\') {
+            end += 2;
+            continue;
+          }
+          if (code[end++] === quote) break;
+        }
+        output += token('string', code.slice(index, end));
+        index = end;
+        continue;
+      }
+
+      const whitespace = rest.match(/^\s+/)?.[0];
+      if (whitespace) {
+        output += whitespace;
+        index += whitespace.length;
+        continue;
+      }
+
+      const number = rest.match(/^(?:0[xob][\da-f]+|\d+(?:\.\d+)?(?:e[+-]?\d+)?n?)/i)?.[0];
+      if (number) {
+        output += token('number', number);
+        index += number.length;
+        continue;
+      }
+
+      const identifier = rest.match(/^[A-Za-z_$][\w$]*/)?.[0];
+      if (identifier) {
+        const following = code.slice(index + identifier.length).trimStart();
+        let kind = 'variable';
+        if (declarations.has(identifier)) kind = 'declaration';
+        else if (keywords.has(identifier)) kind = 'keyword';
+        else if (constants.has(identifier)) kind = identifier === 'true' || identifier === 'false' ? 'boolean' : 'constant';
+        else if (identifier === 'TypeFlow') kind = 'class';
+        else if (following.startsWith(':')) kind = 'property';
+        else if (following.startsWith('(')) kind = 'function';
+        output += token(kind, identifier);
+        index += identifier.length;
+        continue;
+      }
+
+      const operator = rest.match(/^(?:===|!==|>>>|\?\?|\?\.|=>|==|!=|<=|>=|&&|\|\||\+\+|--|\*\*|\+=|-=|\*=|\/=|[+\-*/%=&|!<>?~^])/u)?.[0];
+      if (operator) {
+        output += token('operator', operator);
+        index += operator.length;
+        continue;
+      }
+
+      output += token('punctuation', code[index]);
+      index += 1;
+    }
+
+    return output;
   };
 
   const updateCodeSnippet = () => {
@@ -1019,6 +1155,8 @@ if (pgStage && btnType) {
     pgText,
     pgDirection,
     pgTypeStyle,
+    pgWordOrder,
+    pgWordLayout,
     pgScrambleCharset,
     pgScrambleColor,
     pgEraseStyle,
@@ -2029,6 +2167,3 @@ if (tocLinks.length) {
 
   headings.forEach((h) => observer.observe(h));
 }
-
-
-

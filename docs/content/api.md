@@ -53,7 +53,17 @@ export interface TypeFlowConfig {
   naturalCadence?: boolean;
   granularity?: "grapheme" | "word";
   direction?: "left" | "right" | "center";
-  typeStyle?: "char" | "word" | "scramble" | "fade-trail";
+  typeStyle?: "char" | "word" | "scramble" | "fade-trail" | "word-fade" | "float-in-top" | "float-in-bottom" | "float-in-left" | "float-in-right" | "zoom-in-space";
+  wordOrder?: "left-to-right" | "right-to-left" | "random";
+  wordLayout?: "opacity" | "placeholder";
+  wordFadeDuration?: number;
+  wordStagger?: number;
+  wordSeed?: string | number;
+  wordMotionDistance?: number;
+  wordMotionDepth?: number;
+  wordMotionScale?: number;
+  wordMotionPerspective?: number;
+  wordMotionEasing?: string;
   trailFade?: number | boolean;
   cursor?: string;
   cursorBlink?: boolean;
@@ -68,7 +78,7 @@ export interface TypeFlowConfig {
   sanitizer?: (html: string) => string;
   respectReducedMotion?: boolean;
   ariaLive?: "off" | "polite" | "assertive";
-  eraseStyle?: "end" | "start" | "center" | "scramble" | "fade-trail" | "instant" | "fade";
+  eraseStyle?: "end" | "start" | "center" | "scramble" | "fade-trail" | "instant" | "fade" | "word-fade" | "float-in-top" | "float-in-bottom" | "float-in-left" | "float-in-right" | "zoom-in-space";
   duration?: number;
   preserveBaseline?: boolean;
   onStart?: () => void;
@@ -87,7 +97,17 @@ export interface TypeFlowConfig {
 | `naturalCadence`| `boolean`| `false` | Adds natural micro-pauses at punctuation (. , ! ?) and word breaks. |
 | `granularity` | `"grapheme" \| "word"` | `"grapheme"` | Unit segmentation mode using `Intl.Segmenter`. |
 | `direction` | `"left" \| "right" \| "center"` | `"left"` | Typing reveal direction (LTR, RTL, center-outward). |
-| `typeStyle` | `"char" \| "word" \| "scramble" \| "fade-trail"` | `"char"` | Typing reveal presentation style (`fade-trail` adds a soft trailing opacity gradient). |
+| `typeStyle` | `"char" \| "word" \| "scramble" \| "fade-trail" \| "word-fade" \| "float-in-top" \| "float-in-bottom" \| "float-in-left" \| "float-in-right" \| "zoom-in-space"` | `"char"` | Typing reveal presentation style. `word-fade` and the `float-in-*`/`zoom-in-space` spatial styles lay out the final text before transitioning each word. |
+| `wordOrder` | `"left-to-right" \| "right-to-left" \| "random"` | `"left-to-right"` | Reveal or erase order for `word-fade` and the spatial word-motion styles; it does not change bidi direction. |
+| `wordLayout` | `"opacity" \| "placeholder"` | `"opacity"` | Stable-layout strategy shared by `word-fade` and the spatial word-motion styles. Placeholder mode also hides unrevealed words with `visibility`. |
+| `wordFadeDuration` | `number` | `280` | Opacity/transform transition duration for each word in milliseconds. |
+| `wordStagger` | `number` | Current `speed` | Delay between consecutive word transitions in milliseconds. |
+| `wordSeed` | `string \| number` | `undefined` | Optional deterministic seed when `wordOrder` is `"random"`. |
+| `wordMotionDistance` | `number` | `24` | Translate distance in pixels for `float-in-*` styles. |
+| `wordMotionDepth` | `number` | `160` | `translateZ` depth in pixels for `zoom-in-space`. |
+| `wordMotionScale` | `number` | `0.82` | Starting scale (0-1) for `zoom-in-space`. |
+| `wordMotionPerspective` | `number` | `600` | CSS `perspective` in pixels applied to the target element while `zoom-in-space` runs. |
+| `wordMotionEasing` | `string` | `"ease"` | CSS timing function for `float-in-*`/`zoom-in-space` transitions. |
 | `trailFade` | `number \| boolean` | `undefined` | Length of trailing fade gradient in characters. |
 | `scrambleCharset` | `"matrix" \| "ascii" \| ...` | `undefined` | Built-in scramble glyph charset preset name. |
 | `scrambleGlyphs`| `string` | `"!<>-_\\/[]{}—=+*^?#________"` | Character pool used during scramble reveals. |
@@ -102,7 +122,7 @@ export interface TypeFlowConfig {
 | `sanitizer` | `(html: string) => string` | `undefined` | Custom HTML sanitization function. |
 | `respectReducedMotion` | `boolean` | `true` | Skips animation if user OS has `prefers-reduced-motion: reduce`. |
 | `ariaLive` | `"off" \| "polite" \| "assertive"` | `undefined` | Updates the element `aria-live` attribute during typing. |
-| `eraseStyle` | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade"` | `"end"` | Erasing animation method. |
+| `eraseStyle` | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade" \| "word-fade" \| "float-in-top" \| "float-in-bottom" \| "float-in-left" \| "float-in-right" \| "zoom-in-space"` | `"end"` | Erasing animation method. |
 | `duration` | `number` | `250` | Fade duration in ms when `eraseStyle: 'fade'`. |
 | `preserveBaseline` | `boolean` | `true` | Retains initial prefix when erasing an `append` mode element. |
 | `onStart` | `() => void` | `undefined` | Callback invoked right before the first character renders. |
