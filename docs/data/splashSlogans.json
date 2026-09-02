@@ -1,20 +1,27 @@
 [
   {
-    "slogan": "typewriter animations.",
+    "slogan": "Typewriter animation Library",
     "mode": "typeStyle: char · eraseStyle: end",
     "typeStyle": "char",
     "eraseStyle": "end",
     "speed": 48
   },
   {
-    "slogan": "center-outward typography.",
+    "slogan": "Customizable reveal animations.",
     "mode": "direction: center · eraseStyle: center",
     "direction": "center",
     "eraseStyle": "center",
     "speed": 46
   },
   {
-    "slogan": "Scramble animation.",
+    "slogan": "Multi-directional reveal configurations.",
+    "mode": "direction: right · eraseStyle: start",
+    "direction": "right",
+    "eraseStyle": "start",
+    "speed": 46
+  },
+  {
+    "slogan": "Cybernetic scramble decrypt reveal.",
     "mode": "typeStyle: scramble · scrambleCharset: matrix",
     "typeStyle": "scramble",
     "scrambleCharset": "matrix",
@@ -23,13 +30,13 @@
     "speed": 44
   },
   {
-    "slogan": "smart diff morphing.",
+    "slogan": "Smart diff morphing.",
     "mode": "TypeFlow.morph() · longest common prefix",
-    "eraseStyle": "start",
+    "eraseStyle": "end",
     "speed": 45
   },
   {
-    "slogan": "real-time streaming.",
+    "slogan": "Real-time streaming.",
     "mode": "TypeFlow.stream() · zero DOM lag",
     "typeStyle": "word",
     "cursor": "▍",
@@ -37,13 +44,7 @@
     "speed": 40
   },
   {
-    "slogan": "procedural web audio clicks.",
-    "mode": "audio: mechanical · Web Audio API",
-    "speed": 45,
-    "eraseStyle": "end"
-  },
-  {
-    "slogan": "trailing fade dissolve motion.",
+    "slogan": "Trailing fade dissolve motion.",
     "mode": "typeStyle: fade-trail · trailFade: 6",
     "typeStyle": "fade-trail",
     "trailFade": 6,
@@ -51,23 +52,65 @@
     "speed": 42
   },
   {
-    "slogan": "100% safe HTML parsing.",
-    "mode": "html: true · DOMParser AST tree",
-    "html": true,
-    "eraseStyle": "word",
-    "speed": 45
+    "slogan": "Stable-layout word fade reveals.",
+    "mode": "typeStyle: word-fade · wordOrder: left-to-right",
+    "typeStyle": "word-fade",
+    "eraseStyle": "word-fade",
+    "wordOrder": "left-to-right",
+    "wordFadeDuration": 260,
+    "speed": 55,
+    "cursor": "|"
   },
   {
-    "slogan": "right-to-left reverse reveals.",
-    "mode": "direction: right · eraseStyle: start",
-    "direction": "right",
-    "eraseStyle": "start",
-    "speed": 46
+    "slogan": "Perspective zoom word motion.",
+    "mode": "typeStyle: zoom-in-space · perspective transform",
+    "typeStyle": "zoom-in-space",
+    "eraseStyle": "zoom-in-space",
+    "wordFadeDuration": 260,
+    "speed": 60,
+    "cursor": "|"
   },
   {
-    "slogan": "declarative sequences & rotators.",
+    "slogan": "Declarative sequences & rotators.",
     "mode": "TypeFlow.sequence() · seq.visible()",
     "eraseStyle": "fade",
     "speed": 45
+  },
+  {
+    "slogan": "Zero-dependency framework adapters.",
+    "mode": "TypeFlow adapters · React · Vue · Svelte · Solid",
+    "typeStyle": "word",
+    "direction": "left",
+    "eraseStyle": "fade",
+    "speed": 42,
+    "cursor": "▍"
+  },
+  {
+    "slogan": "Safe HTML parsing.",
+    "mode": "html: true · DOMParser AST tree",
+    "html": true,
+    "eraseStyle": "end",
+    "speed": 45
+  },
+  {
+    "slogan": "Audio synthesis and soundtrack synchronization.",
+    "mode": "audio: synth · lifecycle-synchronized playback",
+    "typeStyle": "char",
+    "direction": "center",
+    "eraseStyle": "fade-trail",
+    "trailFade": 5,
+    "speed": 43,
+    "cursor": "|"
+  },
+  {
+    "slogan": "Live interactive playground.",
+    "mode": "playground · live options · generated configuration",
+    "typeStyle": "scramble",
+    "direction": "left",
+    "scrambleCharset": "cyber",
+    "scrambleRounds": 2,
+    "eraseStyle": "scramble",
+    "speed": 40,
+    "cursor": "■"
   }
 ]

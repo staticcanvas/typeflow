@@ -12,15 +12,37 @@
     "properties": {
       "slogan": { "type": "string", "minLength": 1 },
       "mode": { "type": "string", "minLength": 1 },
-      "typeStyle": { "enum": ["char", "word", "scramble", "fade-trail"] },
-      "eraseStyle": { "enum": ["end", "start", "center", "scramble", "fade-trail", "instant", "fade"] },
+      "typeStyle": {
+        "enum": [
+          "char", "word", "scramble", "fade-trail", "word-fade",
+          "float-in-top", "float-in-bottom", "float-in-left", "float-in-right", "zoom-in-space"
+        ]
+      },
+      "eraseStyle": {
+        "enum": [
+          "end", "start", "center", "scramble", "fade-trail", "instant", "fade", "word-fade",
+          "float-in-top", "float-in-bottom", "float-in-left", "float-in-right", "zoom-in-space"
+        ]
+      },
       "direction": { "enum": ["left", "right", "center"] },
-      "scrambleCharset": { "type": "string", "minLength": 1 },
+      "scrambleCharset": {
+        "enum": ["matrix", "ascii", "ascii-extended", "blocks", "binary", "hex", "braille", "runic", "cyber"]
+      },
       "scrambleRounds": { "type": "integer", "minimum": 1, "maximum": 100 },
       "trailFade": { "type": "integer", "minimum": 1, "maximum": 100 },
       "speed": { "type": "number", "minimum": 0, "maximum": 10000 },
       "cursor": { "type": "string" },
-      "html": { "type": "boolean" }
+      "html": { "type": "boolean" },
+      "wordOrder": { "enum": ["left-to-right", "right-to-left", "random"] },
+      "wordLayout": { "enum": ["opacity", "placeholder"] },
+      "wordFadeDuration": { "type": "integer", "minimum": 0, "maximum": 10000 },
+      "wordStagger": { "type": "integer", "minimum": 0, "maximum": 10000 },
+      "wordSeed": { "type": "string", "minLength": 1 },
+      "wordMotionDistance": { "type": "integer", "minimum": 0, "maximum": 1000 },
+      "wordMotionDepth": { "type": "integer", "minimum": 0, "maximum": 2000 },
+      "wordMotionScale": { "type": "number", "minimum": 0.01, "maximum": 1 },
+      "wordMotionPerspective": { "type": "integer", "minimum": 0, "maximum": 5000 },
+      "wordMotionEasing": { "type": "string", "minLength": 1 }
     }
   }
 }
