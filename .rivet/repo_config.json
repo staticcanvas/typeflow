@@ -1,0 +1,153 @@
+{
+  "project": {
+    "name": "typeflow",
+    "displayName": "TypeFlow",
+    "namespace": "staticcanvas",
+    "path": "staticcanvas/typeflow",
+    "artifactPath": "staticcanvas/typeflow",
+    "defaultBranch": "develop",
+    "npmPackage": "@staticcanvas/typeflow",
+    "jsrPackage": "@staticcanvas/typeflow",
+    "bannerUrl": "https://r2os.staticcanvas.me/logos/typeflow/dist/webp/typeflow-logo-64x64.webp",
+    "documentationUrl": "https://staticcanvas.gitlab.io/typeflow"
+  },
+  "readmeHeader": {
+    "alignment": "left",
+    "badgeStyle": "flat-square",
+    "badgeColor": "#42275a",
+    "labelColor": "#1e1e1e",
+    "logoColor": "#e73827",
+    "codecovToken": ""
+  },
+  "readme": {
+    "requiredHeadings": [
+      { "level": 2, "name": "Overview" },
+      { "level": 2, "name": "Features" },
+      { "level": 2, "name": "Installation" },
+      { "level": 2, "name": "Usage" },
+      { "level": 2, "name": "Companion Extensions" },
+      { "level": 2, "name": "API Reference" },
+      { "level": 2, "name": "Development & NPM Scripts" },
+      { "level": 2, "name": "Extending TypeFlow & Developer Guide" },
+      { "level": 2, "name": "Benchmarks" }
+    ]
+  },
+  "commit": {
+    "defaultType": "feat",
+    "defaultScope": "core",
+    "defaultDescription": "update typewriter animation engine",
+    "types": [
+      { "name": "feat", "description": "add or change user-facing behavior" },
+      { "name": "fix", "description": "correct defective behavior" },
+      { "name": "docs", "description": "change documentation only" },
+      { "name": "refactor", "description": "restructure without behavior changes" },
+      { "name": "perf", "description": "improve runtime performance" },
+      { "name": "test", "description": "add or correct tests" },
+      { "name": "build", "description": "change build or dependencies" },
+      { "name": "ci", "description": "change continuous integration" },
+      { "name": "chore", "description": "perform repository maintenance" },
+      { "name": "revert", "description": "revert an earlier commit" }
+    ],
+    "scopes": [
+      {
+        "name": "rivet",
+        "description": "repository metadata automation",
+        "paths": ["rivet.ps1", ".rivet/**"]
+      },
+      {
+        "name": "core",
+        "description": "library runtime and core animation engine",
+        "paths": [
+          "src/typeflow.js",
+          "src/typeflow.d.ts",
+          "tests/**",
+          "index.html",
+          "vite*.js",
+          "bunfig.toml"
+        ]
+      },
+      {
+        "name": "audio",
+        "description": "procedural Web Audio keystroke synthesis",
+        "paths": ["src/typeflow-webaudio.js", "src/typeflow-webaudio.d.ts"]
+      },
+      {
+        "name": "keystroke",
+        "description": "keystroke timing, travel distance, and typo simulation",
+        "paths": ["src/typeflow-keystroke.js", "src/typeflow-keystroke.d.ts"]
+      },
+      {
+        "name": "extchars",
+        "description": "extended Unicode decryption character sets",
+        "paths": ["src/typeflow-extchars.js", "src/typeflow-extchars.d.ts"]
+      },
+      {
+        "name": "metrics",
+        "description": "performance HUD diagnostic badge",
+        "paths": ["src/typeflow-metrics.js", "src/typeflow-metrics.d.ts"]
+      },
+      {
+        "name": "debug",
+        "description": "diagnostic tracing and logcad logging",
+        "paths": ["src/typeflow-debug.js", "src/typeflow-debug.d.ts"]
+      },
+      {
+        "name": "adapters",
+        "description": "framework adapters and custom elements",
+        "paths": ["src/typeflow-adapters.js", "src/typeflow-element.js"]
+      },
+      {
+        "name": "docs",
+        "description": "documentation site, guides, and playground",
+        "paths": [
+          "docs/**",
+          "public/**",
+          "editors/**",
+          "branding/**",
+          "architecture/**",
+          "README*.md"
+        ]
+      },
+      {
+        "name": "release",
+        "description": "versioning and release assets",
+        "paths": [
+          "CHANGELOG.md",
+          "release-notes.md",
+          "package*.json",
+          "bun.lock",
+          "jsr.jsonc",
+          "scripts/**",
+          "docs/data/changelog.json",
+          "README*.md"
+        ]
+      },
+      {
+        "name": "ci",
+        "description": "pipeline configuration and quality gates",
+        "paths": [".gitlab-ci.yml", "ci-failures.md"]
+      },
+      { "name": "none", "description": "omit the commit scope", "paths": ["**"] }
+    ],
+    "preview": {
+      "maxDiffLines": 240
+    }
+  },
+  "authors": {
+    "mappings": []
+  },
+  "tagging": {
+    "prefix": "v",
+    "releaseSuffix": "-release",
+    "remote": "origin"
+  },
+  "gitlab": {
+    "baseUri": "https://gitlab.com",
+    "projectId": "",
+    "tokenEnvironmentVariable": "GITLAB_API_KEY"
+  },
+  "metadataSource": "repo_meta.json",
+  "labelScope": "project",
+  "defaultTextColor": "#FFFFFF",
+  "requestTimeoutSeconds": 30
+}
