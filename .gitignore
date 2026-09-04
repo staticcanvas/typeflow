@@ -56,7 +56,8 @@ mr.md
 
 # Repository-local rivet checkout managed by rivet.ps1
 /rivet/
-.rivet
+.rivet/mr.md
+.rivet/work-items
 
 
 # Temp Backup
