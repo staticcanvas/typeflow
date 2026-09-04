@@ -2,20 +2,20 @@
 
 ![TypeFlow Banner](https://r2os.staticcanvas.me/logos/typeflow/dist/webp/typeflow-logo-64x64.webp)
 
-[![license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow)
-[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.27.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
-[![documentation](https://img.shields.io/badge/docs-online-0087af?style=flat-square&logo=gitbook&logoColor=ffffff)](https://staticcanvas.gitlab.io/typeflow)
-[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/work_items?sort=created_date&state=opened&first_page_size=20)
+[![license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow)
+[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/pipelines)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.28.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![documentation](https://img.shields.io/badge/docs-online-42275a?style=flat-square&logo=gitbook&logoColor=e73827)](https://staticcanvas.gitlab.io/typeflow)
+[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
-[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/releases/permalink/latest)
-[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/typeflow/-/tags)
+[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/releases/permalink/latest)
+[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/tags)
 
-[![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/typeflow)
-[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/typeflow)
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://www.npmjs.com/package/@staticcanvas/typeflow)
+[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/typeflow?style=flat-square&logo=npm&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://www.npmjs.com/package/@staticcanvas/typeflow)
 
-[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://jsr.io/%40staticcanvas/typeflow)
-[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/typeflow?style=flat-square&logo=jsdelivr&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/typeflow)
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://jsr.io/%40staticcanvas/typeflow)
+[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/typeflow?style=flat-square&logo=jsdelivr&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/typeflow)
 
 [![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.27.0/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/develop/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
@@ -399,7 +399,12 @@ TypeFlow.type('#terminal', 'System diagnostics active.', {
 | `naturalCadence`       | `boolean`                                                                                                     | `false`                         | Automatic micro-pauses at punctuation (. , ! ?) and word breaks.                                  |
 | `granularity`          | `"grapheme" \| "word"`                                                                                        | `"grapheme"`                    | Unit segmentation mode using `Intl.Segmenter`.                                                    |
 | `direction`            | `"left" \| "right" \| "center"`                                                                               | `"left"`                        | Typing reveal direction (LTR, RTL, center-outward).                                               |
-| `typeStyle`            | `"char" \| "word" \| "scramble" \| "fade-trail"`                                                              | `"char"`                        | Typing reveal presentation style (`fade-trail` creates a soft trailing opacity ramp).             |
+| `typeStyle`            | `"char" \| "word" \| "scramble" \| "fade-trail" \| "word-fade"`                                              | `"char"`                        | Typing reveal style; `word-fade` retains final word positions while transitioning opacity.        |
+| `wordOrder`            | `"left-to-right" \| "right-to-left" \| "random"`                                                                 | `"left-to-right"`               | Word reveal or erase order without changing the element's bidi direction.                         |
+| `wordLayout`           | `"opacity" \| "placeholder"`                                                                                       | `"opacity"`                     | Stable word layout strategy used by `word-fade`.                                                  |
+| `wordFadeDuration`     | `number`                                                                                                      | `280`                            | Opacity transition duration for each word in milliseconds.                                        |
+| `wordStagger`          | `number`                                                                                                      | Current `speed`                  | Delay between consecutive word transitions.                                                       |
+| `wordSeed`             | `string \| number`                                                                                            | `undefined`                      | Reproducible shuffle seed when `wordOrder` is `"random"`.                                        |
 | `trailFade`            | `number \| boolean`                                                                                           | `undefined`                     | Soft trailing opacity gradient length in characters (e.g. `3` or `4`).                            |
 | `scrambleCharset`      | `"matrix" \| "ascii" \| "ascii-extended" \| "blocks" \| "binary" \| "hex" \| "braille" \| "runic" \| "cyber"` | `undefined`                     | Built-in scramble glyph charset preset.                                                           |
 | `scrambleGlyphs`       | `string`                                                                                                      | `"!<>-_\\/[]{}—=+*^?#________"` | Custom character pool used during scramble reveals.                                               |
@@ -414,7 +419,7 @@ TypeFlow.type('#terminal', 'System diagnostics active.', {
 | `sanitizer`            | `(html: string) => string`                                                                                    | `undefined`                     | Custom sanitizer function overriding default sanitizer.                                           |
 | `respectReducedMotion` | `boolean`                                                                                                     | `true`                          | Instantly completes animation when reduced motion is preferred.                                   |
 | `ariaLive`             | `"off" \| "polite" \| "assertive"`                                                                            | `undefined`                     | ARIA live region policy applied to target element.                                                |
-| `eraseStyle`           | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade"`                           | `"end"`                         | Erase technique direction or visual transition mode (`fade-trail` dissolves trailing characters). |
+| `eraseStyle`           | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade" \| "word-fade"`           | `"end"`                         | Erase technique direction or visual transition mode.                                              |
 | `duration`             | `number`                                                                                                      | `250`                           | Transition duration in ms when `eraseStyle: "fade"`.                                              |
 | `preserveBaseline`     | `boolean`                                                                                                     | `true`                          | Preserves base content when erasing `append` mode elements.                                       |
 | `onStart`              | `() => void`                                                                                                  | `undefined`                     | Callback invoked when animation begins.                                                           |
@@ -456,14 +461,20 @@ TypeFlow provides a full suite of NPM scripts for local development, automated t
 | :--------------------------- | :--------------------------------------------------------------------- | :----------------------------------------------------------------------- |
 | **`npm run dev`**            | `vite`                                                                 | Starts the local Vite development server for rapid iteration.            |
 | **`npm run build`**          | `vite build`                                                           | Compiles production ESM, CJS, and UMD bundles into `dist/`.              |
-| **`npm test`**               | `vitest run`                                                           | Runs the full Vitest unit test suite (34 test cases).                    |
+| **`npm test`**               | `vitest run`                                                           | Runs the full Vitest unit test suite.                                    |
 | **`npm run test:coverage`**  | `vitest run --coverage`                                                | Executes tests with V8 code coverage report.                             |
-| **`npm run benchmark`**      | `node scripts/run-benchmark.mjs`                                       | Executes 10,000+ character synthetic benchmark suite.                    |
-| **`npm run benchmark:md`**   | `node scripts/run-benchmark.mjs --markdown`                            | Runs benchmarks and outputs a copy-pasteable Markdown table.             |
-| **`npm run benchmark:json`** | `node scripts/run-benchmark.mjs --json`                                | Outputs machine-readable JSON metrics for CI pipelines.                  |
-| **`npm run check:size`**     | `node scripts/check-bundle-size.mjs`                                   | Verifies bundle sizes against strict budget thresholds (<8KB gzipped).   |
-| **`npm run check:quality`**  | `npm run build && npm run check:size && npm run benchmark && npm test` | Runs the complete quality assurance pipeline.                            |
+| **`npm run benchmark`**      | `node --expose-gc scripts/run-benchmark.mjs`                            | Runs the repeated 10k, 50k, 100k, and concurrency-tier synthetic suite.  |
+| **`npm run benchmark:quick`**| `node --expose-gc scripts/run-benchmark.mjs --quick`                    | Runs three samples over a reduced concurrency matrix.                    |
+| **`npm run benchmark:md`**   | `node --expose-gc scripts/run-benchmark.mjs --markdown`                 | Generates a Markdown result table.                                      |
+| **`npm run benchmark:json`** | `node --expose-gc scripts/run-benchmark.mjs --json`                     | Generates the benchmark report as JSON.                                 |
+| **`npm run check:size`**     | `node scripts/check-bundle-size.mjs`                                   | Verifies the core bundle against the 10 KiB gzip budget.                 |
+| **`npm run validate:docs-data`** | `node scripts/validate-doc-data.mjs`                               | Validates documentation splash data against its schema.                 |
+| **`npm run check:quality`**  | `npm run validate:docs-data && npm run build && npm run check:size && npm test` | Runs deterministic release quality checks.                    |
 | **`npm run docs:build`**     | `npm run build && hugo --source docs`                                  | Compiles the static documentation and playground website into `public/`. |
+| **`npm run release:docs:preview`** | Rivet release-document dry run | Previews generated release notes and Hugo changelog data from the latest reachable stable tag. |
+| **`npm run release:docs`** | Rivet release-document sync | Updates `CHANGELOG.md`, `release-notes.md`, and `docs/data/changelog.json`; requires Rivet at `./rivet`. |
+| **`npm run release:docs:rebuild:preview`** | Rivet history dry run | Previews a complete release-history rebuild across reachable tags. |
+| **`npm run release:docs:rebuild`** | Rivet history sync | Rebuilds the canonical changelog and generated Hugo projection across all reachable tags. |
 | **`npm run docs:serve`**     | `npm run build && hugo server --source docs...`                        | Launches local live-reloading Hugo documentation server.                 |
 | **`npm run lint`**           | `eslint .`                                                             | Validates codebase with ESLint.                                          |
 | **`npm run lint:fix`**       | `eslint . --fix`                                                       | Automatically resolves fixable lint issues.                              |
@@ -568,23 +579,28 @@ export function createTypeFlowCustomHook(useRef, useEffect) {
 
 TypeFlow is engineered with pre-compiled token caching and direct DOM window slicing, delivering sub-millisecond execution speeds even under 10,000+ character payloads.
 
-### Synthetic Benchmarks (Node.js & Modern V8 Engines)
+### Synthetic Benchmarks (Node.js and JSDOM)
 
-| Benchmark Scenario                       | Payload Size                         | Execution Time | Memory Delta    | Status |
-| :--------------------------------------- | :----------------------------------- | :------------- | :-------------- | :----- |
-| **Plain Text Parse & Segmentation**      | 10,125 characters                    | **20.18 ms**   | +2.6 MB heap    | PASS   |
-| **Safe HTML Parse & Sanitize**           | 10,170 characters (nested tags)      | **145.71 ms**  | <4.5 MB heap    | PASS   |
-| **Instant Erase & DOM Reset**            | 10,000 characters                    | **4.89 ms**    | <0.1 MB heap    | PASS   |
-| **Word-Level Segmentation**              | 10,000 characters (`Intl.Segmenter`) | **11.41 ms**   | <0.1 MB heap    | PASS   |
-| **Trailing Fade Gradient Rendering**     | 10,000 characters (sliding opacity)  | **3.53 ms**    | <0.2 MB heap    | PASS   |
-| **Directional Reveal Math (Center/RTL)** | 1,000 units                          | **< 1.00 ms**  | 0 KB allocation | PASS   |
-| **Smart Morph Diff Calculation**         | Longest common prefix diffing        | **< 0.15 ms**  | 0 KB allocation | PASS   |
-| **Production ESM Bundle Footprint**      | Minified + Gzipped                   | **< 7.1 KB**   | 0 runtime deps  | PASS   |
+The synthetic suite measures engine completion time and heap deltas. Each scenario runs warm-up iterations followed by seven measured samples and reports minimum, median, p95, maximum, and standard deviation. It covers:
 
-Run the benchmark suite locally with formatted Markdown output:
+- 10,000, 50,000, and 100,000-character plain-text final rendering;
+- word segmentation, safe nested-HTML parsing, morphing, and instant erasing at each character tier;
+- 1, 10, 25, 50, 100, 250, 500, and 1,000 concurrent short instances;
+- raw and gzip production bundle size; and
+- Node, JSDOM, operating system, processor, sample, garbage-collection, and commit metadata.
+
+JSDOM does not calculate browser layout, paint, frame rate, GPU composition, or long tasks. These results must not be presented as a supported browser instance limit.
+
+Run the suite with formatted Markdown output:
 
 ```bash
 npm run benchmark:md
+```
+
+Generate JSON without npm's command banner when piping the result:
+
+```bash
+npm run --silent benchmark:json > typeflow-benchmark.json
 ```
 
 ---

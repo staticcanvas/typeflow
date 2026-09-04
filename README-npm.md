@@ -2,10 +2,10 @@
 
 # **@staticcanvas/typeflow**
 
-[![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&color=%230087af)](https://www.npmjs.com/package/@staticcanvas/typeflow)
-[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&color=%230087af)](https://jsr.io/%40staticcanvas/typeflow)
-[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.27.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
-[![license](https://img.shields.io/npm/l/@staticcanvas/typeflow?style=flat-square&color=%230087af)](https://gitlab.com/staticcanvas/typeflow)
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&color=%2342275a)](https://www.npmjs.com/package/@staticcanvas/typeflow)
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&color=%2342275a)](https://jsr.io/%40staticcanvas/typeflow)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.28.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![license](https://img.shields.io/npm/l/@staticcanvas/typeflow?style=flat-square&color=%2342275a)](https://gitlab.com/staticcanvas/typeflow)
 
 > **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 
@@ -198,25 +198,24 @@ TypeFlow.isTyping(target): boolean
 | :-------------------------- | :--------------------------------------------------------------------- | :---------------------------------------------------------- |
 | **`npm run dev`**           | `vite`                                                                 | Starts local Vite development server.                       |
 | **`npm run build`**         | `vite build`                                                           | Compiles production ESM, CJS, and UMD bundles into `dist/`. |
-| **`npm test`**              | `vitest run`                                                           | Runs full unit test suite (34 test cases).                  |
-| **`npm run benchmark`**     | `node scripts/run-benchmark.mjs`                                       | Runs 10k+ char synthetic benchmarks.                        |
-| **`npm run benchmark:md`**  | `node scripts/run-benchmark.mjs --markdown`                            | Outputs formatted Markdown benchmark table.                 |
-| **`npm run check:quality`** | `npm run build && npm run check:size && npm run benchmark && npm test` | Runs the full QA validation pipeline.                       |
+| **`npm test`**              | `vitest run`                                                           | Runs the full unit test suite.                              |
+| **`npm run benchmark`**     | `node --expose-gc scripts/run-benchmark.mjs`                           | Runs repeated 10k, 50k, 100k, and concurrency benchmarks.  |
+| **`npm run benchmark:md`**  | `node --expose-gc scripts/run-benchmark.mjs --markdown`                | Generates a Markdown benchmark table.                      |
+| **`npm run benchmark:json`**| `node --expose-gc scripts/run-benchmark.mjs --json`                    | Generates machine-readable benchmark data.                 |
+| **`npm run check:quality`** | `npm run validate:docs-data && npm run build && npm run check:size && npm test` | Runs deterministic release checks.              |
 
 ---
 
 ## Benchmarks
 
-| Benchmark Scenario                       | Payload               | Execution Time | Memory Overhead |
-| :--------------------------------------- | :-------------------- | :------------- | :-------------- |
-| **Plain Text Parse & Segmentation**      | 10,125 chars          | **20.18 ms**   | +2.6 MB heap    |
-| **Safe HTML Parse & Allowlist Sanitize** | 10,170 chars          | **145.71 ms**  | <4.5 MB heap    |
-| **Instant Erase & DOM Reset**            | 10,000 chars          | **4.89 ms**    | <0.1 MB heap    |
-| **Word Segmentation (`Intl.Segmenter`)** | 10,000 chars          | **11.41 ms**   | <0.1 MB heap    |
-| **Trailing Fade Gradient Rendering**     | 10,000 chars          | **3.53 ms**    | <0.2 MB heap    |
-| **Directional Reveal Math (Center/RTL)** | 1,000 units           | **< 1.00 ms**  | 0 KB allocation |
-| **Smart Morph Diff Calculation**         | Longest common prefix | **< 0.15 ms**  | 0 KB allocation |
-| **Production ESM Bundle Footprint**      | Minified + Gzip       | **< 7.1 KB**   | 0 runtime deps  |
+The JSDOM suite uses warm-up rounds and seven measured samples at 10,000, 50,000, and 100,000 characters. It reports minimum, median, p95, maximum, standard deviation, and heap delta for plain text, word segmentation, safe HTML, morph, and instant erase operations. It also measures 1–1,000 concurrent short instances.
+
+These synthetic results do not measure browser layout, paint, frame rate, long tasks, or GPU composition and therefore do not define a supported browser instance limit.
+
+```bash
+npm run benchmark:md
+npm run --silent benchmark:json > typeflow-benchmark.json
+```
 
 ---
 
