@@ -3,6 +3,7 @@ title: Changelog
 description: Release history, unreleased features, and version notes for TypeFlow.
 eyebrow: Releases
 category: Releases
+layout: changelog
 keywords:
   - changelog
   - releases

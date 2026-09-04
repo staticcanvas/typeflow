@@ -1,0 +1,41 @@
+{{- $data := site.Data.changelog -}}
+{{- if and $data (eq (int $data.schema_version) 2) $data.versions -}}
+<div class="changelog-data" data-changelog-schema="{{ $data.schema_version }}" data-changelog-source="{{ $data.source.canonical_record }}">
+  {{- range $data.versions }}
+  {{- $release := . -}}
+  {{- $releaseID := printf "release-%s" (.version | anchorize) -}}
+  <section class="changelog-release" aria-labelledby="{{ $releaseID }}">
+    <header class="changelog-release__header">
+      <h2 id="{{ $releaseID }}">{{ if eq .version "unreleased" }}Unreleased{{ else }}v{{ strings.TrimPrefix "v" .version }}{{ end }}</h2>
+      {{- with .date }}<time datetime="{{ . }}">{{ time.Format "2 January 2006" . }}</time>{{ end }}
+    </header>
+    {{- if .entries }}
+      {{- range $category := slice "Added" "Changed" "Deprecated" "Removed" "Fixed" "Security" }}
+        {{- $entries := where $release.entries "category" $category -}}
+        {{- with $entries }}
+    <section class="changelog-category" aria-labelledby="{{ $releaseID }}-{{ $category | anchorize }}">
+      <h3 id="{{ $releaseID }}-{{ $category | anchorize }}">{{ $category }}</h3>
+      <ul>
+        {{- range $entry := . }}
+        <li>
+          <span>{{ $entry.text }}</span>
+          <span class="changelog-entry__meta">
+            {{- with $entry.scope }}<code>{{ . }}</code>{{ end }}
+            {{- with $entry.commit.url }}<a href="{{ . }}" rel="external">{{ $entry.commit.short }}</a>{{ end }}
+            {{- with $entry.author.reference }}<span class="changelog-author">{{ . }}</span>{{ end }}
+          </span>
+        </li>
+        {{- end }}
+      </ul>
+    </section>
+        {{- end }}
+      {{- end }}
+    {{- else }}
+    <p class="changelog-empty">No changelog notes are recorded for this version.</p>
+    {{- end }}
+  </section>
+  {{- end }}
+</div>
+{{- else -}}
+  {{- .Content -}}
+{{- end -}}

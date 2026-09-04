@@ -38,7 +38,7 @@
         --tf-border-default:      #253347;
         --tf-border-strong:       #334155;
         --tf-text-primary:        #f1f5f9;
-        --tf-text-secondary:      #94a3b8;
+        --tf-text-secondary:      #a8b4c5;
         --tf-text-muted:          #64748b;
         --tf-accent:              #38bdf8;
         --tf-accent-dim:          rgba(56, 189, 248, 0.12);
@@ -46,12 +46,15 @@
         --tf-accent-orange:       #fb923c;
         --tf-accent-orange-dim:   rgba(251, 146, 60, 0.12);
         --tf-accent-orange-glow:  rgba(251, 146, 60, 0.25);
+        --tf-nav-active:          #ffb07c;
         --tf-accent-gradient:     linear-gradient(135deg, #38bdf8 0%, #a78bfa 45%, #fb923c 100%);
         --tf-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         --tf-font-header: 'Lexend', var(--tf-font-sans);
         --tf-font-brand: 'Roboto Condensed', 'Arial Narrow', sans-serif-condensed, sans-serif;
         --tf-font-splash: 'Anton SC', 'Impact', 'Arial Black', sans-serif;
         --tf-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        --tf-font-body-size: clamp(0.96875rem, 0.95rem + 0.08vw, 1rem);
+        --tf-font-sidebar-size: clamp(0.875rem, 0.855rem + 0.08vw, 0.925rem);
         --header-height: 64px;
         --sidebar-width: 220px;
         --toc-width: 200px;
@@ -73,6 +76,7 @@
         --tf-accent-orange:       #ea580c;
         --tf-accent-orange-dim:   rgba(234, 88, 12, 0.10);
         --tf-accent-orange-glow:  rgba(234, 88, 12, 0.20);
+        --tf-nav-active:          #c2410c;
         --tf-accent-gradient:     linear-gradient(135deg, #0284c7 0%, #7c3aed 45%, #ea580c 100%);
       }
       *, *::before, *::after {
@@ -88,7 +92,7 @@
         background-color: var(--tf-bg-canvas);
         color: var(--tf-text-primary);
         font-family: var(--tf-font-sans);
-        font-size: 15px;
+        font-size: var(--tf-font-body-size);
         line-height: 1.7;
         min-height: 100vh;
         display: flex;
@@ -118,11 +122,15 @@
         border-image: linear-gradient(90deg, transparent 0%, rgba(2, 132, 199, 0.5) 15%, rgba(234, 88, 12, 0.8) 50%, rgba(255, 12, 5, 0.5) 85%, transparent 100%) 1;
       }
       .header-inner {
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(14rem, 23.75rem) minmax(0, 1fr);
         align-items: center;
-        justify-content: space-between;
         height: 100%;
         gap: 20px;
+      }
+      .header-inner > .brand {
+        justify-self: start;
+        min-width: 0;
       }
       .search-trigger-btn {
         display: inline-flex;
@@ -130,7 +138,7 @@
         gap: 10px;
         max-width: 380px;
         width: 100%;
-        margin-inline: auto;
+        justify-self: center;
         padding: 6px 14px;
         border-radius: 8px;
         background: var(--tf-bg-surface);
@@ -240,14 +248,15 @@
         text-decoration: none;
         padding: 6px 10px;
         border-radius: 6px;
-        font-size: 13.5px;
+        font-size: var(--tf-font-sidebar-size);
         font-weight: 500;
         white-space: nowrap;
       }
-      .sidebar-link.active {
-        color: var(--tf-accent);
-        background: var(--tf-accent-dim);
+      .sidebar-link[aria-current="page"] {
+        color: var(--tf-nav-active);
+        background: var(--tf-accent-orange-dim);
         font-weight: 600;
+        box-shadow: inset 2px 0 0 var(--tf-nav-active);
       }
       .main-content {
         min-width: 0;
@@ -483,18 +492,27 @@
       @media (max-width: 768px) {
         .shell { padding-inline: 14px; }
         .page-body { grid-template-columns: 1fr; padding-inline: 14px; padding-block: 16px; }
+        .header-inner { grid-template-columns: auto minmax(4.5rem, 1fr) auto; gap: 8px; }
+        .search-trigger-btn { width: min(100%, 5.25rem); max-width: 5rem; padding-inline: 7px; gap: 0; }
+        .search-trigger-icon, .search-trigger-placeholder { display: none; }
+        .search-trigger-kbd { margin-inline: auto; }
         .sidebar { display: none; }
         .main-content { padding-left: 0; }
       }
       @media (max-width: 480px) {
         .shell { padding-inline: 10px; }
         .page-body { padding-inline: 10px; }
+        .brand small { display: none; }
+        .header-actions { gap: 6px; }
+      }
+      @media (max-width: 380px) {
+        .brand-text { display: none; }
       }
     </style>
 
     {{ partial "seo.html" . }}
 
-    <link rel="icon" type="image/svg+xml" href="{{ "assets/branding/typeflow-logo.svg" | relURL }}">
+    {{ partial "favicon-links.html" . }}
 
     {{/*
       ── Step 3: Local Stylesheets — preload + async non-render-blocking ────────
@@ -607,12 +625,12 @@
             {{ if .HasChildren }}
             <p class="sidebar-section-label">{{ .Name }}</p>
             {{ range .Children }}
-            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}"
+            <a class="sidebar-link"
                href="{{ .URL | relURL }}"
                {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
             {{ end }}
             {{ else }}
-            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}"
+            <a class="sidebar-link"
                href="{{ .URL | relURL }}"
                {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
             {{ end }}
@@ -716,7 +734,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs" crossorigin="anonymous"></script>
     <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $version }}"></script>
     {{ block "scripts" . }}{{ end }}
   </body>

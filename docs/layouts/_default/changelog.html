@@ -1,0 +1,14 @@
+{{ define "main" }}
+<div class="doc-page doc-page--no-toc">
+  <article class="doc-article">
+    <header class="doc-header">
+      {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+    <div class="doc-content">
+      {{ partial "changelog-data.html" . }}
+    </div>
+  </article>
+</div>
+{{ end }}
