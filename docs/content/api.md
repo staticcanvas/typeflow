@@ -36,11 +36,13 @@ The `@staticcanvas/typeflow` package provides ESM, CommonJS, and UMD distributio
 | Export Path | Format | Target | Description |
 | :--- | :--- | :--- | :--- |
 | `@staticcanvas/typeflow` | ESM / CJS / UMD | `dist/typeflow.mjs` | Core typewriter engine and sequence helpers. |
-| `@staticcanvas/typeflow/metrics` | ESM | `src/typeflow-metrics.js` | Real-time floating performance HUD and diagnostic badge. |
-| `@staticcanvas/typeflow/debug` | ESM | `src/typeflow-debug.js` | Diagnostic tracing and `@staticcanvas/logcad` integration. |
-| `@staticcanvas/typeflow/webaudio` | ESM | `src/typeflow-webaudio.js` | Zero-asset procedural Web Audio synthesizer. |
-| `@staticcanvas/typeflow/keystroke` | ESM | `src/typeflow-keystroke.js` | Human typing dynamics, finger travel, and typo simulation. |
-| `@staticcanvas/typeflow/extchars` | ESM | `src/typeflow-extchars.js` | Extended Unicode glyph sets for decrypt scramble reveals. |
+| `@staticcanvas/typeflow/metrics` | ESM / CJS / UMD | `dist/typeflow-metrics.mjs` | Real-time floating performance HUD and diagnostic badge. |
+| `@staticcanvas/typeflow/debug` | ESM / CJS / UMD | `dist/typeflow-debug.mjs` | Diagnostic tracing and `@staticcanvas/logcad` integration. |
+| `@staticcanvas/typeflow/webaudio` | ESM / CJS / UMD | `dist/typeflow-webaudio.mjs` | Zero-asset procedural Web Audio synthesizer. |
+| `@staticcanvas/typeflow/parallel` | ESM / CJS / UMD | `dist/typeflow-parallel.mjs` | Explicit opt-in parallel step orchestration with bounded concurrency. |
+| `@staticcanvas/typeflow/keystroke` | ESM / CJS / UMD | `dist/typeflow-keystroke.mjs` | Human typing dynamics, finger travel, and typo simulation. |
+| `@staticcanvas/typeflow/extchars` | ESM / CJS / UMD | `dist/typeflow-extchars.mjs` | Extended Unicode glyph sets for decrypt scramble reveals. |
+| `@staticcanvas/typeflow/caret` | ESM / CJS / UMD | `dist/typeflow-caret.mjs` | Persistent, editable cursor bound to an element's text. |
 | `jsr:@staticcanvas/typeflow` | ESM | `src/typeflow.js` | JSR package distribution for Deno and Node. |
 
 ## `TypeFlowConfig` Options
@@ -53,8 +55,19 @@ export interface TypeFlowConfig {
   naturalCadence?: boolean;
   granularity?: "grapheme" | "word";
   direction?: "left" | "right" | "center";
-  typeStyle?: "char" | "word" | "scramble" | "fade-trail";
+  typeStyle?: "char" | "word" | "scramble" | "fade-trail" | "word-fade" | "float-in-top" | "float-in-bottom" | "float-in-left" | "float-in-right" | "zoom-in-space";
+  wordOrder?: "left-to-right" | "right-to-left" | "random";
+  wordLayout?: "opacity" | "placeholder";
+  wordFadeDuration?: number;
+  wordStagger?: number;
+  wordSeed?: string | number;
+  wordMotionDistance?: number;
+  wordMotionDepth?: number;
+  wordMotionScale?: number;
+  wordMotionPerspective?: number;
+  wordMotionEasing?: string;
   trailFade?: number | boolean;
+  trailMinOpacity?: number;
   cursor?: string;
   cursorBlink?: boolean;
   html?: boolean;
@@ -62,13 +75,15 @@ export interface TypeFlowConfig {
   scrambleCharset?: "matrix" | "ascii" | "ascii-extended" | "blocks" | "binary" | "hex" | "braille" | "runic" | "cyber";
   scrambleGlyphs?: string;
   scrambleRounds?: number;
+  scrambleColor?: string;
+  scrambleGradient?: string;
   audio?: "mechanical" | "beep" | "synth" | boolean | (() => void);
   allowedTags?: string[];
   allowedAttributes?: Record<string, string[]>;
   sanitizer?: (html: string) => string;
   respectReducedMotion?: boolean;
   ariaLive?: "off" | "polite" | "assertive";
-  eraseStyle?: "end" | "start" | "center" | "scramble" | "fade-trail" | "instant" | "fade";
+  eraseStyle?: "end" | "start" | "center" | "scramble" | "fade-trail" | "instant" | "fade" | "word-fade" | "float-in-top" | "float-in-bottom" | "float-in-left" | "float-in-right" | "zoom-in-space";
   duration?: number;
   preserveBaseline?: boolean;
   onStart?: () => void;
@@ -87,11 +102,24 @@ export interface TypeFlowConfig {
 | `naturalCadence`| `boolean`| `false` | Adds natural micro-pauses at punctuation (. , ! ?) and word breaks. |
 | `granularity` | `"grapheme" \| "word"` | `"grapheme"` | Unit segmentation mode using `Intl.Segmenter`. |
 | `direction` | `"left" \| "right" \| "center"` | `"left"` | Typing reveal direction (LTR, RTL, center-outward). |
-| `typeStyle` | `"char" \| "word" \| "scramble" \| "fade-trail"` | `"char"` | Typing reveal presentation style (`fade-trail` adds a soft trailing opacity gradient). |
+| `typeStyle` | `"char" \| "word" \| "scramble" \| "fade-trail" \| "word-fade" \| "float-in-top" \| "float-in-bottom" \| "float-in-left" \| "float-in-right" \| "zoom-in-space"` | `"char"` | Typing reveal presentation style. `word-fade` and the `float-in-*`/`zoom-in-space` spatial styles lay out the final text before transitioning each word. |
+| `wordOrder` | `"left-to-right" \| "right-to-left" \| "random"` | `"left-to-right"` | Reveal or erase order for `word-fade` and the spatial word-motion styles; it does not change bidi direction. |
+| `wordLayout` | `"opacity" \| "placeholder"` | `"opacity"` | Stable-layout strategy shared by `word-fade` and the spatial word-motion styles. Placeholder mode also hides unrevealed words with `visibility`. |
+| `wordFadeDuration` | `number` | `280` | Opacity/transform transition duration for each word in milliseconds. |
+| `wordStagger` | `number` | Current `speed` | Delay between consecutive word transitions in milliseconds. |
+| `wordSeed` | `string \| number` | `undefined` | Optional deterministic seed when `wordOrder` is `"random"`. |
+| `wordMotionDistance` | `number` | `24` | Translate distance in pixels for `float-in-*` styles. |
+| `wordMotionDepth` | `number` | `160` | `translateZ` depth in pixels for `zoom-in-space`. |
+| `wordMotionScale` | `number` | `0.82` | Starting scale (0-1) for `zoom-in-space`. |
+| `wordMotionPerspective` | `number` | `600` | CSS `perspective` in pixels applied to the target element while `zoom-in-space` runs. |
+| `wordMotionEasing` | `string` | `"ease"` | CSS timing function for `float-in-*`/`zoom-in-space` transitions. |
 | `trailFade` | `number \| boolean` | `undefined` | Length of trailing fade gradient in characters. |
+| `trailMinOpacity` | `number` | `0.18` | Lowest opacity used by characters in a trailing fade. |
 | `scrambleCharset` | `"matrix" \| "ascii" \| ...` | `undefined` | Built-in scramble glyph charset preset name. |
 | `scrambleGlyphs`| `string` | `"!<>-_\\/[]{}—=+*^?#________"` | Character pool used during scramble reveals. |
 | `scrambleRounds`| `number` | `2` | Number of glyph iterations per unit. |
+| `scrambleColor` | `string` | `undefined` | CSS color applied to the active scramble glyph. |
+| `scrambleGradient` | `string` | `undefined` | CSS gradient applied to the active scramble glyph; overrides `scrambleColor`. |
 | `audio` | `"mechanical" \| "beep" \| "synth" \| boolean \| fn` | `undefined` | Procedural Web Audio synthesized keystrokes or custom sound callback. |
 | `cursor` | `string` | `"\|"` | Cursor glyph string. Set to `""` to omit cursor. |
 | `cursorBlink` | `boolean` | `true` | Enables post-completion cursor blinking effect. |
@@ -102,7 +130,7 @@ export interface TypeFlowConfig {
 | `sanitizer` | `(html: string) => string` | `undefined` | Custom HTML sanitization function. |
 | `respectReducedMotion` | `boolean` | `true` | Skips animation if user OS has `prefers-reduced-motion: reduce`. |
 | `ariaLive` | `"off" \| "polite" \| "assertive"` | `undefined` | Updates the element `aria-live` attribute during typing. |
-| `eraseStyle` | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade"` | `"end"` | Erasing animation method. |
+| `eraseStyle` | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade" \| "word-fade" \| "float-in-top" \| "float-in-bottom" \| "float-in-left" \| "float-in-right" \| "zoom-in-space"` | `"end"` | Erasing animation method. |
 | `duration` | `number` | `250` | Fade duration in ms when `eraseStyle: 'fade'`. |
 | `preserveBaseline` | `boolean` | `true` | Retains initial prefix when erasing an `append` mode element. |
 | `onStart` | `() => void` | `undefined` | Callback invoked right before the first character renders. |
@@ -200,6 +228,38 @@ TypeFlow.sequence([
 ], { repeat: 1 });
 ```
 
+### `TypeFlow.parallel(steps, options?)` — experimental
+
+> This API is opt-in and experimental. Its shape may change before it is
+> promoted to the stable API.
+
+Runs ordinary `seq` steps concurrently while preserving input order in the
+result array. `concurrency` bounds active children. With `all-settled` (the
+default), every step runs; with `fail-fast`, the first error or interrupted
+child stops active siblings. The controller promise always resolves, including
+errors as `{ status: 'rejected', reason }` entries. Calling `stop()` propagates
+to active children and pending waits. A later operation on a repeated target
+interrupts the earlier operation, following the normal TypeFlow target rule.
+
+```javascript
+import { TypeFlow, seq } from '@staticcanvas/typeflow';
+import { installParallel } from '@staticcanvas/typeflow/parallel';
+
+// Explicit opt-in: this adds parallel() only for callers importing the extension.
+installParallel(TypeFlow, seq);
+
+const group = TypeFlow.parallel([
+  seq.type('#status-a', 'Connected', { delay: 100 }),
+  seq.erase('#status-b', { eraseStyle: 'fade' }),
+  seq.parallel([
+    seq.type('#nested-a', 'Nested A'),
+    seq.type('#nested-b', 'Nested B')
+  ], { concurrency: 1 })
+], { concurrency: 2, settlement: 'all-settled' });
+
+const { completed, results } = await group.promise;
+```
+
 ### `TypeFlow.rotate(target, words, config?)`
 Cyclically types and erases an array of strings.
 
@@ -253,6 +313,8 @@ import { TypeFlowWebAudio, createKeystrokeAudio } from '@staticcanvas/typeflow/w
 
 TypeFlowWebAudio.play('mechanical-blue', { pan: 0.1 });
 const audioCallback = createKeystrokeAudio('teletype');
+const controller = TypeFlow.type('#target', 'Scoped audio', { audio: audioCallback });
+controller.stop(); // also stops and disconnects this callback's active voices
 ```
 
 ### `TypeFlowKeystroke` (`@staticcanvas/typeflow/keystroke`)

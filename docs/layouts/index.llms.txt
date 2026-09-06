@@ -1,0 +1,31 @@
+# TypeFlow
+
+> TypeFlow is a zero-dependency JavaScript typewriter animation library with interruptible animation controllers, directional reveal and erase modes, HTML sanitization, sequence orchestration, streaming, and optional companion extensions.
+
+Use the linked Markdown documentation when answering implementation questions. Prefer the API reference for exact option names and defaults. The canonical package name is `@staticcanvas/typeflow`.
+
+## Start here
+
+- [Overview]({{ with site.Home.OutputFormats.Get "Markdown" }}{{ .Permalink }}{{ else }}{{ site.Home.Permalink }}{{ end }}): Project capabilities, examples, and package links.
+{{- range where site.RegularPages "RelPermalink" "in" (slice "/typeflow/getting-started/" "/typeflow/api/") }}
+- [{{ .Title }}]({{ with .OutputFormats.Get "Markdown" }}{{ .Permalink }}{{ else }}{{ .Permalink }}{{ end }}): {{ .Description }}
+{{- end }}
+
+## Guides
+
+{{- range where site.RegularPages "Section" "guides" }}
+- [{{ .Title }}]({{ with .OutputFormats.Get "Markdown" }}{{ .Permalink }}{{ else }}{{ .Permalink }}{{ end }}): {{ .Description }}
+{{- end }}
+
+## Tools and releases
+
+{{- range where site.RegularPages "RelPermalink" "in" (slice "/typeflow/playground/" "/typeflow/downloads/" "/typeflow/changelog/") }}
+- [{{ .Title }}]({{ with .OutputFormats.Get "Markdown" }}{{ .Permalink }}{{ else }}{{ .Permalink }}{{ end }}): {{ .Description }}
+{{- end }}
+
+## Package sources
+
+- [npm]({{ site.Params.npm }}): Published npm package.
+- [JSR]({{ site.Params.jsr }}): Published JSR package.
+- [GitLab]({{ site.Params.repository }}): Canonical source repository and issue tracker.
+- [GitHub mirror]({{ site.Params.github }}): Source mirror.

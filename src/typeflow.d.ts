@@ -14,7 +14,7 @@ export interface TypeFlowConfig {
   /** Automatically add micro-pauses at punctuation (. , ! ?) and word boundaries. Default: false */
   naturalCadence?: boolean;
   /** Granularity of typing and erasing. Default: 'grapheme' */
-  granularity?: "grapheme" | "word";
+  granularity?: 'grapheme' | 'word';
   /** Cursor character. Empty string disables it. Default: '|' */
   cursor?: string;
   /** Blink the cursor once typing completes. Default: true. (Ignored by erase.) */
@@ -22,21 +22,74 @@ export interface TypeFlowConfig {
   /** Interpret `text` as sanitized HTML instead of plain text. Default: false */
   html?: boolean;
   /** 'replace' clears the target first; 'append' types after existing content. Default: 'replace' */
-  mode?: "replace" | "append";
+  mode?: 'replace' | 'append';
   /** Reveal direction for typing: 'left' (standard LTR), 'right' (RTL), 'center' (middle-outward expand). Default: 'left' */
-  direction?: "left" | "right" | "center";
-  /** Reveal style for typing: 'char' (standard), 'word', 'scramble' (matrix decrypt), 'fade-trail' (soft trailing opacity ramp). Default: 'char' */
-  typeStyle?: "char" | "word" | "scramble" | "fade-trail";
+  direction?: 'left' | 'right' | 'center';
+  /**
+   * Reveal style for typing. Default: 'char'
+   * - 'word-fade'      renders the final layout, then fades words into place
+   * - 'float-in-top'   words fade in while sliding down from above
+   * - 'float-in-bottom' words fade in while sliding up from below
+   * - 'float-in-left'  words fade in while sliding in from the left
+   * - 'float-in-right' words fade in while sliding in from the right
+   * - 'zoom-in-space'  words fade in while scaling up from depth (perspective transform)
+   */
+  typeStyle?:
+    | 'char'
+    | 'word'
+    | 'scramble'
+    | 'fade-trail'
+    | 'word-fade'
+    | 'float-in-top'
+    | 'float-in-bottom'
+    | 'float-in-left'
+    | 'float-in-right'
+    | 'zoom-in-space';
+  /** Word reveal/erase order used by `word-fade` and the spatial word-motion styles. Default: 'left-to-right'. */
+  wordOrder?: 'left-to-right' | 'right-to-left' | 'random';
+  /** Stable-layout strategy used by `word-fade` and the spatial word-motion styles. Default: 'opacity'. */
+  wordLayout?: 'opacity' | 'placeholder';
+  /** Opacity/transform transition duration for each word in milliseconds. Default: 280. */
+  wordFadeDuration?: number;
+  /** Delay between consecutive word transitions in milliseconds. Defaults to `speed`. */
+  wordStagger?: number;
+  /** Optional seed for reproducible random word ordering. */
+  wordSeed?: string | number;
+  /** Translate distance in pixels for `float-in-*` word-motion styles. Default: 24. */
+  wordMotionDistance?: number;
+  /** translateZ depth in pixels for the `zoom-in-space` word-motion style. Default: 160. */
+  wordMotionDepth?: number;
+  /** Starting scale (0-1) for the `zoom-in-space` word-motion style. Default: 0.82. */
+  wordMotionScale?: number;
+  /** CSS perspective in pixels applied to the target element for `zoom-in-space`. Default: 600. */
+  wordMotionPerspective?: number;
+  /** CSS timing function for `float-in-*` and `zoom-in-space` word transitions. Default: 'ease'. */
+  wordMotionEasing?: string;
   /** Soft trailing opacity gradient length in characters (e.g. 3) or boolean during reveal/erase. */
   trailFade?: number | boolean;
+  /** Lowest opacity used by trailing fade characters. Default: 0.18. */
+  trailMinOpacity?: number;
   /** Built-in scramble charset preset name. */
-  scrambleCharset?: "matrix" | "ascii" | "ascii-extended" | "blocks" | "binary" | "hex" | "braille" | "runic" | "cyber";
+  scrambleCharset?:
+    | 'matrix'
+    | 'ascii'
+    | 'ascii-extended'
+    | 'blocks'
+    | 'binary'
+    | 'hex'
+    | 'braille'
+    | 'runic'
+    | 'cyber';
   /** Custom scramble glyph characters when typeStyle or eraseStyle is 'scramble'. */
   scrambleGlyphs?: string;
   /** Number of scramble iterations per unit before settling. Default: 2 */
   scrambleRounds?: number;
+  /** CSS color applied to the active scramble glyph. */
+  scrambleColor?: string;
+  /** CSS gradient applied to the active scramble glyph. Overrides scrambleColor. */
+  scrambleGradient?: string;
   /** Zero-dependency Web Audio synthesizer sound effect or custom audio callback. */
-  audio?: "mechanical" | "beep" | "synth" | boolean | (() => void);
+  audio?: 'mechanical' | 'beep' | 'synth' | boolean | (() => void);
   /** Extra tags allowed in html mode, merged with the safe default list. */
   allowedTags?: string[];
   /** Extra attributes allowed per tag, merged with the safe default map. */
@@ -46,7 +99,7 @@ export interface TypeFlowConfig {
   /** Instantly complete instead of animating if the user prefers reduced motion. Default: true */
   respectReducedMotion?: boolean;
   /** aria-live region setting applied to the target for the duration of typing. */
-  ariaLive?: "off" | "polite" | "assertive";
+  ariaLive?: 'off' | 'polite' | 'assertive';
   /**
    * Erase-only: which direction/technique to erase with. Default: 'end'
    * - 'end'        backspace-style, removes from the right
@@ -56,8 +109,24 @@ export interface TypeFlowConfig {
    * - 'fade-trail' dissolves trailing characters with a soft opacity ramp
    * - 'instant'    clears immediately, no animation
    * - 'fade'       CSS opacity fade-out, then clears
+   * - 'word-fade'  fades words without changing their layout positions
+   * - 'float-in-*' fades words out while sliding them top/bottom/left/right
+   * - 'zoom-in-space' fades words out while shrinking them back into depth
    */
-  eraseStyle?: "end" | "start" | "center" | "scramble" | "fade-trail" | "instant" | "fade";
+  eraseStyle?:
+    | 'end'
+    | 'start'
+    | 'center'
+    | 'scramble'
+    | 'fade-trail'
+    | 'instant'
+    | 'fade'
+    | 'word-fade'
+    | 'float-in-top'
+    | 'float-in-bottom'
+    | 'float-in-left'
+    | 'float-in-right'
+    | 'zoom-in-space';
   /** Erase-only: duration in ms for eraseStyle 'fade'. Default: 250 */
   duration?: number;
   /**
@@ -93,11 +162,11 @@ export interface TypeFlowStreamController {
 }
 
 export type TypeFlowStep =
-  | { kind: "type"; target?: HTMLElement | string; text: string; config?: TypeFlowConfig }
-  | { kind: "erase"; target?: HTMLElement | string; config?: TypeFlowConfig }
-  | { kind: "pause"; duration: number }
-  | { kind: "visible"; target?: HTMLElement | string; threshold?: number }
-  | { kind: "call"; fn: () => void | Promise<void> };
+  | { kind: 'type'; target?: HTMLElement | string; text: string; config?: TypeFlowConfig }
+  | { kind: 'erase'; target?: HTMLElement | string; config?: TypeFlowConfig }
+  | { kind: 'pause'; duration: number }
+  | { kind: 'visible'; target?: HTMLElement | string; threshold?: number }
+  | { kind: 'call'; fn: () => void | Promise<void> };
 
 export interface TypeFlowSequenceConfig {
   /** Number of times to run the sequence. Use Infinity to loop forever. Default: 1 */
@@ -127,7 +196,11 @@ export declare class TypeFlowEngine {
   /** Erases the target's current content. */
   erase(target: HTMLElement | string, config?: TypeFlowConfig): TypeFlowController;
   /** Smart Diff Morphing: calculates common prefix, erases mismatched suffix, and types new text. */
-  morph(target: HTMLElement | string, nextText: string, options?: TypeFlowConfig): TypeFlowController;
+  morph(
+    target: HTMLElement | string,
+    nextText: string,
+    options?: TypeFlowConfig
+  ): TypeFlowController;
   /** Creates a real-time streaming chunk ingestion controller for LLM/SSE token streams. */
   stream(
     target: HTMLElement | string,
@@ -135,13 +208,17 @@ export declare class TypeFlowEngine {
   ): TypeFlowStreamController;
   /** Returns a complete configuration object for an animation preset profile. */
   preset(
-    name: "cyberpunk" | "terminal" | "writer" | "matrix" | "blocks" | "subtle",
+    name: 'cyberpunk' | 'terminal' | 'writer' | 'matrix' | 'blocks' | 'subtle',
     overrides?: TypeFlowConfig
   ): TypeFlowConfig;
   /** Runs type / erase / pause / visible / call steps in order. */
   sequence(steps: TypeFlowStep[], seqConfig?: TypeFlowSequenceConfig): TypeFlowController;
   /** QoL shortcut for the rotating text pattern. */
-  rotate(target: HTMLElement | string, words: string[], config?: TypeFlowRotateConfig): TypeFlowController;
+  rotate(
+    target: HTMLElement | string,
+    words: string[],
+    config?: TypeFlowRotateConfig
+  ): TypeFlowController;
   /** Staggers typing across multiple DOM elements with an offset delay between each item. */
   stagger(
     targets: HTMLElement[] | NodeList | string,
@@ -180,7 +257,9 @@ export interface ReactLike {
   useEffect: (fn: () => void | (() => void), deps: unknown[]) => void;
 }
 
-export declare function createTypeFlowReact(React: ReactLike): <T extends HTMLElement = HTMLElement>(
+export declare function createTypeFlowReact(
+  React: ReactLike
+): <T extends HTMLElement = HTMLElement>(
   text: string,
   config?: TypeFlowConfig
 ) => { current: T | null };
@@ -195,7 +274,9 @@ export interface VueLike {
   onBeforeUnmount: (cb: () => void) => void;
 }
 
-export declare function createTypeFlowVue(Vue: VueLike): <T extends HTMLElement = HTMLElement>(
+export declare function createTypeFlowVue(
+  Vue: VueLike
+): <T extends HTMLElement = HTMLElement>(
   getText: () => string,
   config?: TypeFlowConfig
 ) => { value: T | null };
@@ -245,4 +326,3 @@ export declare function createTypeFlowAlpine(Alpine: AlpineLike): void;
 export declare function defineTypeFlowElement(
   customElementsRegistry?: CustomElementRegistry | null
 ): void;
-

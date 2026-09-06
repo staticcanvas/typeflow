@@ -65,7 +65,28 @@ test:
   script:
     - echo "🔵 Running tests..."
     - npm ci
-    - npm test
+    - npm run test
+  allow_failure: false
+
+# ------------------------------------------------------
+# End-to-end stage (Playwright, against the built Hugo docs site)
+# ------------------------------------------------------
+e2e:
+  stage: test
+  needs: []
+  script:
+    - echo "🟠 Running Playwright end-to-end tests..."
+    - npm ci
+    - npx playwright install --with-deps chromium
+    - hugo version
+    - npm run build
+    - npx playwright test
+  artifacts:
+    when: on_failure
+    paths:
+      - playwright-report/
+      - test-results/
+    expire_in: 1 week
   allow_failure: false
 
 # ------------------------------------------------------
@@ -80,7 +101,7 @@ coverage:
     - npm ci
     - npm run test:coverage
     - command -v codecov
-    - codecov --verbose upload-process --disable-search --fail-on-error -t "$CODECOV_API_KEY" -n "lume-${CI_COMMIT_SHORT_SHA}" -F unit -f coverage/lcov.info
+    - codecov --verbose upload-process --disable-search --fail-on-error -t "$CODECOV_API_KEY" -n "typeflow-${CI_COMMIT_SHORT_SHA}" -F unit -f coverage/lcov.info
   allow_failure: false
 
 # ------------------------------------------------------
@@ -147,6 +168,7 @@ validate:release:
         }
       '
     - hugo --source docs --gc --minify
+    - node scripts/validate-doc-links.mjs
   allow_failure: false
 
 # ------------------------------------------------------

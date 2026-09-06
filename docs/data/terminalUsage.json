@@ -1,0 +1,26 @@
+[
+  {
+    "id": "esm",
+    "label": "ESM",
+    "note": "Browser entry point \u00b7 bundle with your app.",
+    "code": "import { TypeFlow } from \"@staticcanvas/typeflow\";\n\nconst target = document.createElement(\"p\");\ndocument.body.append(target);\n\nTypeFlow.type(target, \"Hello, world.\", {\n  speed: 30,\n});"
+  },
+  {
+    "id": "browser",
+    "label": "Browser CDN",
+    "note": "Load app.js with <script type=\"module\" src=\"app.js\"></script>.",
+    "code": "import { TypeFlow } from\n  \"https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@VERSION/dist/typeflow.esm.js\";\n\nconst target = document.createElement(\"p\");\ndocument.body.append(target);\n\nTypeFlow.type(target, \"Hello, world.\", {\n  speed: 30,\n});"
+  },
+  {
+    "id": "node",
+    "label": "Node.js",
+    "note": "Import check only \u00b7 animation requires a DOM.",
+    "code": "// package.json: { \"type\": \"module\" }\n// Run: node app.js\nimport { TypeFlow } from \"@staticcanvas/typeflow\";\n\nconsole.log(typeof TypeFlow.type);\n// Prints: function\n// TypeFlow.type() needs a browser DOM."
+  },
+  {
+    "id": "bun",
+    "label": "Bun \u2192 browser",
+    "note": "Bundle with: bun build ./app.js --outdir ./dist --target browser",
+    "code": "import { TypeFlow } from \"@staticcanvas/typeflow\";\n\nconst target = document.createElement(\"p\");\ndocument.body.append(target);\n\nTypeFlow.type(target, \"Hello, world.\", {\n  speed: 30,\n});"
+  }
+]

@@ -4,16 +4,17 @@
 public/
 docs/data/package.json
 docs/data/releases.json
-docs/static/webutil/libs/
-docs/static/webutil/assets/
-*.map
-
 
 # Build locks & cache
 .hugo_build.lock
 .cache/
 coverage/
 *.tmp
+
+# Playwright e2e artifacts
+/playwright-report/
+/test-results/
+/blob-report/
 
 # Ignore environment variable files
 *.env
@@ -53,6 +54,11 @@ branding/dist
 # merge request templates
 mr.md
 
-# rivet
+# Repository-local rivet checkout managed by rivet.ps1
 /rivet/
-.rivet/
+.rivet/mr.md
+.rivet/work-items
+
+
+# Temp Backup
+/backup/

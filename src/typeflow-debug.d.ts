@@ -22,7 +22,11 @@ export class TypeFlowDebug {
 
   static enable(options?: TypeFlowDebugOptions): void;
   static disable(): void;
-  static log(level: 'info' | 'warn' | 'error' | 'debug' | 'trace', message: string, data?: Record<string, any>): void;
+  static log(
+    level: 'info' | 'warn' | 'error' | 'debug' | 'trace',
+    message: string,
+    data?: Record<string, any>
+  ): void;
   static trace<T>(controller: T, label?: string): T;
   static getHistory(): TypeFlowDebugEntry[];
   static clearHistory(): void;

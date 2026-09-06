@@ -9,6 +9,7 @@ import {
   createTypeFlowAlpine,
   defineTypeFlowElement,
 } from '../src/typeflow.js';
+import { installParallel } from '../src/typeflow-parallel.js';
 
 describe('TypeFlow Comprehensive Test Suite', () => {
   let container;
@@ -40,6 +41,70 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       const result = await controller.promise;
       expect(result.completed).toBe(true);
       expect(container.textContent).toBe('Streaming word by word');
+    });
+
+    it('fades words without changing their final layout text', async () => {
+      const controller = TypeFlow.type(container, 'Stable word positions', {
+        typeStyle: 'word-fade',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+
+      expect(container.textContent).toBe('Stable word positions');
+      const words = [...container.querySelectorAll('.tf-word-fade')];
+      expect(words).toHaveLength(3);
+      expect(words.every((word) => word.style.opacity === '0')).toBe(true);
+      expect(words.map((word) => word.dataset.tfWordOrder)).toEqual(['0', '1', '2']);
+
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Stable word positions');
+      expect(container.querySelector('.tf-word-fade')).toBeNull();
+    });
+
+    it('supports reverse and deterministic random word-fade order', () => {
+      const reverse = TypeFlow.type(container, 'one two three', {
+        typeStyle: 'word-fade',
+        wordOrder: 'right-to-left',
+        delay: 100,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      expect([...container.querySelectorAll('.tf-word-fade')].map((word) => word.dataset.tfWordOrder)).toEqual(['2', '1', '0']);
+      reverse.stop();
+
+      const second = document.createElement('div');
+      document.body.appendChild(second);
+      const firstRandom = TypeFlow.type(container, 'one two three four', {
+        typeStyle: 'word-fade', wordOrder: 'random', wordSeed: 'fixture', delay: 100, respectReducedMotion: false, cursor: ''
+      });
+      const secondRandom = TypeFlow.type(second, 'one two three four', {
+        typeStyle: 'word-fade', wordOrder: 'random', wordSeed: 'fixture', delay: 100, respectReducedMotion: false, cursor: ''
+      });
+      const orderFor = (element) => [...element.querySelectorAll('.tf-word-fade')].map((word) => word.dataset.tfWordOrder);
+      expect(orderFor(container)).toEqual(orderFor(second));
+      firstRandom.stop();
+      secondRandom.stop();
+    });
+
+    it('preserves sanitized HTML and supports hidden word placeholders', async () => {
+      const controller = TypeFlow.type(container, 'Safe <strong>word fade</strong>', {
+        html: true,
+        typeStyle: 'word-fade',
+        wordLayout: 'placeholder',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      expect([...container.querySelectorAll('.tf-word-fade')].every((word) => word.style.visibility === 'hidden')).toBe(true);
+      await controller.promise;
+      expect(container.querySelector('strong')?.textContent).toBe('word fade');
+      expect(container.textContent).toBe('Safe word fade');
     });
 
     it('handles naturalCadence punctuation pauses without error', async () => {
@@ -75,6 +140,159 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       controller.stop();
       const result = await controller.promise;
       expect(result.completed).toBe(false);
+    });
+
+    it('stops cancellable audio callbacks when an animation is interrupted', async () => {
+      const audio = Object.assign(vi.fn(), { stop: vi.fn() });
+      const controller = TypeFlow.type(container, 'Audio cleanup', {
+        audio,
+        speed: 100,
+        respectReducedMotion: false,
+        cursor: '',
+      });
+      controller.stop();
+      await controller.promise;
+      expect(audio.stop).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('Spatial Word-Motion Reveal & Erase (float-in-*, zoom-in-space)', () => {
+    it.each([
+      ['float-in-top', 'translateY(0)'],
+      ['float-in-bottom', 'translateY(0)'],
+      ['float-in-left', 'translateX(0)'],
+      ['float-in-right', 'translateX(0)'],
+      ['zoom-in-space', 'translateZ(0) scale(1)'],
+    ])('types with %s reveal, ending on clean final DOM', async (typeStyle, visibleTransform) => {
+      const controller = TypeFlow.type(container, 'Stable spatial words', {
+        typeStyle,
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: '',
+      });
+
+      const words = [...container.querySelectorAll('.tf-word-fade')];
+      expect(words).toHaveLength(3);
+      expect(words.every((word) => word.style.display === 'inline-block')).toBe(true);
+      expect(words.every((word) => word.style.opacity === '0')).toBe(true);
+      expect(words.every((word) => word.style.transform !== '' && word.style.transform !== visibleTransform)).toBe(true);
+
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('Stable spatial words');
+      expect(container.querySelector('.tf-word-fade')).toBeNull();
+      expect(container.style.perspective).toBe('');
+    });
+
+    it('erases with a float-in-* style and restores the preserved baseline', async () => {
+      const typed = await TypeFlow.type(container, 'Baseline kept here', {
+        mode: 'append',
+        respectReducedMotion: false,
+        cursor: '',
+      }).promise;
+      expect(typed.completed).toBe(true);
+
+      const controller = TypeFlow.erase(container, {
+        eraseStyle: 'float-in-bottom',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        respectReducedMotion: false,
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.textContent).toBe('');
+    });
+
+    it('sets a CSS perspective on the target only while zoom-in-space is active', () => {
+      const controller = TypeFlow.type(container, 'Depth reveal', {
+        typeStyle: 'zoom-in-space',
+        wordStagger: 100,
+        wordFadeDuration: 100,
+        delay: 100,
+        respectReducedMotion: false,
+        cursor: '',
+      });
+      expect(container.style.perspective).not.toBe('');
+      expect(container.style.transformStyle).toBe('preserve-3d');
+      controller.stop();
+      expect(container.style.perspective).toBe('');
+    });
+
+    it('preserves whitespace, punctuation, nested HTML, bidi text, and CJK text', async () => {
+      const source = 'Line one\n\t<strong>مرحبا, 世界!</strong>  e\u0301lan';
+      const controller = TypeFlow.type(container, source, {
+        html: true,
+        typeStyle: 'float-in-left',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 1,
+        respectReducedMotion: false,
+        cursor: '',
+      });
+
+      expect(container.textContent).toBe('Line one\n\tمرحبا, 世界!  e\u0301lan');
+      expect(container.querySelector('strong')?.textContent).toBe('مرحبا, 世界!');
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.innerHTML).toBe('Line one\n\t<strong>مرحبا, 世界!</strong>  e\u0301lan');
+      expect(container.querySelector('.tf-word-fade')).toBeNull();
+      expect(container.hasAttribute('aria-busy')).toBe(false);
+    });
+
+    it('removes transient wrappers and accessibility state when interrupted', async () => {
+      const interrupted = vi.fn();
+      const controller = TypeFlow.type(container, '<a href="/next">Interrupt safely</a>', {
+        html: true,
+        typeStyle: 'zoom-in-space',
+        wordStagger: 100,
+        wordFadeDuration: 100,
+        delay: 100,
+        respectReducedMotion: false,
+        cursor: '',
+        onInterrupt: interrupted,
+      });
+
+      expect(container.querySelector('.tf-word-fade')).not.toBeNull();
+      expect(container.getAttribute('aria-busy')).toBe('true');
+      controller.stop();
+      expect(await controller.promise).toEqual({ completed: false, text: '<a href="/next">Interrupt safely</a>' });
+      expect(interrupted).toHaveBeenCalledOnce();
+      expect(container.innerHTML).toBe('<a href="/next">Interrupt safely</a>');
+      expect(container.querySelector('.tf-word-fade')).toBeNull();
+      expect(container.hasAttribute('aria-busy')).toBe(false);
+      expect(container.style.perspective).toBe('');
+      expect(container.style.transformStyle).toBe('');
+    });
+
+    it('respects prefers-reduced-motion by rendering the final text instantly', async () => {
+      const originalMatchMedia = window.matchMedia;
+      window.matchMedia = vi.fn().mockImplementation((query) => ({
+        matches: query.includes('prefers-reduced-motion'),
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+
+      try {
+        const controller = TypeFlow.type(container, 'Reduced motion text', {
+          typeStyle: 'float-in-top',
+          respectReducedMotion: true,
+          cursor: '',
+        });
+        const result = await controller.promise;
+        expect(result.completed).toBe(true);
+        expect(container.textContent).toBe('Reduced motion text');
+        expect(container.querySelector('.tf-word-fade')).toBeNull();
+        expect(container.style.perspective).toBe('');
+      } finally {
+        window.matchMedia = originalMatchMedia;
+      }
     });
   });
 
@@ -204,6 +422,23 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       expect(container.textContent).toBe('');
     });
 
+    it('erases words with stable layout in configured order', async () => {
+      container.textContent = 'fade these words';
+      const controller = TypeFlow.erase(container, {
+        eraseStyle: 'word-fade',
+        wordOrder: 'right-to-left',
+        wordStagger: 1,
+        wordFadeDuration: 1,
+        delay: 10,
+        respectReducedMotion: false,
+        cursor: ''
+      });
+      expect(container.textContent).toBe('fade these words');
+      expect([...container.querySelectorAll('.tf-word-fade')].map((word) => word.dataset.tfWordOrder)).toEqual(['2', '1', '0']);
+      expect((await controller.promise).completed).toBe(true);
+      expect(container.textContent).toBe('');
+    });
+
     it('preserves baseline prefix when typed with mode: append', async () => {
       await TypeFlow.type(container, 'Prefix: ', { mode: 'replace', speed: 1, respectReducedMotion: false, cursor: '' }).promise;
       await TypeFlow.type(container, 'Dynamic part', { mode: 'append', speed: 1, respectReducedMotion: false, cursor: '' }).promise;
@@ -245,6 +480,87 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       const result = await controller.promise;
       expect(result.completed).toBe(true);
       expect(container.textContent).toBe('Visible content');
+    });
+  });
+
+  describe('Experimental Parallel Runner', () => {
+    beforeEach(() => installParallel(TypeFlow, seq));
+    it('types multiple targets with bounded concurrency and input-ordered results', async () => {
+      const targets = Array.from({ length: 4 }, () => document.body.appendChild(document.createElement('div')));
+      let active = 0;
+      let peak = 0;
+      const steps = targets.map((target, index) => seq.call(async () => {
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        target.textContent = String(index);
+        active -= 1;
+      }));
+
+      const result = await TypeFlow.parallel(steps, { concurrency: 2 }).promise;
+      expect(result.completed).toBe(true);
+      expect(peak).toBe(2);
+      expect(result.results.map((entry) => entry.status)).toEqual(Array(4).fill('fulfilled'));
+      expect(targets.map((target) => target.textContent)).toEqual(['0', '1', '2', '3']);
+    });
+
+    it('supports type, erase, per-step config delays, empty groups, and repeated targets deterministically', async () => {
+      const second = document.body.appendChild(document.createElement('div'));
+      second.textContent = 'erase me';
+      const result = await TypeFlow.parallel([
+        seq.type(container, 'first operation', { speed: 20, delay: 5, respectReducedMotion: false, cursor: '' }),
+        seq.type(container, 'replacement', { speed: 1, respectReducedMotion: false, cursor: '' }),
+        seq.erase(second, { eraseStyle: 'instant', delay: 5 }),
+      ]).promise;
+
+      expect(result.completed).toBe(false);
+      expect(result.results.map((entry) => entry.status)).toEqual(['interrupted', 'fulfilled', 'fulfilled']);
+      expect(container.textContent).toBe('replacement');
+      expect(second.textContent).toBe('');
+      await expect(TypeFlow.parallel([]).promise).resolves.toEqual({ completed: true, text: '', results: [] });
+    });
+
+    it('captures failures with all-settled and stops siblings with fail-fast', async () => {
+      const allSettled = await TypeFlow.parallel([
+        seq.call(() => { throw new Error('expected'); }),
+        seq.call(() => 'still runs'),
+      ], { settlement: 'all-settled' }).promise;
+      expect(allSettled.results.map((entry) => entry.status)).toEqual(['rejected', 'fulfilled']);
+
+      const slow = TypeFlow.type(container, 'slow sibling', { speed: 100, respectReducedMotion: false, cursor: '' });
+      slow.stop();
+      await slow.promise;
+      const failFast = await TypeFlow.parallel([
+        seq.type(container, 'will stop', { speed: 100, respectReducedMotion: false, cursor: '' }),
+        seq.call(() => { throw new Error('fail fast'); }),
+        seq.call(() => { throw new Error('must not start'); }),
+      ], { concurrency: 2, settlement: 'fail-fast' }).promise;
+      expect(failFast.completed).toBe(false);
+      expect(failFast.results[0].status).toBe('interrupted');
+      expect(failFast.results[1].status).toBe('rejected');
+      expect(failFast.results[2].status).toBe('interrupted');
+    });
+
+    it('supports nested parallel groups and propagates stop()', async () => {
+      const second = document.body.appendChild(document.createElement('div'));
+      const nested = TypeFlow.parallel([
+        seq.parallel([
+          seq.type(container, 'left', { speed: 1, respectReducedMotion: false, cursor: '' }),
+          seq.type(second, 'right', { speed: 1, respectReducedMotion: false, cursor: '' }),
+        ]),
+        seq.call(() => { container.dataset.joined = 'true'; }),
+      ], { concurrency: 1 });
+      expect((await nested.promise).completed).toBe(true);
+      expect(container.dataset.joined).toBe('true');
+
+      const stopped = TypeFlow.parallel([
+        seq.type(container, 'a long child operation', { speed: 100, respectReducedMotion: false, cursor: '' }),
+        seq.pause(10_000),
+      ]);
+      stopped.stop();
+      const stoppedResult = await stopped.promise;
+      expect(stoppedResult.completed).toBe(false);
+      expect(stoppedResult.results.every((entry) => entry.status === 'interrupted')).toBe(true);
     });
   });
 
@@ -419,6 +735,28 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       const result = await controller.promise;
       expect(result.completed).toBe(true);
       expect(container.textContent).toBe('Matrix Decode');
+    });
+
+    it('uses an explicit scrambleGlyphs pool instead of the default charset', async () => {
+      vi.useFakeTimers();
+      let controller;
+      try {
+        controller = TypeFlow.type(container, 'AB', {
+          typeStyle: 'scramble',
+          scrambleGlyphs: 'Ω',
+          scrambleRounds: 20,
+          speed: 20,
+          respectReducedMotion: false,
+          cursor: ''
+        });
+        // Twenty initial scramble ticks precede the first revealed character.
+        await vi.advanceTimersByTimeAsync(220);
+        expect(container.querySelector('.tf-scramble')?.textContent).toBe('Ω');
+      } finally {
+        controller?.stop();
+        await controller?.promise;
+        vi.useRealTimers();
+      }
     });
   });
 
@@ -602,4 +940,3 @@ describe('TypeFlow Comprehensive Test Suite', () => {
     });
   });
 });
-

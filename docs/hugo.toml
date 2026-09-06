@@ -8,19 +8,52 @@ disableKinds = ['taxonomy', 'term']
 
 [params]
   version = '2.3.0'
-  description = 'Lightweight, interruptible typewriter animation library with HTML sanitization, erase modes, and sequence orchestration.'
+  description = 'TypeFlow is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.'
+  author = 'StaticCanvas'
   repository = 'https://gitlab.com/staticcanvas/typeflow'
   github = 'https://github.com/staticcanvas/typeflow'
+  npm = 'https://www.npmjs.com/package/@staticcanvas/typeflow'
+  jsr = 'https://jsr.io/@staticcanvas/typeflow'
 
 [markup]
   [markup.goldmark.renderer]
     unsafe = true
   [markup.highlight]
-    noClasses = true
-    style = 'github-dark'
+    noClasses = false
+    guessSyntax = true
+    lineNos = false
+    tabWidth = 2
 
 [outputs]
-  home = ['HTML', 'JSON']
+  home = ['HTML', 'JSON', 'Markdown', 'LLMS', 'LLMSFULL']
+  page = ['HTML', 'Markdown']
+  section = ['HTML', 'Markdown']
+
+[mediaTypes]
+  [mediaTypes.'text/markdown']
+    suffixes = ['md']
+
+[outputFormats]
+  [outputFormats.Markdown]
+    mediaType = 'text/markdown'
+    baseName = 'index'
+    isPlainText = true
+    notAlternative = true
+  [outputFormats.LLMS]
+    mediaType = 'text/plain'
+    baseName = 'llms'
+    isPlainText = true
+    notAlternative = true
+  [outputFormats.LLMSFULL]
+    mediaType = 'text/plain'
+    baseName = 'llms-full'
+    isPlainText = true
+    notAlternative = true
+
+[sitemap]
+  changeFreq = 'weekly'
+  priority = 0.5
+  filename = 'sitemap.xml'
 
 [[module.mounts]]
   source = 'static'
@@ -29,57 +62,81 @@ disableKinds = ['taxonomy', 'term']
   source = '../branding'
   target = 'static/assets/branding'
 
+# Explicit URLs retain menu links on Hugo 0.111.x, which does not resolve pageRef.
 [menu]
   [[menu.main]]
     name = 'Overview'
     pageRef = '/'
+    url = '/'
     weight = 10
   [[menu.main]]
     name = 'Get started'
     pageRef = '/getting-started/'
+    url = '/getting-started/'
     weight = 20
   [[menu.main]]
     name = 'Guides'
     identifier = 'guides'
     pageRef = '/guides/'
+    url = '/guides/'
     weight = 30
   [[menu.main]]
     name = 'Sequences'
     parent = 'guides'
     pageRef = '/guides/sequences/'
+    url = '/guides/sequences/'
     weight = 31
   [[menu.main]]
     name = 'HTML & Sanitization'
     parent = 'guides'
     pageRef = '/guides/html-sanitization/'
+    url = '/guides/html-sanitization/'
     weight = 32
   [[menu.main]]
     name = 'Erase Styles'
     parent = 'guides'
     pageRef = '/guides/erase-styles/'
+    url = '/guides/erase-styles/'
     weight = 33
   [[menu.main]]
     name = 'Framework Adapters'
     parent = 'guides'
     pageRef = '/guides/framework-adapters/'
+    url = '/guides/framework-adapters/'
     weight = 34
   [[menu.main]]
     name = 'Accessibility'
     parent = 'guides'
     pageRef = '/guides/accessibility/'
+    url = '/guides/accessibility/'
     weight = 35
+  [[menu.main]]
+    name = 'Extensions'
+    parent = 'guides'
+    pageRef = '/guides/extensions/'
+    url = '/guides/extensions/'
+    weight = 36
   [[menu.main]]
     name = 'Sound & Audio'
     parent = 'guides'
     pageRef = '/guides/audio-soundtracks/'
+    url = '/guides/audio-soundtracks/'
     weight = 37
+  [[menu.main]]
+    name = 'Effects Index'
+    parent = 'guides'
+    pageRef = '/guides/reveal-erase-caret-index/'
+    url = '/guides/reveal-erase-caret-index/'
+    weight = 38
   [[menu.main]]
     name = 'API reference'
     pageRef = '/api/'
+    url = '/api/'
     weight = 40
   [[menu.main]]
     name = 'Playground'
     pageRef = '/playground/'
+    url = '/playground/'
     weight = 50
   [[menu.main]]
     name = 'Resources'
@@ -89,9 +146,11 @@ disableKinds = ['taxonomy', 'term']
     name = 'Downloads'
     parent = 'resources'
     pageRef = '/downloads/'
+    url = '/downloads/'
     weight = 61
   [[menu.main]]
     name = 'Changelog'
     parent = 'resources'
     pageRef = '/changelog/'
+    url = '/changelog/'
     weight = 62

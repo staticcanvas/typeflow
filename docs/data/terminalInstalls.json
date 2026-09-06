@@ -1,0 +1,22 @@
+[
+  {
+    "name": "npm",
+    "command": "npm install @staticcanvas/typeflow"
+  },
+  {
+    "name": "bun",
+    "command": "bun add @staticcanvas/typeflow"
+  },
+  {
+    "name": "yarn",
+    "command": "yarn add @staticcanvas/typeflow"
+  },
+  {
+    "name": "pnpm",
+    "command": "pnpm add @staticcanvas/typeflow"
+  },
+  {
+    "name": "jsr",
+    "command": "npx jsr add @staticcanvas/typeflow"
+  }
+]

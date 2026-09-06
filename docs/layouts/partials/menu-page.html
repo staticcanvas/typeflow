@@ -1,0 +1,14 @@
+{{/* Resolve configured content paths on both older and newer Hugo versions. */}}
+{{ $page := .Page }}
+{{ if not $page }}
+  {{ with .URL }}
+    {{ $path := strings.TrimPrefix site.Home.RelPermalink . }}
+    {{ $path = strings.TrimSuffix "/" $path }}
+    {{ if not $path }}
+      {{ $page = site.Home }}
+    {{ else }}
+      {{ $page = site.GetPage $path }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ return $page }}

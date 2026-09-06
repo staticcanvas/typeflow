@@ -14,10 +14,6 @@
  * @module docs
  */
 
-import { TypeFlow, seq } from '../webutil/libs/typeflow.esm.js';
-import { TypeFlowMetrics } from '../webutil/libs/typeflow-metrics.js';
-import { TypeFlowDebug } from '../webutil/libs/typeflow-debug.js';
-
 const root = document.documentElement;
 
 // ─── Theme Toggle ────────────────────────────────────────────────────────────
@@ -42,63 +38,80 @@ if (themeToggleBtn) {
 
 // ─── Mermaid.js Integration ───────────────────────────────────────────────────
 
+const MERMAID_MODULE_URL = 'https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.esm.min.mjs';
+let mermaidModulePromise;
+let mermaidRenderSequence = 0;
+const mermaidSources = new WeakMap();
+
+/**
+ * Loads Mermaid only when a diagram is present. The exact version is pinned so
+ * documentation builds do not silently acquire a different renderer.
+ * @returns {Promise<object|null>}
+ */
+async function loadMermaid() {
+  if (!document.querySelector('pre code.language-mermaid, div.mermaid, .mermaid-diagram')) return null;
+  mermaidModulePromise ||= import(MERMAID_MODULE_URL).then((module) => module.default || module);
+
+  try {
+    return await mermaidModulePromise;
+  } catch (error) {
+    console.error('TypeFlow docs: Mermaid could not be loaded.', error);
+    return null;
+  }
+}
+
 /**
  * Builds a Mermaid theme variables object matched to the TypeFlow docs palette.
  * @param {'dark'|'light'} theme
  * @returns {object} Mermaid themeVariables config
  */
 function getMermaidThemeVars(theme) {
-  const dark = theme !== 'light';
+  const styles = getComputedStyle(root);
+  const token = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
+  const canvas = token('--tf-bg-canvas', theme === 'light' ? '#f8fafc' : '#090d16');
+  const surface = token('--tf-bg-surface', theme === 'light' ? '#ffffff' : '#0f172a');
+  const elevated = token('--tf-bg-surface-elevated', theme === 'light' ? '#f1f5f9' : '#1e293b');
+  const border = token('--tf-border-default', theme === 'light' ? '#cbd5e1' : '#253347');
+  const strongBorder = token('--tf-border-strong', theme === 'light' ? '#94a3b8' : '#334155');
+  const text = token('--tf-text-primary', theme === 'light' ? '#0f172a' : '#f1f5f9');
+  const secondaryText = token('--tf-text-secondary', theme === 'light' ? '#475569' : '#a8b4c5');
+  const accent = token('--tf-accent', theme === 'light' ? '#0284c7' : '#38bdf8');
+  const orange = token('--tf-nav-active', theme === 'light' ? '#c2410c' : '#ffb07c');
+  const mono = token('--tf-font-mono', 'ui-monospace, monospace');
+
   return {
-    // Base backgrounds
-    background:          dark ? '#090d16' : '#f8fafc',
-    mainBkg:             dark ? '#0f172a' : '#ffffff',
-    nodeBorder:          dark ? '#253347' : '#cbd5e1',
-    clusterBkg:          dark ? '#1e293b' : '#f1f5f9',
-    titleColor:          dark ? '#f1f5f9' : '#0f172a',
-    edgeLabelBackground: dark ? '#1e293b' : '#f1f5f9',
-
-    // Text
-    nodeTextColor:       dark ? '#f1f5f9' : '#0f172a',
-    textColor:           dark ? '#94a3b8' : '#475569',
-    labelTextColor:      dark ? '#f1f5f9' : '#0f172a',
-
-    // Primary accent (sky blue)
-    primaryColor:        dark ? '#0c2340' : '#e0f2fe',
-    primaryBorderColor:  dark ? '#38bdf8' : '#0284c7',
-    primaryTextColor:    dark ? '#38bdf8' : '#0284c7',
-
-    // Secondary accent (orange)
-    secondaryColor:      dark ? '#2a1200' : '#fff7ed',
-    secondaryBorderColor:dark ? '#fb923c' : '#ea580c',
-    secondaryTextColor:  dark ? '#fb923c' : '#ea580c',
-
-    // Tertiary accent (purple)
-    tertiaryColor:       dark ? '#1a0e2e' : '#faf5ff',
-    tertiaryBorderColor: dark ? '#a78bfa' : '#7c3aed',
-    tertiaryTextColor:   dark ? '#a78bfa' : '#7c3aed',
-
-    // Lines / borders
-    lineColor:           dark ? '#334155' : '#94a3b8',
-    activationBorderColor: dark ? '#38bdf8' : '#0284c7',
-    activationBkgColor:  dark ? '#0c2340' : '#e0f2fe',
-
-    // Sequence diagram participants
-    actorBkg:            dark ? '#0f172a' : '#ffffff',
-    actorBorder:         dark ? '#253347' : '#cbd5e1',
-    actorTextColor:      dark ? '#f1f5f9' : '#0f172a',
-    actorLineColor:      dark ? '#334155' : '#94a3b8',
-
-    // Signals / notes
-    signalColor:         dark ? '#94a3b8' : '#475569',
-    signalTextColor:     dark ? '#f1f5f9' : '#0f172a',
-    noteBkgColor:        dark ? '#1e293b' : '#f1f5f9',
-    noteBorderColor:     dark ? '#253347' : '#e2e8f0',
-    noteTextColor:       dark ? '#94a3b8' : '#475569',
-
-    // Fonts
-    fontFamily:          "'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace",
-    fontSize:            '13px',
+    background: canvas,
+    mainBkg: surface,
+    nodeBorder: border,
+    clusterBkg: elevated,
+    titleColor: text,
+    edgeLabelBackground: elevated,
+    nodeTextColor: text,
+    textColor: secondaryText,
+    labelTextColor: text,
+    primaryColor: surface,
+    primaryBorderColor: accent,
+    primaryTextColor: text,
+    secondaryColor: elevated,
+    secondaryBorderColor: orange,
+    secondaryTextColor: orange,
+    tertiaryColor: canvas,
+    tertiaryBorderColor: strongBorder,
+    tertiaryTextColor: secondaryText,
+    lineColor: strongBorder,
+    activationBorderColor: accent,
+    activationBkgColor: elevated,
+    actorBkg: surface,
+    actorBorder: border,
+    actorTextColor: text,
+    actorLineColor: strongBorder,
+    signalColor: secondaryText,
+    signalTextColor: text,
+    noteBkgColor: elevated,
+    noteBorderColor: border,
+    noteTextColor: secondaryText,
+    fontFamily: mono,
+    fontSize: '13px',
   };
 }
 
@@ -109,7 +122,7 @@ function getMermaidThemeVars(theme) {
  * @param {'dark'|'light'} [theme]
  */
 async function initMermaid(theme) {
-  const mermaid = window.mermaid;
+  const mermaid = await loadMermaid();
   if (!mermaid) return;
 
   theme = theme || root.dataset.theme || 'dark';
@@ -125,69 +138,85 @@ async function initMermaid(theme) {
     gantt: { useMaxWidth: false },
   });
 
-  // Hugo renders ```mermaid as <pre><code class="language-mermaid">
-  // Mermaid itself also reads <div class="mermaid"> — handle both.
+  // Hugo renders ```mermaid as <pre><code class="language-mermaid">. Keep the
+  // original block in place until Mermaid has loaded, which is the no-JS and
+  // network-failure fallback.
   const codeBlocks = document.querySelectorAll('pre code.language-mermaid');
 
   for (const code of codeBlocks) {
     const pre = code.closest('pre');
-    if (!pre || pre.dataset.mermaidProcessed) continue;
-    pre.dataset.mermaidProcessed = '1';
+    if (!pre) continue;
 
     const definition = code.textContent.trim();
-    const wrapper = document.createElement('div');
+    const wrapper = document.createElement('figure');
     wrapper.className = 'mermaid-diagram';
+    wrapper.setAttribute('aria-label', 'TypeFlow architecture diagram');
     wrapper.innerHTML = `
       <div class="mermaid-toolbar">
         <span class="mermaid-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="m9 9 3 3 3-3"/><path d="M12 12v6"/></svg> Diagram</span>
-        <button type="button" class="mermaid-copy-btn" title="Copy source"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
+        <button type="button" class="mermaid-copy-btn" aria-label="Copy Mermaid source"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
       </div>
-      <div class="mermaid-render" id="mermaid-${Math.random().toString(36).slice(2)}"></div>
+      <div class="mermaid-render" id="mermaid-${++mermaidRenderSequence}" role="img" aria-label="Rendered Mermaid diagram" tabindex="0"></div>
+      <details class="mermaid-source">
+        <summary>View diagram source</summary>
+        <pre><code></code></pre>
+      </details>
     `;
 
-    const renderTarget = wrapper.querySelector('.mermaid-render');
-    const copyBtn = wrapper.querySelector('.mermaid-copy-btn');
-
+    wrapper.querySelector('.mermaid-source code').textContent = definition;
+    mermaidSources.set(wrapper, definition);
     pre.replaceWith(wrapper);
 
-    try {
-      const { svg } = await mermaid.render(renderTarget.id, definition);
-      renderTarget.innerHTML = svg;
-      // Make SVG responsive
-      const svgEl = renderTarget.querySelector('svg');
-      if (svgEl) {
-        svgEl.removeAttribute('width');
-        svgEl.removeAttribute('height');
-        if (!svgEl.getAttribute('viewBox')) {
-          svgEl.setAttribute('viewBox', `0 0 ${svgEl.getAttribute('width') || 800} ${svgEl.getAttribute('height') || 400}`);
-        }
-        svgEl.style.maxWidth = '100%';
-        svgEl.style.height = 'auto';
-      }
-    } catch (err) {
-      renderTarget.innerHTML = `<pre class="mermaid-error">⚠ Diagram parse error:\n${err.message}</pre>`;
-    }
-
-    // Copy button
+    const copyBtn = wrapper.querySelector('.mermaid-copy-btn');
     copyBtn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(definition);
-        copyBtn.textContent = '✓ Copied';
+        copyBtn.textContent = 'Copied';
         setTimeout(() => { copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`; }, 1800);
       } catch {}
     });
   }
 
-  // Also process any raw <div class="mermaid"> blocks (e.g. from shortcodes)
-  const rawDivs = document.querySelectorAll('div.mermaid:not([data-mermaid-processed])');
-  if (rawDivs.length) {
-    rawDivs.forEach(el => { el.dataset.mermaidProcessed = '1'; });
-    mermaid.run({ nodes: [...rawDivs] });
+  // Re-render existing wrappers on every theme change using the retained source.
+  for (const wrapper of document.querySelectorAll('.mermaid-diagram')) {
+    const renderTarget = wrapper.querySelector('.mermaid-render');
+    const definition = mermaidSources.get(wrapper);
+    if (!renderTarget || !definition) continue;
+
+    try {
+      // Mermaid's own render() looks up this id in the live document and
+      // deletes any element it finds there as internal bookkeeping, so the
+      // id passed here must never match a permanent element (the render
+      // target keeps its own id from creation and is never touched).
+      const renderId = `mermaid-render-pass-${++mermaidRenderSequence}`;
+      const { svg, bindFunctions } = await mermaid.render(renderId, definition);
+      renderTarget.innerHTML = svg;
+      bindFunctions?.(renderTarget);
+      const svgEl = renderTarget.querySelector('svg');
+      if (svgEl) {
+        svgEl.removeAttribute('width');
+        svgEl.removeAttribute('height');
+        svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      }
+    } catch (error) {
+      renderTarget.replaceChildren();
+      const failure = document.createElement('pre');
+      failure.className = 'mermaid-error';
+      failure.textContent = `Diagram parse error:\n${error instanceof Error ? error.message : String(error)}`;
+      renderTarget.append(failure);
+    }
+  }
+
+  // Raw Mermaid containers are supported for shortcodes. Their source remains
+  // in the element until Mermaid replaces it, so they retain a non-JS fallback.
+  const rawDivs = [...document.querySelectorAll('div.mermaid:not([data-mermaid-processed])')];
+  if (rawDivs.length > 0) {
+    rawDivs.forEach((element) => { element.dataset.mermaidProcessed = 'true'; });
+    await mermaid.run({ nodes: rawDivs });
   }
 }
 
-// Boot Mermaid once the module is loaded — use a small delay so mermaid.esm is ready
-window.addEventListener('load', () => setTimeout(() => initMermaid(), 80));
+initMermaid();
 
 // ─── Mobile Sidebar Toggle ───────────────────────────────────────────────────
 
@@ -268,7 +297,6 @@ if ('startViewTransition' in document) {
     document.querySelectorAll('.sidebar-link').forEach((l) => {
       const lHref = l.getAttribute('href');
       const isCurrent = lHref && (href === lHref || href.startsWith(lHref.replace(/\/$/, '') + '/'));
-      l.classList.toggle('active', isCurrent);
       if (isCurrent) l.setAttribute('aria-current', 'page');
       else l.removeAttribute('aria-current');
     });
@@ -281,6 +309,8 @@ if ('startViewTransition' in document) {
 
 // ─── Keyboard Search Shortcut & Modal Triggers ───────────────────────────────
 
+let searchReturnFocus = null;
+
 /**
  * Opens the 2-column search popup modal.
  */
@@ -288,8 +318,14 @@ export const openSearchModal = () => {
   const modal = document.getElementById('typeflow-search-modal');
   const input = document.getElementById('search-modal-input');
   if (modal) {
+    searchReturnFocus = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+      ? document.activeElement
+      : document.querySelector('[data-search-trigger]');
     modal.removeAttribute('hidden');
     document.body.style.overflow = 'hidden';
+    document.querySelectorAll('[data-search-trigger]').forEach((trigger) => {
+      trigger.setAttribute('aria-expanded', 'true');
+    });
     setTimeout(() => {
       input?.focus();
       input?.select();
@@ -302,9 +338,14 @@ export const openSearchModal = () => {
  */
 export const closeSearchModal = () => {
   const modal = document.getElementById('typeflow-search-modal');
-  if (modal) {
+  if (modal && !modal.hasAttribute('hidden')) {
     modal.setAttribute('hidden', '');
     document.body.style.overflow = '';
+    document.querySelectorAll('[data-search-trigger]').forEach((trigger) => {
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+    searchReturnFocus?.focus();
+    searchReturnFocus = null;
   }
 };
 
@@ -338,6 +379,19 @@ document.querySelectorAll('[data-search-close]').forEach((btn) => {
     closeSearchModal();
   });
 });
+
+// Carry the entry module's content token into companion imports so a docs
+// deployment cannot combine a fresh slogan schema with stale runtime modules.
+const assetVersion = new URL(import.meta.url).search;
+const [
+  { TypeFlow, seq },
+  { TypeFlowMetrics },
+  { TypeFlowDebug },
+] = await Promise.all([
+  import(`../webutil/libs/typeflow.esm.js${assetVersion}`),
+  import(`../webutil/libs/typeflow-metrics.esm.js${assetVersion}`),
+  import(`../webutil/libs/typeflow-debug.esm.js${assetVersion}`),
+]);
 
 // Dynamic rotating search suggestions in the header search trigger
 const searchPlaceholderEl = document.querySelector('.search-trigger-placeholder');
@@ -391,6 +445,10 @@ document.querySelectorAll('[data-copy]').forEach((btn) => {
 document.querySelectorAll('pre').forEach((pre) => {
   if (pre.classList.contains('pg-code-pre') || pre.closest('.pg-code-card') || pre.querySelector('.copy-button')) return;
 
+  // Code blocks can overflow horizontally, so they must be keyboard-focusable
+  // for users who cannot drag a scrollbar or use a precision pointer.
+  if (!pre.hasAttribute('tabindex')) pre.tabIndex = 0;
+
   const btn = document.createElement('button');
   btn.className = 'copy-button';
   btn.type = 'button';
@@ -440,6 +498,7 @@ document.querySelectorAll('[data-code-tabs]').forEach((tabset) => {
  */
 const heroSloganEl = document.getElementById('hero-slogan');
 const heroModeText = document.getElementById('hero-mode-text');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 if (heroSloganEl) {
   const setMode = (label) => {
@@ -449,34 +508,47 @@ if (heroSloganEl) {
   };
 
   let sloganSteps = [];
+  let staticSlogan = null;
   const slogansDataEl = document.getElementById('splash-slogans-data');
   if (slogansDataEl) {
     try {
       const parsedSlogans = JSON.parse(slogansDataEl.textContent);
       if (Array.isArray(parsedSlogans) && parsedSlogans.length > 0) {
+        staticSlogan = parsedSlogans[0];
         parsedSlogans.forEach((item) => {
+          const {
+            slogan,
+            mode,
+            typeStyle = 'char',
+            eraseStyle = 'end',
+            speed = 45,
+            cursor = '|',
+            typeConfig = {},
+            eraseConfig = {},
+            ...sharedOptions
+          } = item;
+          const typeOptions = { ...sharedOptions, ...typeConfig };
+          const eraseOptions = { ...sharedOptions, ...eraseConfig };
           sloganSteps.push(
-            seq.call(() => setMode(item.mode || item.slogan)),
-            seq.type(heroSloganEl, item.slogan, {
-              typeStyle: item.typeStyle || 'char',
-              direction: item.direction || 'left',
-              scrambleCharset: item.scrambleCharset || 'matrix',
-              scrambleRounds: item.scrambleRounds || 2,
-              trailFade: item.trailFade,
-              html: item.html,
-              speed: item.speed || 45,
-              cursor: item.cursor || '|',
-              cursorBlink: true,
-              respectReducedMotion: false,
+            seq.call(() => setMode(mode || slogan)),
+            seq.type(heroSloganEl, slogan, {
+              ...typeOptions,
+              typeStyle: typeOptions.typeStyle ?? typeStyle,
+              speed: typeOptions.speed ?? speed,
+              cursor: typeOptions.cursor ?? cursor,
+              cursorBlink: typeOptions.cursorBlink ?? true,
+              respectReducedMotion: typeOptions.respectReducedMotion ?? false,
             }),
             seq.pause(2600),
             seq.erase(heroSloganEl, {
-              eraseStyle: item.eraseStyle || 'end',
-              scrambleCharset: item.scrambleCharset || 'matrix',
-              scrambleRounds: 1,
-              speed: Math.max(16, Math.floor((item.speed || 45) * 0.55)),
-              duration: 350,
-              respectReducedMotion: false,
+              ...eraseOptions,
+              eraseStyle: eraseOptions.eraseStyle ?? eraseStyle,
+              scrambleRounds: eraseConfig.scrambleRounds ?? 1,
+              speed: eraseConfig.speed ?? Math.max(16, Math.floor(speed * 0.55)),
+              duration: eraseOptions.duration ?? 350,
+              cursor: eraseOptions.cursor ?? '',
+              cursorBlink: eraseOptions.cursorBlink ?? false,
+              respectReducedMotion: eraseOptions.respectReducedMotion ?? false,
             }),
             seq.pause(450)
           );
@@ -487,6 +559,10 @@ if (heroSloganEl) {
 
   // Fallback defaults if json data is absent
   if (sloganSteps.length === 0) {
+    staticSlogan = {
+      slogan: 'typewriter animations.',
+      mode: 'typeStyle: char · eraseStyle: end (backspace)',
+    };
     sloganSteps = [
       seq.call(() => setMode('typeStyle: char · eraseStyle: end (backspace)')),
       seq.type(heroSloganEl, 'typewriter animations.', {
@@ -540,55 +616,261 @@ if (heroSloganEl) {
     ];
   }
 
-  TypeFlow.sequence(sloganSteps, { repeat: Infinity });
+  if (reduceMotion && staticSlogan) {
+    heroSloganEl.textContent = staticSlogan.slogan;
+    setMode(staticSlogan.mode);
+  } else {
+    TypeFlow.sequence(sloganSteps, { repeat: Infinity });
+  }
 }
 
-// ─── Hero Staggered Terminal Demo ─────────────────────────────────────────────
+// ─── Reveal/Erase/Caret Index Live Demos ──────────────────────────────────────
 
 /**
- * Runs a 3-line staggered typewriter sequence in the hero terminal using
- * {@link TypeFlow.stagger}.
+ * Drives every `[data-tf-demo]` element on the page (used by the reveal/
+ * erase/caret index guide): reads a JSON config from the element's own
+ * `data-tf-demo` attribute, types the configured text in, holds, erases it,
+ * and repeats. Each element keeps its literal text content as a no-JS/
+ * pre-hydration fallback.
  */
-const line1 = document.getElementById('hero-type-1');
-const line2 = document.getElementById('hero-type-2');
-const line3 = document.getElementById('hero-type-3');
+function initIndexRevealEraseDemos() {
+  const demoEls = document.querySelectorAll('[data-tf-demo]');
+  if (!demoEls.length) return;
+  const heightReservations = [];
 
-if (line1 && line2 && line3) {
-  const terminalLines = [line1, line2, line3];
-  const terminalTexts = [
-    'npm install @staticcanvas/typeflow',
-    'import { TypeFlow } from "@staticcanvas/typeflow";',
-    'TypeFlow.type("#target", "Fast. Resilient. Safe.", { speed: 30 });'
-  ];
-
-  const runTerminalStagger = () => {
-    terminalLines.forEach((l) => {
-      TypeFlow.stop(l);
-      l.textContent = '';
+  const reserveDemoHeight = (el, text) => {
+    const width = el.getBoundingClientRect().width;
+    if (width <= 0) return;
+    const probe = el.cloneNode(false);
+    probe.removeAttribute('id');
+    probe.removeAttribute('data-tf-demo');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.textContent = text;
+    Object.assign(probe.style, {
+      position: 'fixed',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+      inset: '0 auto auto 0',
+      width: `${width}px`,
+      minBlockSize: '0',
     });
-    TypeFlow.stagger(terminalLines, terminalTexts, {
-      speed: 28,
-      stagger: 320,
-      cursor: '|',
-      cursorBlink: true,
-      respectReducedMotion: false,
-    }).promise.then(() => {
-      setTimeout(async () => {
-        await Promise.all(
-          terminalLines.map((l) =>
-            TypeFlow.erase(l, { eraseStyle: 'fade', duration: 300 }).promise
-          )
-        );
-        terminalLines.forEach((l) => {
-          TypeFlow.stop(l);
-          l.textContent = '';
-        });
-        setTimeout(runTerminalStagger, 800);
-      }, 5000);
-    });
+    document.body.appendChild(probe);
+    el.style.minBlockSize = `${Math.ceil(probe.getBoundingClientRect().height)}px`;
+    probe.remove();
   };
 
-  runTerminalStagger();
+  demoEls.forEach((el) => {
+    let config;
+    try {
+      config = JSON.parse(el.dataset.tfDemo);
+    } catch {
+      return;
+    }
+    const text = config.text || el.textContent.trim();
+    el.textContent = text;
+    heightReservations.push({ el, text });
+    reserveDemoHeight(el, text);
+
+    const shared = {
+      direction: config.direction || 'left',
+      scrambleCharset: config.scrambleCharset || 'matrix',
+      scrambleRounds: config.scrambleRounds ?? 2,
+      trailFade: config.trailFade,
+      html: config.html,
+      speed: config.speed ?? 45,
+      cursor: config.cursor ?? '|',
+      cursorBlink: true,
+      respectReducedMotion: true,
+      wordOrder: config.wordOrder,
+      wordLayout: config.wordLayout,
+      wordFadeDuration: config.wordFadeDuration,
+      wordStagger: config.wordStagger,
+      wordSeed: config.wordSeed,
+      wordMotionDistance: config.wordMotionDistance,
+      wordMotionDepth: config.wordMotionDepth,
+      wordMotionScale: config.wordMotionScale,
+      wordMotionPerspective: config.wordMotionPerspective,
+      wordMotionEasing: config.wordMotionEasing,
+    };
+
+    const steps = [
+      seq.type(el, text, { ...shared, typeStyle: config.typeStyle || 'char' }),
+      seq.pause(1800),
+      seq.erase(el, { ...shared, eraseStyle: config.eraseStyle || 'end' }),
+      seq.pause(500),
+    ];
+
+    TypeFlow.sequence(steps, { repeat: Infinity });
+  });
+
+  let resizeFrame = null;
+  window.addEventListener('resize', () => {
+    if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => {
+      heightReservations.forEach(({ el, text }) => reserveDemoHeight(el, text));
+      resizeFrame = null;
+    });
+  }, { passive: true });
+}
+
+initIndexRevealEraseDemos();
+
+/**
+ * Drives every `[data-tf-caret-demo]` element: reads a JSON config
+ * (`{ text, steps: [{ op, args }] }`) from the element's own attribute,
+ * runs each Caret operation in order with a pause between, then resets and
+ * repeats. Lazily imports the `@staticcanvas/typeflow/caret` bundle only
+ * when at least one such element is present on the page.
+ */
+async function initIndexCaretDemos() {
+  const demoEls = document.querySelectorAll('[data-tf-caret-demo]');
+  if (!demoEls.length) return;
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+  const { Caret } = await import(`../webutil/libs/typeflow-caret.esm.js${assetVersion}`);
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  demoEls.forEach(async (el) => {
+    let config;
+    try {
+      config = JSON.parse(el.dataset.tfCaretDemo);
+    } catch {
+      return;
+    }
+
+    while (document.contains(el)) {
+      const caret = new Caret(el, { text: config.text, cursor: '|' });
+      await sleep(900);
+      for (const step of config.steps || []) {
+        if (step.op === 'insert') {
+          await caret.insert(...(step.args || []), { speed: 45 }).promise;
+        } else {
+          caret[step.op]?.(...(step.args || []));
+        }
+        await sleep(750);
+      }
+      await sleep(1600);
+      caret.destroy();
+    }
+  });
+}
+
+initIndexCaretDemos();
+
+// ─── Hero installation and usage Rolodex windows ──────────────────────────────
+
+for (const terminal of document.querySelectorAll('[data-hero-rolodex]')) {
+  const slides = [...terminal.querySelectorAll('[data-rolodex-slide]')];
+  // Keep an inert copy beneath the animated code to reserve its full layout.
+  const examples = slides.map((slide) => {
+    const code = slide.querySelector('code');
+    const html = code.innerHTML;
+    const layer = document.createElement('span');
+    layer.className = 'terminal-type-layer';
+    const size = code.cloneNode(true);
+    size.classList.add('terminal-code-size');
+    size.setAttribute('aria-hidden', 'true');
+    size.inert = true;
+    code.dataset.liveCode = '';
+    code.replaceWith(layer);
+    layer.append(size, code);
+    return { code, html };
+  });
+  const label = terminal.querySelector('[data-rolodex-label]');
+  const pauseButton = terminal.querySelector('[data-rolodex-pause]');
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let index = 0;
+  let paused = motion.matches;
+  let timer;
+  let animation;
+  let typing;
+  const pose = (angle, offset, opacity) => ({
+    transform: `perspective(900px) translateY(${offset}px) rotateX(${angle}deg)`,
+    opacity,
+  });
+  const show = () => {
+    slides.forEach((slide, i) => {
+      slide.inert = i !== index;
+      slide.setAttribute('aria-hidden', String(i !== index));
+    });
+    label.textContent = slides[index].dataset.label;
+    terminal.dataset.example = slides[index].dataset.example;
+  };
+  const schedule = () => {
+    clearTimeout(timer);
+    if (!paused && !typing && !document.hidden && terminal.isConnected) timer = setTimeout(rotate, 6500);
+  };
+  const finishTyping = () => {
+    typing?.stop();
+    typing = null;
+    const { code, html } = examples[index];
+    TypeFlow.stop(code);
+    code.innerHTML = html;
+  };
+  const typeExample = () => {
+    clearTimeout(timer);
+    if (paused || motion.matches || document.hidden) return;
+    const { code, html } = examples[index];
+    const controller = TypeFlow.type(code, html, {
+      html: true,
+      speed: terminal.classList.contains('terminal-install') ? 28 : 12,
+      cursor: '|',
+      cursorBlink: true,
+      respectReducedMotion: true,
+    });
+    typing = controller;
+    controller.promise.then(() => {
+      if (typing !== controller) return;
+      typing = null;
+      schedule();
+    });
+  };
+  const animate = async (frames, duration) => {
+    animation = terminal.animate(frames, {
+      duration, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards',
+    });
+    await animation.finished;
+  };
+  const rotate = async () => {
+    try {
+      finishTyping();
+      if (!motion.matches) await animate([pose(0, 0, 1), pose(-65, -20, 0)], 360);
+      index = (index + 1) % slides.length;
+      show();
+      animation?.cancel();
+      typeExample();
+      if (!motion.matches) await animate([pose(65, 20, 0), pose(0, 0, 1)], 480);
+    } catch (error) {
+      if (error.name !== 'AbortError') throw error;
+    } finally {
+      animation?.cancel();
+      animation = null;
+      schedule();
+    }
+  };
+  const syncPause = () => {
+    pauseButton.textContent = paused ? 'Play' : 'Pause';
+    pauseButton.setAttribute('aria-pressed', String(paused));
+    pauseButton.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} ${terminal.classList.contains('terminal-install') ? 'installation' : 'usage'} rotation`);
+    if (paused) {
+      animation?.cancel();
+      finishTyping();
+    }
+    schedule();
+  };
+  pauseButton.addEventListener('click', () => { paused = !paused; syncPause(); });
+  motion.addEventListener('change', () => { paused = motion.matches; syncPause(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      animation?.cancel();
+      finishTyping();
+    }
+    schedule();
+  });
+  window.addEventListener('pagehide', () => { clearTimeout(timer); animation?.cancel(); finishTyping(); });
+  show();
+  syncPause();
+  typeExample();
 }
 
 // ─── Lucide Icons Initialization ─────────────────────────────────────────────
@@ -616,21 +898,21 @@ const initAnimationMatrixGrid = () => {
     },
     'word-word': {
       stageId: 'matrix-stage-2',
-      text: 'High-velocity token streaming word by word.',
+      text: 'Type and erase one word at a time.',
       typeOpts: { typeStyle: 'word', speed: 50, cursor: '|' },
       eraseOpts: { eraseStyle: 'word', speed: 30 },
       hold: 2400,
     },
     'fade-trail': {
       stageId: 'matrix-stage-3',
-      text: 'Smooth trailing fade opacity gradient dissolve.',
+      text: 'Fade characters along the trailing edge.',
       typeOpts: { typeStyle: 'fade-trail', trailFade: 5, trailingFadeLength: 5, speed: 36, cursor: '' },
       eraseOpts: { eraseStyle: 'fade-trail', trailFade: 5, trailingFadeLength: 5, speed: 22 },
       hold: 2500,
     },
     'scramble-matrix': {
       stageId: 'matrix-stage-4',
-      text: 'CYBERNETIC MATRIX CIPHER DECRYPT INITIALIZED',
+      text: 'Reveal text with matrix characters.',
       typeOpts: { typeStyle: 'scramble', scrambleCharset: 'matrix', scrambleRounds: 2, speed: 38, cursor: '■' },
       eraseOpts: { eraseStyle: 'scramble', scrambleCharset: 'matrix', speed: 20 },
       hold: 2400,
@@ -658,7 +940,7 @@ const initAnimationMatrixGrid = () => {
     },
     'scramble-runes': {
       stageId: 'matrix-stage-8',
-      text: 'ᚠᚢᚦᚨᚱᚲ ANCIENT RUNIC GLYPH DECODER',
+      text: 'Reveal text with runic characters.',
       typeOpts: { typeStyle: 'scramble', scrambleCharset: 'runic', scrambleRounds: 2, speed: 38, cursor: '|' },
       eraseOpts: { eraseStyle: 'end', speed: 22 },
       hold: 2400,
@@ -672,16 +954,16 @@ const initAnimationMatrixGrid = () => {
     },
     'instant-reset': {
       stageId: 'matrix-stage-10',
-      text: 'Instantaneous zero-frame tactical clear and reset.',
+      text: 'Clear the text without an erase animation.',
       typeOpts: { speed: 34, cursor: '|' },
       eraseOpts: { eraseStyle: 'instant' },
       hold: 2200,
     },
     'scramble-hieroglyphs': {
       stageId: 'matrix-stage-11',
-      text: '𓂀𓃀𓃁 HIEROGLYPHIC SACRED SCRAMBLE DECRYPT',
-      typeOpts: { typeStyle: 'scramble', scrambleCharset: 'hieroglyphs', scrambleRounds: 2, speed: 38, cursor: '▍' },
-      eraseOpts: { eraseStyle: 'scramble', scrambleCharset: 'hieroglyphs', speed: 20 },
+      text: 'Reveal text with hieroglyph characters.',
+      typeOpts: { typeStyle: 'scramble', scrambleGlyphs: '𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇', scrambleRounds: 2, speed: 38, cursor: '▍' },
+      eraseOpts: { eraseStyle: 'scramble', scrambleGlyphs: '𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇', speed: 20 },
       hold: 2400,
     },
     'stagger-engine': {
@@ -817,6 +1099,8 @@ const pgSampleSelect     = document.getElementById('pg-sample-select');
 const pgText             = document.getElementById('pg-text');
 const pgDirection        = document.getElementById('pg-direction');
 const pgTypeStyle        = document.getElementById('pg-type-style');
+const pgWordOrder        = document.getElementById('pg-word-order');
+const pgWordLayout       = document.getElementById('pg-word-layout');
 const pgScrambleCharset  = document.getElementById('pg-scramble-charset');
 const pgScrambleColor    = document.getElementById('pg-scramble-color');
 const pgScrambleRounds   = document.getElementById('pg-scramble-rounds');
@@ -856,6 +1140,7 @@ const pgStatusText       = document.getElementById('pg-status-text');
 const pgMetaChars        = document.getElementById('pg-meta-chars');
 const pgMetaFont         = document.getElementById('pg-meta-font');
 const pgCodeSnippet      = document.getElementById('pg-code-snippet');
+const pgCodeOperation    = document.getElementById('pg-code-operation');
 
 const btnType            = document.getElementById('pg-btn-type');
 const btnErase           = document.getElementById('pg-btn-erase');
@@ -873,6 +1158,25 @@ if (pgStage && btnType) {
   /** @type {import('../webutil/libs/typeflow.esm.js').TypeFlowController | null} */
   let activeController = null;
   let activeStream = null;
+  let generatedCode = '';
+  let snippetAction = 'type';
+  let snippetPayload = null;
+
+  const WORD_MOTION_STYLES = new Set([
+    'word-fade', 'float-in-top', 'float-in-bottom', 'float-in-left', 'float-in-right', 'zoom-in-space',
+  ]);
+  // Playground-only pools are emitted as `scrambleGlyphs`, not as unsupported
+  // core charset names, so preview and copied code use the same characters.
+  const PLAYGROUND_GLYPH_POOLS = {
+    hieroglyphs: '𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏',
+    greek: 'αβγδεζηθικλμνξοπρστυφχψω',
+    math: '∀∃∄∅∆∇∈∉∋∌∎∏∑−∓∔∕∖∗∘√∛∝∞',
+    chess: '♔♕♖♗♘♙♚♛♜♝♞♟',
+    geometric: '▲▼◀▶◆◇◈◉◊○●◐◑',
+    astronomy: '☉☽☿♀♁♂♃♄♅♆♇',
+    currency: '$€£¥₹₽₩₪₺₫฿',
+    arrows: '←↑→↓↔↕↖↗↘↙',
+  };
 
   const setStatus = (status, isActive = false) => {
     if (pgStatusText) pgStatusText.textContent = status;
@@ -895,25 +1199,36 @@ if (pgStage && btnType) {
     if (pgMetaFont) pgMetaFont.textContent = `${size} · ${font}`;
   };
 
-  const getOptions = () => {
+  const getOptions = (operation = 'type') => {
+    const isErase = operation === 'erase';
+    const style = isErase ? (pgEraseStyle?.value || 'end') : (pgTypeStyle?.value || 'char');
     const opts = {
       speed: Number(pgSpeed?.value ?? 40),
       delay: Number(pgDelay?.value ?? 0),
       speedVariance: Number(pgSpeedVariance?.value ?? 0),
-      direction: pgDirection?.value || 'left',
-      typeStyle: pgTypeStyle?.value || 'char',
-      eraseStyle: pgEraseStyle?.value || 'end',
       cursor: pgCursorChar?.value ?? '|',
       cursorBlink: pgCursorBlink?.checked ?? true,
       granularity: pgGranularity?.value || 'grapheme',
-      mode: pgMode?.value || 'replace',
-      html: pgHtml?.checked ?? true,
-      naturalCadence: pgNaturalCadence?.checked ?? false,
       respectReducedMotion: pgReducedMotion?.checked ?? false,
     };
 
-    if (pgTypeStyle?.value === 'scramble' || pgEraseStyle?.value === 'scramble') {
-      opts.scrambleCharset = pgScrambleCharset?.value || 'matrix';
+    if (isErase) {
+      opts.eraseStyle = style;
+    } else {
+      opts.direction = pgDirection?.value || 'left';
+      opts.typeStyle = style;
+      opts.html = pgHtml?.checked ?? true;
+      opts.naturalCadence = pgNaturalCadence?.checked ?? false;
+      if (operation === 'type') opts.mode = pgMode?.value || 'replace';
+    }
+
+    if (style === 'scramble') {
+      const charset = pgScrambleCharset?.value || 'matrix';
+      if (PLAYGROUND_GLYPH_POOLS[charset]) {
+        opts.scrambleGlyphs = PLAYGROUND_GLYPH_POOLS[charset];
+      } else {
+        opts.scrambleCharset = charset;
+      }
       opts.scrambleRounds = Number(pgScrambleRounds?.value ?? 2);
       const colorVal = pgScrambleColor?.value;
       if (colorVal && colorVal !== 'default') {
@@ -929,24 +1244,23 @@ if (pgStage && btnType) {
       }
     }
 
-    if (pgTypeStyle?.value === 'fade-trail' || pgEraseStyle?.value === 'fade-trail') {
-      const len = Number(pgFadeTrailLen?.value ?? 4);
-      const minOp = Number(pgFadeTrailMinOp?.value ?? 0.18);
-      opts.trailingFadeLength = len;
-      opts.trailFade = len;
-      opts.trailingFadeMinOpacity = minOp;
-      opts.trailMinOpacity = minOp;
+    if (style === 'fade-trail') {
+      opts.trailFade = Number(pgFadeTrailLen?.value ?? 4);
+      opts.trailMinOpacity = Number(pgFadeTrailMinOp?.value ?? 0.18);
     }
 
-    if (pgStagger && Number(pgStagger.value) > 0) {
-      opts.stagger = Number(pgStagger.value);
+    if (WORD_MOTION_STYLES.has(style)) {
+      opts.wordOrder = pgWordOrder?.value || 'left-to-right';
+      opts.wordLayout = pgWordLayout?.value || 'opacity';
+      opts.wordFadeDuration = Number(pgFadeDuration?.value ?? 280);
+      if (pgStagger && Number(pgStagger.value) > 0) opts.wordStagger = Number(pgStagger.value);
     }
 
-    if (pgEraseStyle?.value === 'fade') {
+    if (isErase && style === 'fade') {
       opts.duration = Number(pgFadeDuration?.value ?? 250);
     }
 
-    if (pgAudio?.value && pgAudio.value !== 'none') {
+    if (pgAudio?.value && pgAudio.value !== 'none' && pgAudio.value !== 'soundtrack') {
       opts.audio = pgAudio.value;
     }
 
@@ -954,42 +1268,221 @@ if (pgStage && btnType) {
   };
 
   const highlightJavaScript = (code) => {
-    const escaped = code
+    const escape = (value) => value
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+    const token = (kind, value) => `<span class="token-${kind}">${escape(value)}</span>`;
+    const declarations = new Set(['class', 'const', 'function', 'import', 'let', 'var']);
+    const keywords = new Set([
+      'as', 'async', 'await', 'break', 'case', 'catch', 'continue', 'default',
+      'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'from',
+      'if', 'in', 'instanceof', 'new', 'of', 'return', 'static', 'switch',
+      'throw', 'try', 'typeof', 'void', 'while', 'with', 'yield',
+    ]);
+    const constants = new Set(['false', 'Infinity', 'NaN', 'null', 'true', 'undefined']);
+    let output = '';
+    let index = 0;
 
-    return escaped
-      .replace(/(['"`])(.*?)\1/g, '<span class="token-string">$1$2$1</span>')
-      .replace(/\b(import|from|const|let|var|return|function|async|await|new|export|default|if|else)\b/g, '<span class="token-keyword">$1</span>')
-      .replace(/\b(true|false|null|undefined)\b/g, '<span class="token-boolean">$1</span>')
-      .replace(/\b(\d+)\b/g, '<span class="token-number">$1</span>')
-      .replace(/(["']?[a-zA-Z0-9_$]+["']?)(?=\s*:)/g, '<span class="token-property">$1</span>')
-      .replace(/\b(type|erase|morph|stream|sequence|rotate|stagger|fit|stop|preset)\b(?=\s*\()/g, '<span class="token-function">$1</span>')
-      .replace(/\b(TypeFlow)\b/g, '<span class="token-class">$1</span>');
+    while (index < code.length) {
+      const rest = code.slice(index);
+
+      if (rest.startsWith('//')) {
+        const length = rest.indexOf('\n') === -1 ? rest.length : rest.indexOf('\n');
+        output += token('comment', rest.slice(0, length));
+        index += length;
+        continue;
+      }
+      if (rest.startsWith('/*')) {
+        const close = rest.indexOf('*/', 2);
+        const length = close === -1 ? rest.length : close + 2;
+        output += token('comment', rest.slice(0, length));
+        index += length;
+        continue;
+      }
+
+      const quote = code[index];
+      if (quote === "'" || quote === '"' || quote === '`') {
+        let end = index + 1;
+        while (end < code.length) {
+          if (code[end] === '\\') {
+            end += 2;
+            continue;
+          }
+          if (code[end++] === quote) break;
+        }
+        output += token('string', code.slice(index, end));
+        index = end;
+        continue;
+      }
+
+      const whitespace = rest.match(/^\s+/)?.[0];
+      if (whitespace) {
+        output += whitespace;
+        index += whitespace.length;
+        continue;
+      }
+
+      const number = rest.match(/^(?:0[xob][\da-f]+|\d+(?:\.\d+)?(?:e[+-]?\d+)?n?)/i)?.[0];
+      if (number) {
+        output += token('number', number);
+        index += number.length;
+        continue;
+      }
+
+      const identifier = rest.match(/^[A-Za-z_$][\w$]*/)?.[0];
+      if (identifier) {
+        const following = code.slice(index + identifier.length).trimStart();
+        let kind = 'variable';
+        if (declarations.has(identifier)) kind = 'declaration';
+        else if (keywords.has(identifier)) kind = 'keyword';
+        else if (constants.has(identifier)) kind = identifier === 'true' || identifier === 'false' ? 'boolean' : 'constant';
+        else if (identifier === 'TypeFlow') kind = 'class';
+        else if (following.startsWith(':')) kind = 'property';
+        else if (following.startsWith('(')) kind = 'function';
+        output += token(kind, identifier);
+        index += identifier.length;
+        continue;
+      }
+
+      const operator = rest.match(/^(?:===|!==|>>>|\?\?|\?\.|=>|==|!=|<=|>=|&&|\|\||\+\+|--|\*\*|\+=|-=|\*=|\/=|[+\-*/%=&|!<>?~^])/u)?.[0];
+      if (operator) {
+        output += token('operator', operator);
+        index += operator.length;
+        continue;
+      }
+
+      output += token('punctuation', code[index]);
+      index += 1;
+    }
+
+    return output;
   };
 
-  const updateCodeSnippet = () => {
-    if (!pgCodeSnippet) return;
-    const opts = getOptions();
-    const cleanOpts = { ...opts };
-    if (!cleanOpts.speedVariance) delete cleanOpts.speedVariance;
-    if (!cleanOpts.delay) delete cleanOpts.delay;
-    if (!cleanOpts.stagger) delete cleanOpts.stagger;
-    if (cleanOpts.direction === 'left') delete cleanOpts.direction;
-    if (cleanOpts.typeStyle === 'char') delete cleanOpts.typeStyle;
-    if (cleanOpts.eraseStyle === 'end') delete cleanOpts.eraseStyle;
-    if (cleanOpts.cursor === '|') delete cleanOpts.cursor;
-    if (cleanOpts.cursorBlink === true) delete cleanOpts.cursorBlink;
-    if (cleanOpts.granularity === 'grapheme') delete cleanOpts.granularity;
-    if (cleanOpts.mode === 'replace') delete cleanOpts.mode;
-    if (cleanOpts.html === true) delete cleanOpts.html;
-    if (!cleanOpts.naturalCadence) delete cleanOpts.naturalCadence;
-    if (!cleanOpts.respectReducedMotion) delete cleanOpts.respectReducedMotion;
+  const cleanOptions = (options, operation) => {
+    const defaults = operation === 'erase'
+      ? {
+          speed: 25, delay: 0, speedVariance: 0, cursor: '|', cursorBlink: false,
+          granularity: 'grapheme', respectReducedMotion: true, eraseStyle: 'end',
+          trailMinOpacity: 0.18, wordOrder: 'left-to-right', wordLayout: 'opacity',
+          wordFadeDuration: 280, scrambleRounds: 2,
+        }
+      : {
+          speed: 50, delay: 0, speedVariance: 0, cursor: '|', cursorBlink: true,
+          granularity: 'grapheme', respectReducedMotion: true, direction: 'left',
+          typeStyle: 'char', html: false, naturalCadence: false, mode: 'replace',
+          trailMinOpacity: 0.18, wordOrder: 'left-to-right', wordLayout: 'opacity',
+          wordFadeDuration: 280, scrambleRounds: 2,
+        };
+    return Object.fromEntries(
+      Object.entries(options).filter(([key, value]) => !Object.is(defaults[key], value)),
+    );
+  };
 
-    const formatted = JSON.stringify(cleanOpts, null, 2);
-    const rawJs = `import { TypeFlow } from '@staticcanvas/typeflow';\n\nconst controller = TypeFlow.type(\n  '#target',\n  ${JSON.stringify(pgText.value)},\n  ${formatted}\n);`;
-    pgCodeSnippet.innerHTML = highlightJavaScript(rawJs);
+  const formatOptions = (operation) => JSON.stringify(
+    cleanOptions(getOptions(operation), operation),
+    null,
+    2,
+  );
+
+  const getStageCode = () => {
+    const size = `${pgFontSize?.value || 24}px`;
+    const font = pgFontFamily?.value || 'Inter';
+    const align = pgTextAlign?.value || 'left';
+    return `const target = document.querySelector('#target');\nObject.assign(target.style, {\n  fontSize: ${JSON.stringify(size)},\n  fontFamily: ${JSON.stringify(`"${font}", system-ui, sans-serif`)},\n  textAlign: ${JSON.stringify(align)}\n});`;
+  };
+
+  const getImportsCode = () => {
+    const imports = ["import { TypeFlow } from '@staticcanvas/typeflow';"];
+    if (pgMetricsToggle?.checked) imports.push("import { TypeFlowMetrics } from '@staticcanvas/typeflow/metrics';");
+    if (pgDebugToggle?.checked) imports.push("import { TypeFlowDebug } from '@staticcanvas/typeflow/debug';");
+    return imports.join('\n');
+  };
+
+  const getExtensionSetupCode = () => {
+    const setup = [];
+    if (pgMetricsToggle?.checked) setup.push("TypeFlowMetrics.mount({ position: 'bottom-right', detailed: false });");
+    if (pgDebugToggle?.checked) setup.push('TypeFlowDebug.enable({ logcad: true, console: true });');
+    if (pgAudio?.value === 'soundtrack') {
+      setup.push(`const soundtrack = new Audio('https://staticcanvas.gitlab.io/typeflow/assets/audio/alexzavesa-dance-playful-night-510786.mp3');\nsoundtrack.volume = 0.55;\nsoundtrack.loop = true;\nawait soundtrack.play();`);
+    }
+    return setup.join('\n\n');
+  };
+
+  const updateCodeSnippet = (action = snippetAction, payload = snippetPayload) => {
+    if (!pgCodeSnippet) return;
+    snippetAction = action;
+    snippetPayload = payload;
+
+    const labels = {
+      type: 'TypeFlow.type()', erase: 'TypeFlow.erase()', morph: 'TypeFlow.morph()',
+      stream: 'TypeFlow.stream()', rotate: 'TypeFlow.rotate()',
+    };
+    if (pgCodeOperation) pgCodeOperation.textContent = labels[action] || labels.type;
+
+    const sections = [getImportsCode(), getStageCode()];
+    const extensionSetup = getExtensionSetupCode();
+    if (extensionSetup) sections.push(extensionSetup);
+
+    let operationCode;
+    if (action === 'erase') {
+      operationCode = `const options = ${formatOptions('erase')};\nconst controller = TypeFlow.erase(target, options);`;
+    } else if (action === 'morph') {
+      const nextText = typeof payload === 'string' ? payload : pgText.value;
+      operationCode = `const options = ${formatOptions('morph')};\nconst controller = TypeFlow.morph(target, ${JSON.stringify(nextText)}, options);`;
+    } else if (action === 'stream') {
+      const chunks = Array.isArray(payload) ? payload : ['TypeFlow Stream Ingestion: ', 'tokens arrive asynchronously ', 'and render in sequence.'];
+      if (pgAudio?.value === 'soundtrack') {
+        operationCode = `const options = ${formatOptions('stream')};\nconst chunks = ${JSON.stringify(chunks, null, 2)};\nlet completedChunks = 0;\nconst stream = TypeFlow.stream(target, {\n  ...options,\n  onChunk: () => {\n    completedChunks += 1;\n    if (completedChunks === chunks.length) {\n      soundtrack.pause();\n      soundtrack.currentTime = 0;\n    }\n  }\n});\n\nfor (const chunk of chunks) {\n  stream.push(chunk);\n}`;
+      } else {
+        operationCode = `const options = ${formatOptions('stream')};\nconst chunks = ${JSON.stringify(chunks, null, 2)};\nconst stream = TypeFlow.stream(target, options);\n\nfor (const chunk of chunks) {\n  stream.push(chunk);\n}`;
+      }
+    } else if (action === 'rotate') {
+      const words = Array.isArray(payload) ? payload : [pgText.value];
+      operationCode = `const words = ${JSON.stringify(words, null, 2)};\nconst typeConfig = ${formatOptions('type')};\nconst eraseConfig = ${formatOptions('erase')};\n\nconst controller = TypeFlow.rotate(target, words, {\n  typeConfig,\n  eraseConfig,\n  holdDuration: 1400,\n  pauseBetween: 250,\n  repeat: 3\n});`;
+    } else {
+      operationCode = `const options = ${formatOptions('type')};\nconst controller = TypeFlow.type(target, ${JSON.stringify(pgText.value)}, options);`;
+    }
+
+    if (pgAudio?.value === 'soundtrack' && action !== 'stream') {
+      operationCode += `\n\ncontroller.promise.finally(() => {\n  soundtrack.pause();\n  soundtrack.currentTime = 0;\n});`;
+    }
+
+    sections.push(operationCode);
+    generatedCode = sections.join('\n\n');
+    pgCodeSnippet.innerHTML = highlightJavaScript(generatedCode);
+    syncControlCompatibility();
+  };
+
+  const setFieldCompatibility = (fieldId, enabled) => {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    field.classList.toggle('is-incompatible', !enabled);
+    field.setAttribute('aria-disabled', String(!enabled));
+    field.querySelectorAll('select, input').forEach((control) => {
+      control.disabled = !enabled;
+    });
+  };
+
+  const syncControlCompatibility = () => {
+    const typeStyle = pgTypeStyle?.value || 'char';
+    const eraseStyle = pgEraseStyle?.value || 'end';
+    const includesErase = snippetAction === 'erase' || snippetAction === 'rotate';
+    const includesType = snippetAction !== 'erase';
+    const usesScramble = (includesType && typeStyle === 'scramble') || (includesErase && eraseStyle === 'scramble');
+    const usesTrail = (includesType && typeStyle === 'fade-trail') || (includesErase && eraseStyle === 'fade-trail');
+    const usesWordMotion = (includesType && WORD_MOTION_STYLES.has(typeStyle))
+      || (includesErase && WORD_MOTION_STYLES.has(eraseStyle));
+
+    setFieldCompatibility('pg-charset-field', usesScramble);
+    setFieldCompatibility('pg-scramble-color-field', usesScramble);
+    setFieldCompatibility('pg-rounds-field', usesScramble);
+    setFieldCompatibility('pg-fade-trail-field', usesTrail);
+    setFieldCompatibility('pg-fade-trail-minop-field', usesTrail);
+    setFieldCompatibility('pg-word-order-field', usesWordMotion);
+    setFieldCompatibility('pg-word-layout-field', usesWordMotion);
+    setFieldCompatibility('pg-word-stagger-field', usesWordMotion);
+    setFieldCompatibility('pg-fade-duration-field', usesWordMotion || (includesErase && eraseStyle === 'fade'));
   };
 
   // Slider Badges Listeners
@@ -1019,6 +1512,8 @@ if (pgStage && btnType) {
     pgText,
     pgDirection,
     pgTypeStyle,
+    pgWordOrder,
+    pgWordLayout,
     pgScrambleCharset,
     pgScrambleColor,
     pgEraseStyle,
@@ -1034,6 +1529,14 @@ if (pgStage && btnType) {
     pgReducedMotion,
   ].forEach((el) => {
     el?.addEventListener('change', () => {
+      if (el === pgTypeStyle) {
+        snippetAction = 'type';
+        snippetPayload = null;
+      } else if (el === pgEraseStyle) {
+        snippetAction = 'erase';
+        snippetPayload = null;
+      }
+      syncControlCompatibility();
       updateStageStyles();
       updateCodeSnippet();
     });
@@ -1076,6 +1579,7 @@ if (pgStage && btnType) {
       if (pgAudio) pgAudio.value = 'none';
       if (pgFadeDuration) { pgFadeDuration.value = '400'; if (pgFadeDurationVal) pgFadeDurationVal.textContent = '400 ms'; }
     }
+    syncControlCompatibility();
     updateStageStyles();
     updateCodeSnippet();
   });
@@ -1085,7 +1589,7 @@ if (pgStage && btnType) {
     if (pgAudio?.value === 'soundtrack') {
       if (!soundtrackAudio) {
         soundtrackAudio = new Audio();
-        soundtrackAudio.src = new URL('audio/alexzavesa-dance-playful-night-510786.mp3', window.location.href).href;
+        soundtrackAudio.src = new URL('../assets/audio/alexzavesa-dance-playful-night-510786.mp3', window.location.href).href;
         soundtrackAudio.volume = 0.55;
         soundtrackAudio.loop = true;
       }
@@ -1143,6 +1647,7 @@ if (pgStage && btnType) {
     } else if (val === 'code') {
       pgText.value = 'const session = await TypeFlow.stream(target, { speed: 20 });';
     }
+    syncControlCompatibility();
     updateStageStyles();
     updateCodeSnippet();
   });
@@ -1155,8 +1660,8 @@ if (pgStage && btnType) {
     setStatus('Typing...', true);
     updateStageStyles();
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('type');
+    const opts = getOptions('type');
     opts.onComplete = (_text) => {
       syncSoundtrack(false);
       setStatus('Complete', false);
@@ -1176,8 +1681,8 @@ if (pgStage && btnType) {
     syncSoundtrack(true);
     setStatus('Erasing...', true);
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('erase');
+    const opts = getOptions('erase');
     opts.onComplete = () => {
       syncSoundtrack(false);
       setStatus('Erased', false);
@@ -1218,8 +1723,8 @@ if (pgStage && btnType) {
 
     morphIndex = (morphIndex + 1) % activePool.length;
     const nextPhrase = activePool[morphIndex];
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('morph', nextPhrase);
+    const opts = getOptions('morph');
 
     activeController = TypeFlow.morph(pgStage, nextPhrase, {
       ...opts,
@@ -1243,21 +1748,6 @@ if (pgStage && btnType) {
     setStatus('Streaming LLM Tokens...', true);
     updateStageStyles();
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
-
-    const stream = TypeFlow.stream(pgStage, {
-      ...opts,
-      onChunk: (_chunk) => {
-        setStatus(`Streaming... (${pgStage.textContent.length} chars)`, true);
-      },
-      onComplete: () => {
-        syncSoundtrack(false);
-        setStatus('Stream finished', false);
-      },
-    });
-    activeStream = stream;
-
     const chunks = pgData?.streamChunks || [
       'TypeFlow Stream Ingestion: ',
       'tokens arrive asynchronously ',
@@ -1265,6 +1755,22 @@ if (pgStage && btnType) {
       'and render fluidly ',
       'with zero DOM lag or layout shift!'
     ];
+    updateCodeSnippet('stream', chunks);
+    const opts = getOptions('stream');
+    let completedChunks = 0;
+
+    const stream = TypeFlow.stream(pgStage, {
+      ...opts,
+      onChunk: (_chunk) => {
+        completedChunks += 1;
+        setStatus(`Streaming... (${pgStage.textContent.length} chars)`, true);
+        if (completedChunks === chunks.length) {
+          syncSoundtrack(false);
+          setStatus('Stream finished', false);
+        }
+      },
+    });
+    activeStream = stream;
 
     for (let i = 0; i < chunks.length; i++) {
       await new Promise((r) => setTimeout(r, i === 0 ? 100 : 350));
@@ -1287,16 +1793,19 @@ if (pgStage && btnType) {
       'Procedural Web Audio clicks and MP3 sync.'
     ];
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('rotate', words);
+    const typeConfig = getOptions('type');
+    const eraseConfig = getOptions('erase');
 
     activeController = TypeFlow.rotate(pgStage, words, {
-      typeConfig:  opts,
-      eraseConfig: opts,
+      typeConfig,
+      eraseConfig,
       holdDuration: 1400,
       pauseBetween: 250,
       repeat: 3,
-      onComplete: () => {
+    });
+    activeController.promise.then(({ completed }) => {
+      if (completed) {
         syncSoundtrack(false);
         setStatus('Rotation Complete', false);
       }
@@ -1331,6 +1840,9 @@ if (pgStage && btnType) {
     if (pgTextAlign) pgTextAlign.value = 'left';
     if (pgAudio) pgAudio.value = 'none';
 
+    snippetAction = 'type';
+    snippetPayload = null;
+    syncControlCompatibility();
     updateStageStyles();
     updateCodeSnippet();
     setStatus('Reset', false);
@@ -1349,7 +1861,7 @@ if (pgStage && btnType) {
   btnCopyCode?.addEventListener('click', async () => {
     if (!pgCodeSnippet) return;
     try {
-      await navigator.clipboard.writeText(pgCodeSnippet.textContent);
+      await navigator.clipboard.writeText(generatedCode);
       const prevHtml = btnCopyCode.innerHTML;
       btnCopyCode.innerHTML = '<i data-lucide="check"></i> Copied!';
       initIcons();
@@ -1372,6 +1884,7 @@ if (pgStage && btnType) {
     } else {
       TypeFlowMetrics.unmount();
     }
+    updateCodeSnippet();
   };
 
   pgMetricsToggle?.addEventListener('change', () => {
@@ -1395,6 +1908,7 @@ if (pgStage && btnType) {
     } else {
       TypeFlowDebug.disable();
     }
+    updateCodeSnippet();
   };
 
   pgDebugToggle?.addEventListener('change', () => {
@@ -1406,10 +1920,57 @@ if (pgStage && btnType) {
     setDebugActive(next);
   });
 
+  /**
+   * Applies a configuration passed via URL query params (e.g. from the
+   * reveal/erase/caret index's "Try in Playground" links) to the form
+   * fields, so a deep link reproduces the exact demoed animation.
+   * @returns {boolean} Whether any recognized param was present.
+   */
+  const applyPlaygroundConfigFromURL = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (![...params.keys()].length) return false;
+
+    const setField = (el, key, eventType) => {
+      if (!el || !params.has(key)) return;
+      el.value = params.get(key);
+      el.dispatchEvent(new Event(eventType, { bubbles: true }));
+    };
+    const setChecked = (el, key) => {
+      if (!el || !params.has(key)) return;
+      el.checked = params.get(key) === 'true';
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    setField(pgText, 'text', 'change');
+    setField(pgDirection, 'direction', 'change');
+    setField(pgTypeStyle, 'typeStyle', 'change');
+    setField(pgEraseStyle, 'eraseStyle', 'change');
+    setField(pgWordOrder, 'wordOrder', 'change');
+    setField(pgWordLayout, 'wordLayout', 'change');
+    setField(pgScrambleCharset, 'scrambleCharset', 'change');
+    setField(pgGranularity, 'granularity', 'change');
+    setField(pgMode, 'mode', 'change');
+    setField(pgCursorChar, 'cursor', 'change');
+    setField(pgSpeed, 'speed', 'input');
+    setField(pgStagger, 'wordStagger', 'input');
+    setField(pgFadeDuration, 'wordFadeDuration', 'input');
+    setField(pgScrambleRounds, 'scrambleRounds', 'input');
+    setField(pgFadeTrailLen, 'trailFadeLength', 'input');
+    setField(pgFadeTrailMinOp, 'trailFadeMinOpacity', 'input');
+    setChecked(pgHtml, 'html');
+    setChecked(pgCursorBlink, 'cursorBlink');
+    setChecked(pgReducedMotion, 'respectReducedMotion');
+
+    return true;
+  };
+
   // Initial load execution
+  const configuredFromURL = applyPlaygroundConfigFromURL();
+  syncControlCompatibility();
   updateStageStyles();
   updateCodeSnippet();
-  activeController = TypeFlow.type(pgStage, pgText.value, getOptions());
+  activeController = TypeFlow.type(pgStage, pgText.value, getOptions('type'));
+  if (configuredFromURL) pgStage.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 // ─── Client-Side Search Engine & Two-Column Modal ─────────────────────────────
@@ -2022,13 +2583,23 @@ if (tocLinks.length) {
       if (entry.isIntersecting) {
         tocLinks.forEach((a) => a.classList.remove('toc-active'));
         const active = [...tocLinks].find((a) => a.getAttribute('href') === '#' + entry.target.id);
-        if (active) active.classList.add('toc-active');
+        if (active) {
+          active.classList.add('toc-active');
+          const toc = active.closest('.doc-toc');
+          if (toc) {
+            const tocBounds = toc.getBoundingClientRect();
+            const linkBounds = active.getBoundingClientRect();
+            if (linkBounds.top < tocBounds.top || linkBounds.bottom > tocBounds.bottom) {
+              toc.scrollTo({
+                top: toc.scrollTop + linkBounds.top - tocBounds.top - (toc.clientHeight / 2),
+                behavior: reduceMotion ? 'auto' : 'smooth',
+              });
+            }
+          }
+        }
       }
     });
   }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });
 
   headings.forEach((h) => observer.observe(h));
 }
-
-
-

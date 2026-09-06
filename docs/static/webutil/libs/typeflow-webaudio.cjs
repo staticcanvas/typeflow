@@ -1,0 +1,81 @@
+/*! typeflow-webaudio | MIT */
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?t(exports):"function"==typeof define&&define.amd?define(["exports"],t):t((e="undefined"!=typeof globalThis?globalThis:e||self).TypeflowWebAudio={})}(this,function(e){"use strict";var t=Object.defineProperty,n=Object.defineProperties,a=Object.getOwnPropertyDescriptors,i=Object.getOwnPropertySymbols,r=Object.prototype.hasOwnProperty,o=Object.prototype.propertyIsEnumerable,c=(e,n,a)=>n in e?t(e,n,{enumerable:!0,configurable:!0,writable:!0,value:a}):e[n]=a,l=(e,t,n)=>c(e,"symbol"!=typeof t?t+"":t,n);const s=e=>(e&&"object"==typeof e&&!Object.isFrozen(e)&&(Object.values(e).forEach(s),Object.freeze(e)),e),u=(e,t,n,a,i,r={})=>{var o,c,l;return{oscillator:e,frequency:{start:t,end:n},gain:{start:a,end:.001},duration:i,filter:null!=(o=r.filter)?o:null,detune:{base:null!=(c=r.detune)?c:0,variance:null!=(l=r.variance)?l:.06}}},d=(e,t)=>({version:1,actions:{type:e,erase:null!=t?t:e}}),p=s({"mechanical-blue":d([u("triangle",3400,900,.18,.008),u("sine",200,50,.32,.035)],[u("triangle",900,180,.12,.025)]),"mechanical-red":d([u("sine",220,70,.26,.028)],[u("sine",150,55,.12,.022)]),"mechanical-brown":d([u("triangle",240,75,.27,.032)],[u("triangle",170,60,.13,.024)]),"soft-keyboard":d([u("sine",520,280,.08,.018,{filter:{type:"lowpass",frequency:1200,q:.7}})],[u("sine",320,180,.06,.016)]),typewriter:d([u("square",320,90,.17,.022)],[u("square",180,70,.13,.026)]),"terminal-beep":d([u("square",880,880,.08,.025)],[u("square",440,330,.06,.03)]),synth:d([u("sawtooth",950,180,.12,.045)],[u("sawtooth",420,120,.09,.04)]),correction:d([u("triangle",360,110,.1,.035)],[u("triangle",260,80,.14,.045)])}),m=s({clicky:"mechanical-blue",mechanical:"mechanical-red",tactile:"mechanical-brown",teletype:"typewriter",vintage:"typewriter","terminal-8bit":"terminal-beep","8bit":"terminal-beep",beep:"terminal-beep","cyber-synth":"synth",neon:"synth",bubble:"soft-keyboard",pop:"soft-keyboard"});function y(e){if(!e||1!==e.version||!e.actions||"object"!=typeof e.actions)throw new TypeError("TypeFlowWebAudio: preset must use schema version 1.");const t={version:1,actions:{}};for(const n of["type","erase"]){const a=e.actions[n];if(!Array.isArray(a)||0===a.length||a.length>4)throw new TypeError(`TypeFlowWebAudio: actions.${n} must contain 1-4 oscillator layers.`);t.actions[n]=a.map(e=>{var t,n,a,i,r,o,c,l,s;const u=String(null!=(t=e.oscillator)?t:"sine");if(!["sine","square","sawtooth","triangle"].includes(u))throw new RangeError("TypeFlowWebAudio: invalid oscillator type.");const d=Number(e.duration),p=Number(null==(n=e.frequency)?void 0:n.start),m=Number(null==(a=e.frequency)?void 0:a.end),y=Number(null==(i=e.gain)?void 0:i.start),f=Number(null==(r=e.gain)?void 0:r.end);if(!(d>=.001&&d<=2))throw new RangeError("TypeFlowWebAudio: duration must be 0.001-2 seconds.");if(!(p>=20&&p<=2e4&&m>=20&&m<=2e4))throw new RangeError("TypeFlowWebAudio: frequency must be 20-20000 Hz.");if(!(y>=0&&y<=1&&f>0&&f<=1))throw new RangeError("TypeFlowWebAudio: gain must be within safe bounds.");const w=Number(null!=(c=null==(o=e.detune)?void 0:o.variance)?c:0);if(!(w>=0&&w<=.5))throw new RangeError("TypeFlowWebAudio: detune variance must be 0-0.5.");const b=null===e.filter||void 0===e.filter?null:{type:String(null!=(l=e.filter.type)?l:"lowpass"),frequency:Math.max(20,Math.min(2e4,Number(e.filter.frequency)||1e3)),q:Math.max(1e-4,Math.min(1e3,Number(e.filter.q)||1))};if(b&&!["lowpass","highpass","bandpass","notch"].includes(b.type))throw new RangeError("TypeFlowWebAudio: invalid filter type.");return{oscillator:u,frequency:{start:p,end:m},gain:{start:y,end:f},duration:d,filter:b,detune:{base:Number(null==(s=e.detune)?void 0:s.base)||0,variance:w}}})}return s(t)}const f=class e{
+/** * * * * * * * * * * * * * * * * * * * * * * * * * * **
+     * @description Initializes or returns the shared Web Audio Context singleton.
+     * Automatically attaches unlock listeners to resume audio on the first user interaction.
+     * @returns {AudioContext | null} The active AudioContext instance or null in non-browser environments.
+     *
+     * -------------
+     *
+     * @example
+     * const ctx = TypeFlowWebAudio.getContext();
+     * console.log('Audio state:', ctx?.state);
+     */
+static getContext(){var t;if("undefined"==typeof window)return null;if(!e.ctx){const n=window.AudioContext||window.webkitAudioContext;if(!n)return null;const a=null==(t=window.navigator)?void 0:t.userActivation;if(a&&!a.isActive&&!a.hasBeenActive){if(!e.unlockHandler){const t=()=>{window.removeEventListener("pointerdown",t),window.removeEventListener("keydown",t),e.unlockHandler=null,e.getContext()};e.unlockHandler=t,window.addEventListener("pointerdown",t,{once:!0}),window.addEventListener("keydown",t,{once:!0})}return null}try{e.ctx=new n}catch(e){return null}e.masterGain=e.ctx.createGain(),e.masterGain.gain.setValueAtTime(e.isMuted?0:e.volume,e.ctx.currentTime),e.masterGain.connect(e.ctx.destination)}return"suspended"===e.ctx.state&&e.ctx.resume().catch(()=>{}),e.ctx}
+/** * * * * * * * * * * * * * * * * * * * * * * * * * * **
+     * @description Sets the master volume level for synthesized keystrokes.
+     * @param {number} vol - Volume level from 0.0 (silent) to 1.0 (maximum).
+     * @returns {void}
+     *
+     * -------------
+     *
+     * @Properties
+     * @param {number} vol - Floating-point number between 0.0 and 1.0.
+     *
+     * -------------
+     *
+     * @example
+     * TypeFlowWebAudio.setVolume(0.15); // Set subtle background volume
+     */static setVolume(t){e.volume=Math.max(0,Math.min(1,t)),e.masterGain&&e.ctx&&!e.isMuted&&e.masterGain.gain.setValueAtTime(e.volume,e.ctx.currentTime)}
+/** * * * * * * * * * * * * * * * * * * * * * * * * * * **
+     * @description Toggles or forces the mute state of procedural keystroke audio.
+     * @param {boolean} [force] - Optional boolean to explicitly force muted (true) or unmuted (false).
+     * @returns {void}
+     *
+     * -------------
+     *
+     * @Properties
+     * @param {boolean} [force] - If omitted, flips the current mute state.
+     *
+     * -------------
+     *
+     * @example
+     * TypeFlowWebAudio.mute(); // Toggle mute
+     * TypeFlowWebAudio.mute(true); // Force mute
+     * TypeFlowWebAudio.mute(false); // Force unmute
+     */static mute(t){e.isMuted=void 0!==t?t:!e.isMuted,e.masterGain&&e.ctx&&e.masterGain.gain.setValueAtTime(e.isMuted?0:e.volume,e.ctx.currentTime)}
+/** Registers a validated instance-safe preset. Built-in collisions require `overwrite: true`. */static registerAudioPreset(t,n,a={}){const i=String(null!=t?t:"").trim().toLowerCase();if(!/^[a-z0-9][a-z0-9-]*$/.test(i))throw new TypeError("TypeFlowWebAudio: invalid preset name.");if(!a.overwrite&&(i in p||i in m||e.customPresets.has(i)))throw new Error(`TypeFlowWebAudio: preset \`${i}\` already exists.`);return e.customPresets.set(i,y(n)),i}
+/** Removes a custom preset. Immutable built-ins cannot be removed. */static removeAudioPreset(t){return e.customPresets.delete(String(null!=t?t:"").trim().toLowerCase())}
+/** Removes every custom preset without affecting immutable built-ins. */static resetAudioPresets(){e.customPresets.clear()}
+/** Returns a frozen custom or built-in preset, resolving compatibility aliases. */static getAudioPreset(t){var n,a;const i=String(null!=t?t:"").trim().toLowerCase();return e.customPresets.has(i)?e.customPresets.get(i):null!=(a=p[null!=(n=m[i])?n:i])?a:null}
+/** Stops and disconnects a scoped set of voices. */static stopVoices(t){Array.from(t).forEach(t=>{var n;try{t.oscillator.stop()}catch(e){}t.nodes.forEach(e=>{try{e.disconnect()}catch(e){}}),null==(n=t.scope)||n.delete(t),e.activeVoices.delete(t)})}
+/** Stops and disconnects all voices created by this extension. */static stopAll(){e.stopVoices(e.activeVoices)}
+/** Tears down voices and the shared AudioContext so repeated setup is clean. */static destroy(){return t=this,n=null,a=function*(){var t,n;e.stopAll(),e.unlockHandler&&"undefined"!=typeof window&&(window.removeEventListener("pointerdown",e.unlockHandler),window.removeEventListener("keydown",e.unlockHandler),e.unlockHandler=null);try{null==(t=e.masterGain)||t.disconnect()}catch(e){}e.panners.forEach(e=>{try{e.disconnect()}catch(e){}}),e.panners.clear(),(null==(n=e.ctx)?void 0:n.close)&&(yield e.ctx.close().catch(()=>{})),e.ctx=null,e.masterGain=null},new Promise((e,i)=>{var r=e=>{try{c(a.next(e))}catch(e){i(e)}},o=e=>{try{c(a.throw(e))}catch(e){i(e)}},c=t=>t.done?e(t.value):Promise.resolve(t.value).then(r,o);c((a=a.apply(t,n)).next())});var t,n,a}static playPreset(t,n,a,i){var r,o,c,l;const s="erase"===a.action?"erase":"type",u=t.currentTime;for(const d of n.actions[s]){for(;e.activeVoices.size>=e.maxPolyphony;){const t=e.activeVoices.values().next().value;try{t.oscillator.stop()}catch(e){}t.nodes.forEach(e=>{try{e.disconnect()}catch(e){}}),null==(r=t.scope)||r.delete(t),e.activeVoices.delete(t)}const n=null!=(o=a.pitchVariance)?o:d.detune.variance,s=1+(2*Math.random()-1)*n,p=t.createOscillator(),m=t.createGain(),y=[p,m];p.type=d.oscillator,p.detune.setValueAtTime(d.detune.base,u),p.frequency.setValueAtTime(d.frequency.start*s,u),p.frequency.exponentialRampToValueAtTime(d.frequency.end*s,u+d.duration),m.gain.setValueAtTime(d.gain.start,u),m.gain.exponentialRampToValueAtTime(d.gain.end,u+d.duration),p.connect(m);let f=m;if(d.filter&&"function"==typeof t.createBiquadFilter){const e=t.createBiquadFilter();e.type=d.filter.type,e.frequency.setValueAtTime(d.filter.frequency,u),e.Q.setValueAtTime(d.filter.q,u),m.connect(e),f=e,y.push(e)}f.connect(i);const w={oscillator:p,nodes:y,scope:a.voiceScope};e.activeVoices.add(w),null==(c=a.voiceScope)||c.add(w),null==(l=p.addEventListener)||l.call(p,"ended",()=>{var t;y.forEach(e=>{try{e.disconnect()}catch(e){}}),null==(t=a.voiceScope)||t.delete(w),e.activeVoices.delete(w)},{once:!0}),p.start(u),p.stop(u+d.duration)}}
+/** * * * * * * * * * * * * * * * * * * * * * * * * * * **
+     * @description Synthesizes and plays a procedural audio keystroke sound in real time without audio assets.
+     * @param {string} [profile='mechanical-blue'] - Sound profile name ('mechanical-blue', 'mechanical-red', 'mechanical-brown', 'teletype', 'cyber-synth', 'terminal-8bit', 'bubble').
+     * @param {Object} [options={}] - Keystroke playback parameters.
+     * @returns {void}
+     *
+     * -------------
+     *
+     * @Properties
+     * @param {string} [profile='mechanical-blue'] - Synthesizer profile.
+     * @param {string} [options.char=' '] - Typed character (differentiates spacebar, return bells, normal keys).
+     * @param {number} [options.pan=0] - Stereo pan from -1.0 (full left) to +1.0 (full right).
+     * @param {number} [options.pitchVariance=0.06] - Organic pitch variation percentage (±0.06 = ±6%).
+     *
+     * -------------
+     *
+     * @example
+     *
+     * // Play a clicky switch sound
+     * TypeFlowWebAudio.play('mechanical-blue');
+     *
+     * // Play a cyber synth keystroke panned slightly to the right
+     * TypeFlowWebAudio.play('cyber-synth', { char: 'A', pan: 0.3 });
+     *
+     * // Play a teletype carriage bell on newline
+     * TypeFlowWebAudio.play('teletype', { char: '\n' });
+     */static play(t="mechanical-blue",n={}){var a,i;if(!0===n.respectReducedMotion&&"undefined"!=typeof window&&(null==(a=window.matchMedia)?void 0:a.call(window,"(prefers-reduced-motion: reduce)").matches))return;const r=e.getContext();if(!r||e.isMuted)return;const o=r.currentTime,c=n.char||" ",l=1+(2*Math.random()-1)*(null!=(i=n.pitchVariance)?i:.06);let s=e.masterGain;if("function"==typeof r.createStereoPanner&&"number"==typeof n.pan){const t=Math.max(-1,Math.min(1,n.pan));let a=e.panners.get(t);a||(a=r.createStereoPanner(),a.pan.setValueAtTime(t,o),a.connect(e.masterGain),e.panners.set(t,a)),s=a}const u=String(t).toLowerCase(),d=e.getAudioPreset(u);if(d)e.playPreset(r,d,n,s);else if("mechanical-blue"===u||"clicky"===u){const e=" "===c||"\n"===c,t=e?140:200,n=r.createOscillator(),a=r.createGain();n.type="triangle",n.frequency.setValueAtTime((e?2800:3400)*l,o),a.gain.setValueAtTime(.2,o),a.gain.exponentialRampToValueAtTime(.001,o+.008),n.connect(a),a.connect(s),n.start(o),n.stop(o+.008);const i=r.createOscillator(),u=r.createGain();i.type="sine",i.frequency.setValueAtTime(t*l,o),i.frequency.exponentialRampToValueAtTime(50,o+.035),u.gain.setValueAtTime(.35,o),u.gain.exponentialRampToValueAtTime(.001,o+.035),i.connect(u),u.connect(s),i.start(o),i.stop(o+.035)}else if("mechanical-red"===u||"mechanical-brown"===u||"tactile"===u||"mechanical"===u){const e=r.createOscillator(),t=r.createGain();e.type=u.includes("brown")?"triangle":"sine",e.frequency.setValueAtTime(220*l,o),e.frequency.exponentialRampToValueAtTime(70,o+.028),t.gain.setValueAtTime(.28,o),t.gain.exponentialRampToValueAtTime(.001,o+.028),e.connect(t),t.connect(s),e.start(o),e.stop(o+.028)}else if("teletype"===u||"vintage"===u||"typewriter"===u)if("\n"===c){const e=r.createOscillator(),t=r.createGain();e.type="sine",e.frequency.setValueAtTime(1760,o),t.gain.setValueAtTime(.3,o),t.gain.exponentialRampToValueAtTime(.001,o+.35),e.connect(t),t.connect(s),e.start(o),e.stop(o+.35)}else{const e=r.createOscillator(),t=r.createGain();e.type="square",e.frequency.setValueAtTime(320*l,o),e.frequency.exponentialRampToValueAtTime(90,o+.022),t.gain.setValueAtTime(.18,o),t.gain.exponentialRampToValueAtTime(.001,o+.022),e.connect(t),t.connect(s),e.start(o),e.stop(o+.022)}else if("cyber-synth"===u||"synth"===u||"neon"===u){const e=r.createOscillator(),t=r.createGain();e.type="sawtooth",e.frequency.setValueAtTime(950*l,o),e.frequency.exponentialRampToValueAtTime(180,o+.045),t.gain.setValueAtTime(.12,o),t.gain.exponentialRampToValueAtTime(.001,o+.045),e.connect(t),t.connect(s),e.start(o),e.stop(o+.045)}else if("terminal-8bit"===u||"8bit"===u||"beep"===u){const e=r.createOscillator(),t=r.createGain();e.type="square",e.frequency.setValueAtTime((" "===c?440:880)*l,o),t.gain.setValueAtTime(.08,o),t.gain.exponentialRampToValueAtTime(.001,o+.025),e.connect(t),t.connect(s),e.start(o),e.stop(o+.025)}else if("bubble"===u||"pop"===u){const e=r.createOscillator(),t=r.createGain();e.type="sine",e.frequency.setValueAtTime(450*l,o),e.frequency.exponentialRampToValueAtTime(1100*l,o+.03),t.gain.setValueAtTime(.25,o),t.gain.exponentialRampToValueAtTime(.001,o+.035),e.connect(t),t.connect(s),e.start(o),e.stop(o+.035)}}};l(f,"ctx",null),l(f,"masterGain",null),l(f,"isMuted",!1),l(f,"volume",.25),l(f,"maxPolyphony",24),l(f,"customPresets",new Map),l(f,"activeVoices",new Set),l(f,"panners",new Map),l(f,"unlockHandler",null);let w=f;function b(e="mechanical-blue",t={}){const l=new Set,s=()=>{return w.play(e,(s=((e,t)=>{for(var n in t||(t={}))r.call(t,n)&&c(e,n,t[n]);if(i)for(var n of i(t))o.call(t,n)&&c(e,n,t[n]);return e})({},t),n(s,a({voiceScope:l}))));var s};return s.stop=()=>w.stopVoices(l),s}"undefined"!=typeof window&&(window.TypeFlowWebAudio=w,window.createKeystrokeAudio=b),e.AUDIO_PRESETS=p,e.AUDIO_PRESET_ALIASES=m,e.AUDIO_PRESET_SCHEMA_VERSION=1,e.TypeFlowWebAudio=w,e.createKeystrokeAudio=b,e.validateAudioPreset=y,Object.defineProperty(e,Symbol.toStringTag,{value:"Module"})});
+//# sourceMappingURL=typeflow-webaudio.cjs.map

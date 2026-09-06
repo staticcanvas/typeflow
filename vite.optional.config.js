@@ -7,12 +7,22 @@ const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'));
 const packageName = pkg.name.split('/').pop();
 const packageDist = `dist/${packageName}`;
 const bundleDist = `${packageDist}/dist`;
-const isDebug = process.env.npm_config_mode === 'debug';
-const name = isDebug ? `${packageName}-debug` : `${packageName}-metrics`;
-const entry = isDebug ? `src/${packageName}-debug.js` : `src/${packageName}-metrics.js`;
 const capitalizedPkg = packageName.replace(/(?:^|[-_])(\w)/g, (_, c) => c.toUpperCase());
-const globalName = isDebug ? `${capitalizedPkg}Debug` : `${capitalizedPkg}Metrics`;
-const external = isDebug ? ['@staticcanvas/logcad'] : [];
+
+const MODES = {
+  metrics: { suffix: 'Metrics', external: [] },
+  debug: { suffix: 'Debug', external: ['@staticcanvas/logcad'] },
+  caret: { suffix: 'Caret', external: [] },
+  webaudio: { suffix: 'WebAudio', external: [] },
+  parallel: { suffix: 'Parallel', external: [] },
+  keystroke: { suffix: 'Keystroke', external: [] },
+  extchars: { suffix: 'ExtChars', external: [] },
+};
+const mode = MODES[process.env.npm_config_mode] ? process.env.npm_config_mode : 'metrics';
+const name = `${packageName}-${mode}`;
+const entry = `src/${name}.js`;
+const globalName = `${capitalizedPkg}${MODES[mode].suffix}`;
+const external = MODES[mode].external;
 /** Vite plugin that copies optional bundles into the documentation web utility. */
 const stageOptionalAssets = {
   name: 'stage-optional-web-assets',

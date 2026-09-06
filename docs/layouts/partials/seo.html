@@ -1,0 +1,55 @@
+{{- $version := site.Data.package.version | default site.Params.version -}}
+{{- $is404 := eq .Kind "404" -}}
+{{- $pageTitle := cond .IsHome "TypeFlow — JavaScript Typewriter Animation Library" (printf "%s · TypeFlow" .Title) -}}
+{{- $description := .Description | default site.Params.description -}}
+{{- $canonical := .Permalink -}}
+{{- $image := "assets/branding/typeflow-social-card.png" | absURL -}}
+{{- $robots := cond $is404 "noindex, nofollow" "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" -}}
+<title>{{ $pageTitle }}</title>
+<meta name="description" content="{{ $description }}">
+<meta name="author" content="{{ site.Params.author }}">
+{{ with .Params.keywords }}<meta name="keywords" content="{{ delimit . ", " }}">{{ end }}
+<meta name="robots" content="{{ $robots }}">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#090d16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+{{ if not $is404 }}
+<link rel="canonical" href="{{ $canonical }}">
+<link rel="sitemap" type="application/xml" href="{{ "sitemap.xml" | absURL }}">
+<link rel="describedby" type="text/plain" href="{{ "llms.txt" | absURL }}">
+{{ with .OutputFormats.Get "Markdown" }}<link rel="alternate" type="text/markdown" href="{{ .Permalink }}" title="{{ $.Title }} as Markdown">{{ end }}
+{{ end }}
+<meta property="og:type" content="{{ cond .IsHome "website" "article" }}">
+<meta property="og:site_name" content="TypeFlow documentation">
+<meta property="og:locale" content="en_AU">
+<meta property="og:title" content="{{ $pageTitle }}">
+<meta property="og:description" content="{{ $description }}">
+<meta property="og:url" content="{{ $canonical }}">
+<meta property="og:image" content="{{ $image }}">
+<meta property="og:image:secure_url" content="{{ $image }}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="TypeFlow JavaScript typewriter animation library documentation">
+{{ if not .IsHome }}
+<meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
+{{ end }}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $pageTitle }}">
+<meta name="twitter:description" content="{{ $description }}">
+<meta name="twitter:image" content="{{ $image }}">
+<meta name="twitter:image:alt" content="TypeFlow JavaScript typewriter animation library documentation">
+
+{{- $organizationID := printf "%s#organization" site.Home.Permalink -}}
+{{- $websiteID := printf "%s#website" site.Home.Permalink -}}
+{{- $softwareID := printf "%s#software" site.Home.Permalink -}}
+{{- $organization := dict "@type" "Organization" "@id" $organizationID "name" site.Params.author "url" site.Home.Permalink -}}
+{{- $website := dict "@type" "WebSite" "@id" $websiteID "name" "TypeFlow documentation" "url" site.Home.Permalink "description" site.Params.description "inLanguage" "en-AU" "publisher" (dict "@id" $organizationID) -}}
+{{- $software := dict "@type" "SoftwareApplication" "@id" $softwareID "name" "TypeFlow" "alternateName" "typeflow.js" "description" site.Params.description "url" site.Home.Permalink "applicationCategory" "DeveloperApplication" "applicationSubCategory" "JavaScript library" "operatingSystem" "Any" "softwareVersion" $version "isAccessibleForFree" true "license" (printf "%s/-/blob/develop/LICENSE" site.Params.repository) "codeRepository" site.Params.repository "downloadUrl" site.Params.npm "sameAs" (slice site.Params.repository site.Params.github site.Params.npm site.Params.jsr) "publisher" (dict "@id" $organizationID) "offers" (dict "@type" "Offer" "price" 0 "priceCurrency" "USD") -}}
+{{- $graph := slice $organization $website $software -}}
+{{- if not .IsHome -}}
+  {{- $article := dict "@type" "TechArticle" "@id" (printf "%s#article" $canonical) "headline" .Title "description" $description "url" $canonical "mainEntityOfPage" (dict "@type" "WebPage" "@id" $canonical) "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00") "inLanguage" "en-AU" "author" (dict "@id" $organizationID) "publisher" (dict "@id" $organizationID) "isPartOf" (dict "@id" $websiteID) "about" (dict "@id" $softwareID) -}}
+  {{- $breadcrumbs := dict "@type" "BreadcrumbList" "@id" (printf "%s#breadcrumb" $canonical) "itemListElement" (slice (dict "@type" "ListItem" "position" 1 "name" "TypeFlow documentation" "item" site.Home.Permalink) (dict "@type" "ListItem" "position" 2 "name" .Title "item" $canonical)) -}}
+  {{- $graph = $graph | append $article $breadcrumbs -}}
+{{- end -}}
+<script type="application/ld+json">{{ dict "@context" "https://schema.org" "@graph" $graph | jsonify | safeJS }}</script>

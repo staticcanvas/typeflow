@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://staticcanvas.gitlab.io/typeflow/schemas/splash-slogans.schema.json",
+  "title": "TypeFlow documentation splash slogans",
+  "description": "Animation records consumed by the documentation splash sequence.",
+  "type": "array",
+  "minItems": 1,
+  "$defs": {
+    "typeFlowConfig": {
+      "description": "Serializable TypeFlowConfig options. Lifecycle callbacks and sanitizer functions are intentionally excluded from JSON data.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "speed": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "delay": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "speedVariance": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "naturalCadence": { "type": "boolean" },
+        "granularity": { "enum": ["grapheme", "word"] },
+        "direction": { "enum": ["left", "right", "center"] },
+        "typeStyle": { "enum": ["char", "word", "scramble", "fade-trail", "word-fade", "float-in-top", "float-in-bottom", "float-in-left", "float-in-right", "zoom-in-space"] },
+        "wordOrder": { "enum": ["left-to-right", "right-to-left", "random"] },
+        "wordLayout": { "enum": ["opacity", "placeholder"] },
+        "wordFadeDuration": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "wordStagger": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "wordSeed": { "type": ["string", "number"] },
+        "wordMotionDistance": { "type": "number", "minimum": 0, "maximum": 1000 },
+        "wordMotionDepth": { "type": "number", "minimum": 0, "maximum": 2000 },
+        "wordMotionScale": { "type": "number", "minimum": 0.01, "maximum": 1 },
+        "wordMotionPerspective": { "type": "number", "minimum": 0, "maximum": 5000 },
+        "wordMotionEasing": { "type": "string", "minLength": 1 },
+        "trailFade": { "type": ["integer", "boolean"], "minimum": 1, "maximum": 100 },
+        "trailMinOpacity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "cursor": { "type": "string" },
+        "cursorBlink": { "type": "boolean" },
+        "html": { "type": "boolean" },
+        "mode": { "enum": ["replace", "append"] },
+        "scrambleCharset": { "enum": ["matrix", "ascii", "ascii-extended", "blocks", "binary", "hex", "braille", "runic", "cyber"] },
+        "scrambleGlyphs": { "type": "string", "minLength": 1 },
+        "scrambleRounds": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "scrambleColor": { "type": "string", "minLength": 1 },
+        "scrambleGradient": { "type": "string", "minLength": 1 },
+        "audio": { "type": ["string", "boolean"], "enum": ["mechanical", "beep", "synth", true, false] },
+        "allowedTags": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "allowedAttributes": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true } },
+        "respectReducedMotion": { "type": "boolean" },
+        "ariaLive": { "enum": ["off", "polite", "assertive"] },
+        "eraseStyle": { "enum": ["end", "start", "center", "scramble", "fade-trail", "instant", "fade", "word-fade", "float-in-top", "float-in-bottom", "float-in-left", "float-in-right", "zoom-in-space"] },
+        "duration": { "type": "number", "minimum": 0, "maximum": 10000 },
+        "preserveBaseline": { "type": "boolean" }
+      }
+    }
+  },
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["slogan", "mode"],
+    "properties": {
+      "slogan": { "type": "string", "minLength": 1 },
+      "mode": { "type": "string", "minLength": 1 },
+      "typeStyle": {
+        "enum": [
+          "char", "word", "scramble", "fade-trail", "word-fade",
+          "float-in-top", "float-in-bottom", "float-in-left", "float-in-right", "zoom-in-space"
+        ]
+      },
+      "eraseStyle": {
+        "enum": [
+          "end", "start", "center", "scramble", "fade-trail", "instant", "fade", "word-fade",
+          "float-in-top", "float-in-bottom", "float-in-left", "float-in-right", "zoom-in-space"
+        ]
+      },
+      "direction": { "enum": ["left", "right", "center"] },
+      "scrambleCharset": {
+        "enum": ["matrix", "ascii", "ascii-extended", "blocks", "binary", "hex", "braille", "runic", "cyber"]
+      },
+      "scrambleRounds": { "type": "integer", "minimum": 1, "maximum": 100 },
+      "trailFade": { "type": ["integer", "boolean"], "minimum": 1, "maximum": 100 },
+      "trailMinOpacity": { "type": "number", "minimum": 0, "maximum": 1 },
+      "speed": { "type": "number", "minimum": 0, "maximum": 10000 },
+      "delay": { "type": "number", "minimum": 0, "maximum": 10000 },
+      "speedVariance": { "type": "number", "minimum": 0, "maximum": 10000 },
+      "naturalCadence": { "type": "boolean" },
+      "granularity": { "enum": ["grapheme", "word"] },
+      "cursor": { "type": "string" },
+      "cursorBlink": { "type": "boolean" },
+      "html": { "type": "boolean" },
+      "scrambleGlyphs": { "type": "string", "minLength": 1 },
+      "scrambleColor": { "type": "string", "minLength": 1 },
+      "scrambleGradient": { "type": "string", "minLength": 1 },
+      "audio": { "type": ["string", "boolean"], "enum": ["mechanical", "beep", "synth", true, false] },
+      "allowedTags": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+      "allowedAttributes": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true } },
+      "respectReducedMotion": { "type": "boolean" },
+      "ariaLive": { "enum": ["off", "polite", "assertive"] },
+      "duration": { "type": "number", "minimum": 0, "maximum": 10000 },
+      "preserveBaseline": { "type": "boolean" },
+      "wordOrder": { "enum": ["left-to-right", "right-to-left", "random"] },
+      "wordLayout": { "enum": ["opacity", "placeholder"] },
+      "wordFadeDuration": { "type": "integer", "minimum": 0, "maximum": 10000 },
+      "wordStagger": { "type": "integer", "minimum": 0, "maximum": 10000 },
+      "wordSeed": { "type": ["string", "number"] },
+      "wordMotionDistance": { "type": "integer", "minimum": 0, "maximum": 1000 },
+      "wordMotionDepth": { "type": "integer", "minimum": 0, "maximum": 2000 },
+      "wordMotionScale": { "type": "number", "minimum": 0.01, "maximum": 1 },
+      "wordMotionPerspective": { "type": "integer", "minimum": 0, "maximum": 5000 },
+      "wordMotionEasing": { "type": "string", "minLength": 1 },
+      "typeConfig": { "$ref": "#/$defs/typeFlowConfig" },
+      "eraseConfig": { "$ref": "#/$defs/typeFlowConfig" }
+    }
+  }
+}

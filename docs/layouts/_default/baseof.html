@@ -1,4 +1,7 @@
 {{ $version := site.Data.package.version | default site.Params.version }}
+{{ $runtimeVersion := printf "%s%s%s%s%s" (readFile "static/assets/docs.js") (readFile "static/webutil/libs/typeflow.esm.js") (readFile "static/webutil/libs/typeflow-metrics.esm.js") (readFile "static/webutil/libs/typeflow-debug.esm.js") (readFile "static/webutil/libs/typeflow-caret.esm.js") | md5 }}
+{{ $typeflowStyleVersion := readFile "static/assets/typeflow.css" | md5 }}
+{{ $docsStyleVersion := readFile "static/assets/docs.css" | md5 }}
 <!doctype html>
 <html lang="{{ site.Language.Lang | default "en" }}" data-theme="dark">
   <head>
@@ -38,7 +41,7 @@
         --tf-border-default:      #253347;
         --tf-border-strong:       #334155;
         --tf-text-primary:        #f1f5f9;
-        --tf-text-secondary:      #94a3b8;
+        --tf-text-secondary:      #a8b4c5;
         --tf-text-muted:          #64748b;
         --tf-accent:              #38bdf8;
         --tf-accent-dim:          rgba(56, 189, 248, 0.12);
@@ -46,12 +49,16 @@
         --tf-accent-orange:       #fb923c;
         --tf-accent-orange-dim:   rgba(251, 146, 60, 0.12);
         --tf-accent-orange-glow:  rgba(251, 146, 60, 0.25);
+        --tf-nav-active:          #ffb07c;
         --tf-accent-gradient:     linear-gradient(135deg, #38bdf8 0%, #a78bfa 45%, #fb923c 100%);
         --tf-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         --tf-font-header: 'Lexend', var(--tf-font-sans);
         --tf-font-brand: 'Roboto Condensed', 'Arial Narrow', sans-serif-condensed, sans-serif;
         --tf-font-splash: 'Anton SC', 'Impact', 'Arial Black', sans-serif;
+        --tf-font-eyebrow: 'Syncopate', var(--tf-font-sans);
         --tf-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        --tf-font-body-size: clamp(0.96875rem, 0.95rem + 0.08vw, 1rem);
+        --tf-font-sidebar-size: clamp(0.875rem, 0.855rem + 0.08vw, 0.925rem);
         --header-height: 64px;
         --sidebar-width: 220px;
         --toc-width: 200px;
@@ -73,6 +80,7 @@
         --tf-accent-orange:       #ea580c;
         --tf-accent-orange-dim:   rgba(234, 88, 12, 0.10);
         --tf-accent-orange-glow:  rgba(234, 88, 12, 0.20);
+        --tf-nav-active:          #c2410c;
         --tf-accent-gradient:     linear-gradient(135deg, #0284c7 0%, #7c3aed 45%, #ea580c 100%);
       }
       *, *::before, *::after {
@@ -88,7 +96,7 @@
         background-color: var(--tf-bg-canvas);
         color: var(--tf-text-primary);
         font-family: var(--tf-font-sans);
-        font-size: 15px;
+        font-size: var(--tf-font-body-size);
         line-height: 1.7;
         min-height: 100vh;
         display: flex;
@@ -118,11 +126,15 @@
         border-image: linear-gradient(90deg, transparent 0%, rgba(2, 132, 199, 0.5) 15%, rgba(234, 88, 12, 0.8) 50%, rgba(255, 12, 5, 0.5) 85%, transparent 100%) 1;
       }
       .header-inner {
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(14rem, 23.75rem) minmax(0, 1fr);
         align-items: center;
-        justify-content: space-between;
         height: 100%;
         gap: 20px;
+      }
+      .header-inner > .brand {
+        justify-self: start;
+        min-width: 0;
       }
       .search-trigger-btn {
         display: inline-flex;
@@ -130,7 +142,7 @@
         gap: 10px;
         max-width: 380px;
         width: 100%;
-        margin-inline: auto;
+        justify-self: center;
         padding: 6px 14px;
         border-radius: 8px;
         background: var(--tf-bg-surface);
@@ -240,14 +252,15 @@
         text-decoration: none;
         padding: 6px 10px;
         border-radius: 6px;
-        font-size: 13.5px;
+        font-size: var(--tf-font-sidebar-size);
         font-weight: 500;
         white-space: nowrap;
       }
-      .sidebar-link.active {
-        color: var(--tf-accent);
-        background: var(--tf-accent-dim);
+      .sidebar-link[aria-current="page"] {
+        color: var(--tf-nav-active);
+        background: var(--tf-accent-orange-dim);
         font-weight: 600;
+        box-shadow: inset 2px 0 0 var(--tf-nav-active);
       }
       .main-content {
         min-width: 0;
@@ -298,6 +311,7 @@
       }
       .doc-eyebrow {
         display: inline-block;
+        font-family: var(--tf-font-eyebrow);
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
@@ -321,8 +335,13 @@
       .doc-toc {
         position: sticky;
         top: var(--sidebar-top-offset);
+        align-self: start;
+        height: fit-content;
+        min-height: 0;
         max-height: calc(100vh - var(--sidebar-top-offset) - 24px);
         overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
         padding-left: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
         border-left: 1px solid var(--tf-border-subtle);
       }
@@ -356,6 +375,8 @@
         align-items: center;
         padding-block: clamp(1.5rem, 1rem + 2vw, 3.5rem);
       }
+      .hero-copy,
+      .hero-art { min-width: 0; }
       @media (max-width: 900px) {
         .hero { grid-template-columns: 1fr; }
       }
@@ -481,42 +502,31 @@
         .doc-toc { display: none; }
       }
       @media (max-width: 768px) {
-        .shell { padding-inline: 14px; }
-        .page-body { grid-template-columns: 1fr; padding-inline: 14px; padding-block: 16px; }
+        .shell { padding-inline-start: max(14px, env(safe-area-inset-left)); padding-inline-end: max(14px, env(safe-area-inset-right)); }
+        .page-body { grid-template-columns: 1fr; padding-inline-start: max(14px, env(safe-area-inset-left)); padding-inline-end: max(14px, env(safe-area-inset-right)); padding-block: 16px; }
+        .header-inner { grid-template-columns: minmax(0, 1fr) 44px auto; gap: 8px; }
+        .search-trigger-btn { width: min(100%, 5.25rem); max-width: 5rem; min-height: 44px; padding-inline: 7px; gap: 0; }
+        .icon-button { width: 44px; height: 44px; }
+        .search-trigger-icon, .search-trigger-placeholder { display: none; }
+        .search-trigger-kbd { margin-inline: auto; }
         .sidebar { display: none; }
         .main-content { padding-left: 0; }
       }
       @media (max-width: 480px) {
-        .shell { padding-inline: 10px; }
-        .page-body { padding-inline: 10px; }
+        .shell { padding-inline-start: max(10px, env(safe-area-inset-left)); padding-inline-end: max(10px, env(safe-area-inset-right)); }
+        .page-body { padding-inline-start: max(10px, env(safe-area-inset-left)); padding-inline-end: max(10px, env(safe-area-inset-right)); }
+        .brand small { display: none; }
+        .header-inner .brand-text { display: none; }
+        .header-actions { gap: 6px; }
+      }
+      @media (max-width: 380px) {
+        .brand-text { display: none; }
       }
     </style>
 
-    {{ $pageTitle := cond .IsHome "TypeFlow — JavaScript Typewriter Animation Library" (printf "%s · TypeFlow" .Title) }}
-    {{ $pageDescription := .Description | default site.Params.description }}
-    {{ $is404 := eq .Kind "404" }}
-    {{ $robots := cond $is404 "noindex, nofollow" "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" }}
-    <meta name="description" content="{{ $pageDescription }}">
-    <meta name="robots" content="{{ $robots }}">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta name="theme-color" content="#090d16" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
-    <title>{{ $pageTitle }}</title>
-    {{ if not $is404 }}<link rel="canonical" href="{{ .Permalink }}">{{ end }}
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="TypeFlow documentation">
-    <meta property="og:locale" content="en_AU">
-    <meta property="og:title" content="{{ $pageTitle }}">
-    <meta property="og:description" content="{{ $pageDescription }}">
-    <meta property="og:url" content="{{ .Permalink }}">
-    <meta property="og:image" content="{{ "assets/branding/typeflow-banner.svg" | absURL }}">
-    <meta property="og:image:alt" content="TypeFlow JavaScript typewriter library">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ $pageTitle }}">
-    <meta name="twitter:description" content="{{ $pageDescription }}">
-    <script type="application/ld+json">{{ dict "@context" "https://schema.org" "@type" "SoftwareApplication" "name" "TypeFlow" "description" $pageDescription "applicationCategory" "DeveloperApplication" "operatingSystem" "Any" "url" .Permalink "softwareVersion" $version "isAccessibleForFree" true "license" (printf "%s/-/blob/develop/LICENSE" site.Params.repository) "codeRepository" site.Params.repository "sameAs" (slice site.Params.repository site.Params.github) | jsonify | safeJS }}</script>
+    {{ partial "seo.html" . }}
 
-    <link rel="icon" type="image/svg+xml" href="{{ "assets/branding/typeflow-logo.svg" | relURL }}">
+    {{ partial "favicon-links.html" . }}
 
     {{/*
       ── Step 3: Local Stylesheets — preload + async non-render-blocking ────────
@@ -531,16 +541,16 @@
     */}}
 
     {{/* preload the local CSS at top priority */}}
-    <link rel="preload" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ "assets/typeflow.css" | relURL }}?v={{ $typeflowStyleVersion }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ "assets/docs.css"     | relURL }}?v={{ $docsStyleVersion }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     {{ if eq .Section "playground" }}
     <link rel="preload" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     {{ end }}
 
     {{/* noscript fallback — regular blocking link for no-JS */}}
     <noscript>
-      <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}">
-      <link rel="stylesheet" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}">
+      <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $typeflowStyleVersion }}">
+      <link rel="stylesheet" href="{{ "assets/docs.css"     | relURL }}?v={{ $docsStyleVersion }}">
       {{ if eq .Section "playground" }}
       <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}">
       {{ end }}
@@ -549,8 +559,8 @@
     {{/* Google Fonts — deferred, font-display:swap prevents FOIT */}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&display=swap"></noscript>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&family=Syncopate:wght@400;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton+SC&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Lexend:wght@500;600;700;800&family=Roboto+Condensed:wght@400;600;700;800&family=Syncopate:wght@400;700&display=swap"></noscript>
 
     {{/*
       ── Step 4: FOUC elimination via body visibility ───────────────────────────
@@ -585,7 +595,7 @@
   <body data-package-version="{{ $version }}" data-search-index="{{ "index.json" | relURL }}?v={{ $version }}">
 
     {{/* ── Site Header ──────────────────────────────────────────── */}}
-    <header class="site-header">
+    <header class="site-header" data-pagefind-ignore>
       <div class="shell header-inner">
         <a class="brand" href="{{ "" | relURL }}" aria-label="typeflow.js home">
           <img src="{{ "assets/branding/typeflow-logo.svg" | relURL }}" alt="" width="30" height="30">
@@ -602,8 +612,8 @@
         </button>
 
         <nav class="header-actions" aria-label="Utility navigation">
-          <a class="header-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab ↗</a>
-          <a class="header-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer">GitHub ↗</a>
+          <a class="icon-button header-repo-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer" aria-label="GitLab repository" title="GitLab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m22 13-3-10-3 7H8L5 3 2 13l10 8Z"/><path d="m2 13 6-3 4 11 4-11 6 3M8 10h8"/></svg></a>
+          <a class="icon-button header-repo-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 6v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.2-1.5 6.2-6.9a5.4 5.4 0 0 0-1.5-3.7 5 5 0 0 0-.1-3.7S17.5.7 15 2.5a13 13 0 0 0-6 0C6.5.7 5.3 1.1 5.3 1.1a5 5 0 0 0-.1 3.7 5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.2 6.6 6.2 6.9a3.4 3.4 0 0 0-.9 2.7V22"/></svg></a>
           <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle color theme">◐</button>
           {{ if not (or .IsHome .Params.fullWidth) }}
           <button class="icon-button mobile-menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-sidebar" aria-label="Open navigation">☰</button>
@@ -615,28 +625,29 @@
     {{/* ── Page Body: sidebar + main (3-col grid via CSS) ──────── */}}
     {{ if or .IsHome .Params.fullWidth }}
     <div class="shell" style="flex:1; padding-block: clamp(1rem, 0.75rem + 1vw, 2rem);">
-      <main id="main-content" class="main-content" style="padding-left:0; padding-bottom: 0;">
+      <main id="main-content" class="main-content" style="padding-left:0; padding-bottom: 0;" data-pagefind-body>
         {{ block "main" . }}{{ end }}
+        {{ partial "page-end.html" . }}
       </main>
     </div>
     {{ else }}
     <div class="page-body">
       {{/* Left sidebar nav */}}
-      <aside class="sidebar" id="site-sidebar" data-sidebar aria-label="Documentation navigation">
+      <aside class="sidebar" id="site-sidebar" data-sidebar aria-label="Documentation navigation" data-pagefind-ignore>
         <nav>
           {{ range site.Menus.main }}
           {{ if not .Parent }}
             {{ if .HasChildren }}
             <p class="sidebar-section-label">{{ .Name }}</p>
             {{ range .Children }}
-            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}"
+            <a class="sidebar-link"
                href="{{ .URL | relURL }}"
-               {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
+               {{ with partial "menu-page.html" . }}{{ if eq $.RelPermalink .RelPermalink }}aria-current="page"{{ end }}{{ end }}>{{ .Name }}</a>
             {{ end }}
             {{ else }}
-            <a class="sidebar-link{{ if eq $.RelPermalink .URL }} active{{ end }}"
+            <a class="sidebar-link"
                href="{{ .URL | relURL }}"
-               {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
+               {{ with partial "menu-page.html" . }}{{ if eq $.RelPermalink .RelPermalink }}aria-current="page"{{ end }}{{ end }}>{{ .Name }}</a>
             {{ end }}
           {{ end }}
           {{ end }}
@@ -644,14 +655,15 @@
       </aside>
 
       {{/* Main content + TOC (rendered by child templates) */}}
-      <main id="main-content" class="main-content">
+      <main id="main-content" class="main-content" data-pagefind-body>
         {{ block "main" . }}{{ end }}
+        {{ partial "page-end.html" . }}
       </main>
     </div>
     {{ end }}
 
     {{/* ── Site Footer ──────────────────────────────────────────── */}}
-    <footer class="site-footer">
+    <footer class="site-footer" data-pagefind-ignore>
       <div class="shell footer-grid">
         <div class="footer-brand">
           <a class="brand" href="{{ "" | relURL }}">
@@ -738,8 +750,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs" crossorigin="anonymous"></script>
-    <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $version }}"></script>
+    <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $runtimeVersion }}"></script>
     {{ block "scripts" . }}{{ end }}
   </body>
 </html>

@@ -12,6 +12,8 @@ keywords:
   - webaudio
   - keystroke
   - extchars
+  - caret
+  - cursor
   - glyphs
   - hieroglyphs
   - runic
@@ -23,15 +25,16 @@ keywords:
 weight: 6
 ---
 
-TypeFlow is built with a hyper-optimized core engine (<7.2 KB gzipped). For developers requiring advanced capabilities, TypeFlow provides five modular, tree-shakeable companion extensions.
+TypeFlow is built with a hyper-optimized core engine (<10 KB gzipped). For developers requiring advanced capabilities, TypeFlow provides six modular, tree-shakeable companion extensions.
 
 ```mermaid
 graph LR
-    A[Core Engine: @staticcanvas/typeflow] --> B[@staticcanvas/typeflow/metrics]
-    A --> C[@staticcanvas/typeflow/debug]
-    A --> D[@staticcanvas/typeflow/webaudio]
-    A --> E[@staticcanvas/typeflow/keystroke]
-    A --> F[@staticcanvas/typeflow/extchars]
+    A["Core Engine: @staticcanvas/typeflow"] --> B["@staticcanvas/typeflow/metrics"]
+    A --> C["@staticcanvas/typeflow/debug"]
+    A --> D["@staticcanvas/typeflow/webaudio"]
+    A --> E["@staticcanvas/typeflow/keystroke"]
+    A --> F["@staticcanvas/typeflow/extchars"]
+    A --> G["@staticcanvas/typeflow/caret"]
 ```
 
 ---
@@ -108,14 +111,38 @@ TypeFlow.type('#terminal', 'Connecting to mainframe...', {
 });
 ```
 
-### Supported Sound Profiles
+### Versioned sound presets
+
+Built-ins are immutable schema-v1 records with separate type and erase action
+envelopes. The extension validates oscillator, frequency, gain, duration,
+filter, detune, and variance bounds before accepting a custom preset.
+
 - `'mechanical-blue'` / `'clicky'`: Crisp high-transient click with body thud.
 - `'mechanical-brown'` / `'tactile'`: Damped tactile bump.
-- `'mechanical-red'`: Smooth linear bottom-out.
-- `'teletype'` / `'vintage'`: Electro-mechanical strike + carriage return bell on `\n`.
-- `'cyber-synth'` / `'synth'`: FM neon laser chirp.
-- `'terminal-8bit'` / `'beep'`: Retro square-wave pulse.
-- `'bubble'` / `'pop'`: Acoustic liquid pop.
+- `'mechanical-red'` / `'mechanical'`: Smooth linear bottom-out.
+- `'soft-keyboard'` / `'bubble'`: Filtered, quiet key response.
+- `'typewriter'` / `'teletype'`: Electro-mechanical strike.
+- `'synth'` / `'cyber-synth'`: Neon oscillator chirp.
+- `'terminal-beep'` / `'terminal-8bit'` / `'beep'`: Retro square-wave pulse.
+- `'correction'`: Distinct erase/correction feedback.
+
+```javascript
+import { AUDIO_PRESETS, TypeFlowWebAudio } from '@staticcanvas/typeflow/webaudio';
+
+const custom = structuredClone(AUDIO_PRESETS['soft-keyboard']);
+custom.actions.type[0].frequency.start = 640;
+
+TypeFlowWebAudio.registerAudioPreset('product-soft', custom);
+TypeFlowWebAudio.play('product-soft');
+TypeFlowWebAudio.removeAudioPreset('product-soft');
+```
+
+The `AudioContext` is created only after browser user activation. The shared
+master graph is reused and active voices are capped. A callback returned by
+`createKeystrokeAudio()` owns a scoped voice set; interrupting its TypeFlow
+controller automatically stops and disconnects that set without affecting
+other callbacks. `stopAll()` and `destroy()` remain available for global
+teardown. Use `action: 'erase'` to select a preset's correction envelope.
 
 ---
 
@@ -171,3 +198,35 @@ const customPool = TypeFlowExtChars.combineCharsets('runic', 'katakana', 'mathSy
 - `braille`: Full Braille patterns (`⠁⠂⠃⠄...`).
 - `astronomical`: Planetary & zodiac glyphs (`☉☽☿♀♁♂...`).
 - `glitch`: Combining zalgo diacritics.
+
+---
+
+## 6. Interactive Caret (`@staticcanvas/typeflow/caret`)
+
+`TypeFlowCaret` is a persistent, editable cursor bound to an element's text. Unlike `TypeFlow.type()`/`erase()`, which run once from start to finish, a caret stays around: `jump()`/`move()` reposition it instantly, `deleteChar()`/`deleteWord()` edit at that position, and `insert()` types new text in with the usual character-by-character animation.
+
+```javascript
+import { Caret } from '@staticcanvas/typeflow/caret';
+
+const caret = Caret('#terminal', { text: 'git commit -m "wip"' });
+
+// Jump to just after "git ", delete the word "commit", type "push" in its place
+caret.jump(4).deleteWord('forward').insert('push');
+// "git push -m "wip""
+```
+
+It's a standalone, zero-dependency module — it does not import the core engine. If a page-global `TypeFlow` happens to be present, a caret opportunistically calls `TypeFlow.stop()` on its target before editing, so starting a caret edit interrupts any in-flight `type()`/`erase()` cleanly; the reverse (a `TypeFlow.type()` call interrupting an in-flight caret) is not automatic, since the two are otherwise fully decoupled.
+
+### API
+
+| Method | Description |
+| :--- | :--- |
+| `jump(position)` | Moves the caret to an absolute grapheme index, clamped to the text's bounds. |
+| `move(delta)` | Moves the caret by a relative number of graphemes (positive = right, negative = left). |
+| `deleteChar(direction)` | Deletes one grapheme: `'backward'` (Backspace, default) or `'forward'` (Delete). |
+| `deleteWord(direction)` | Deletes the whitespace-delimited word adjacent to the caret, consuming the adjoining whitespace with it. |
+| `insert(text, config)` | Types `text` at the caret position, shifting following content right. Returns `{ stop, promise }` like `TypeFlow.type()`. |
+| `stop()` | Stops an in-flight `insert()`. |
+| `destroy()` | Stops any in-flight `insert()` and clears the blink interval. |
+
+`caret.text`, `caret.position`, and `caret.length` expose the current plain text, caret index, and total grapheme count. Every mutating method returns the caret instance, so calls can be chained.

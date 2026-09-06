@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hawk playground</title>
+  <!--
+    Standalone, unlinked prototyping page for hawk (typeflow/hawk/) — deliberately not wired
+    into typeflow's real docs nav or its production search modal (docs.js /
+    docs/layouts/_default/baseof.html stay untouched). Loads whatever hawk build
+    `npm run dev:typeflow` (run from hawk/) last copied into webutil/libs/hawk/, searching a
+    Pagefind index generated from typeflow's own built docs site
+    (webutil/libs/hawk/pagefind-preview/), so it's real content, not a fixture.
+
+    Workflow: edit hawk -> `npm run dev:typeflow` in hawk/ -> refresh this page.
+
+    Ordering note: typeflow's own `npm run build`/`docs:build` wipes and regenerates the whole
+    webutil/libs/ directory (vite.config.js's stageWebUtilityAssets), which deletes the hawk/
+    subfolder hawk's dev script copies into. If you rebuild typeflow's docs, re-run
+    `npm run dev:typeflow` in hawk/ afterward to restore it.
+  -->
+  <link rel="stylesheet" href="webutil/libs/hawk/hawk.css">
+  <link rel="stylesheet" href="webutil/libs/hawk/hawk-theme-typeflow.css">
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      background: var(--hawk-bg-canvas, #090d16);
+      color: var(--hawk-text-primary, #f1f5f9);
+    }
+    .controls {
+      max-width: 640px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+    .controls h1 {
+      font-size: 1.1rem;
+    }
+    .controls p {
+      color: var(--hawk-text-secondary, #94a3b8);
+      font-size: 0.9rem;
+    }
+    fieldset {
+      border: 1px solid var(--hawk-border-default, #253347);
+      border-radius: 8px;
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+    }
+    legend {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--hawk-text-muted, #64748b);
+      padding: 0 0.4rem;
+    }
+    label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin: 0.3rem 0.8rem 0.3rem 0;
+      font-size: 0.85rem;
+    }
+    button.open-btn {
+      background: var(--hawk-accent, #38bdf8);
+      color: #04121c;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #status {
+      font-size: 0.8rem;
+      color: var(--hawk-text-muted, #64748b);
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body data-hawk-theme="typeflow">
+
+  <div class="controls">
+    <h1>hawk playground</h1>
+    <p>Prototyping surface for hawk, searching typeflow's own built docs content via a Pagefind
+      preview index. Not linked from typeflow's real site.</p>
+
+    <button class="open-btn" type="button" data-search-trigger>Open search (Ctrl+K)</button>
+
+    <fieldset>
+      <legend>Scale</legend>
+      <label><input type="radio" name="scale" value="0.8"> 0.8&times;</label>
+      <label><input type="radio" name="scale" value="1" checked> 1&times;</label>
+      <label><input type="radio" name="scale" value="1.2"> 1.2&times;</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Position</legend>
+      <label><input type="radio" name="position" value="top-center" checked> top-center</label>
+      <label><input type="radio" name="position" value="center"> center</label>
+      <label><input type="radio" name="position" value="top-left"> top-left</label>
+      <label><input type="radio" name="position" value="top-right"> top-right</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Columns</legend>
+      <label><input type="radio" name="columns" value="2" checked> 2 (results + preview)</label>
+      <label><input type="radio" name="columns" value="1"> 1 (results only)</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Animation</legend>
+      <label><input type="radio" name="animation" value="typeflow" checked> typeflow</label>
+      <label><input type="radio" name="animation" value="instant"> instant</label>
+    </fieldset>
+
+    <div id="status">Loading hawk...</div>
+  </div>
+
+  <script type="module">
+    import { HawkSearch } from './webutil/libs/hawk/hawk.mjs';
+    import { HawkThemeTypeflow } from './webutil/libs/hawk/hawk-theme-typeflow.mjs';
+
+    const statusEl = document.getElementById('status');
+    HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+
+    let search = null;
+    let typeflowDriverReady = false;
+
+    // TypeFlow itself is optional here too — the 'instant' radio works with no
+    // animation dependency loaded at all. Only fetch typeflow + the driver on demand.
+    async function ensureTypeflowDriver() {
+      if (typeflowDriverReady) return;
+      const [{ default: TypeFlow }, { createHawkAnimationTypeflow }] = await Promise.all([
+        import('./webutil/libs/typeflow.mjs'),
+        import('./webutil/libs/hawk/hawk-animation-typeflow.mjs'),
+      ]);
+      HawkSearch.registerAnimation('typeflow', createHawkAnimationTypeflow(TypeFlow));
+      typeflowDriverReady = true;
+    }
+
+    function currentParams() {
+      const val = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+      return {
+        scale: Number(val('scale')),
+        position: val('position'),
+        columns: Number(val('columns')),
+      };
+    }
+
+    async function mount() {
+      const animation = document.querySelector('input[name="animation"]:checked').value;
+      if (animation === 'typeflow') {
+        try {
+          await ensureTypeflowDriver();
+        } catch {
+          statusEl.textContent = 'typeflow build not found in webutil/libs — falling back to instant.';
+        }
+      }
+
+      search?.destroy();
+      search = new HawkSearch({
+        index: 'webutil/libs/hawk/pagefind-preview/',
+        theme: 'typeflow',
+        animation: typeflowDriverReady && animation === 'typeflow' ? 'typeflow' : false,
+        params: currentParams(),
+      });
+      statusEl.textContent = `Mounted. index: webutil/libs/hawk/pagefind-preview/, animation: ${
+        typeflowDriverReady && animation === 'typeflow' ? 'typeflow' : 'instant'
+      }`;
+    }
+
+    document.querySelectorAll('fieldset input[type="radio"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.name === 'animation') {
+          mount();
+        } else {
+          search?.setParams(currentParams());
+        }
+      });
+    });
+
+    mount();
+  </script>
+</body>
+</html>

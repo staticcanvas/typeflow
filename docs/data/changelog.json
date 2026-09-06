@@ -1,0 +1,616 @@
+{
+  "schema_version": 2,
+  "source": {
+    "history": "git",
+    "canonical_record": "CHANGELOG.md"
+  },
+  "projection": "Complete canonical changelog notes reconstructed from Git tag history.",
+  "project": "staticcanvas/typeflow",
+  "versions": [
+    {
+      "version": "unreleased",
+      "date": null,
+      "from": "v0.27.0",
+      "to": "d6bca597ea7d4b957825ba4607ba5beb52463e69",
+      "entries": [
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "docs",
+          "breaking": false,
+          "text": "Add SEO and LLM discovery.",
+          "commit": {
+            "short": "8ebb0d1",
+            "hash": "8ebb0d122a622087e742ce9341d5c1a65e3fc59b",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/8ebb0d122a622087e742ce9341d5c1a65e3fc59b"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        }
+      ],
+      "included": 17,
+      "excluded_non_version_bump": 16
+    },
+    {
+      "version": "0.27.0",
+      "date": "2026-08-23",
+      "from": "v0.27.0-snapshot",
+      "to": "ef66e63763e31a3f2fdc456e07db6aad03470e70",
+      "entries": [],
+      "included": 0,
+      "excluded_non_version_bump": 0
+    },
+    {
+      "version": "0.27.0-snapshot",
+      "date": "2026-08-23",
+      "from": null,
+      "to": "514fb57e4bbc2a4f96fde1d2abb95382b7990c04",
+      "entries": [
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "playground",
+          "breaking": false,
+          "text": "Update sample cyber phrase to BUILD STATUS RUNNING.",
+          "commit": {
+            "short": "5fb4bcc",
+            "hash": "5fb4bcc57df73945eb6fc884111040ee712e2c0b",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/5fb4bcc57df73945eb6fc884111040ee712e2c0b"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "playground",
+          "breaking": false,
+          "text": "Add site data playground samples with streaming tokens and animated progress bar morphing.",
+          "commit": {
+            "short": "768fb75",
+            "hash": "768fb753839e0ee916f8d3790bb3eb2a169a70ef",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/768fb753839e0ee916f8d3790bb3eb2a169a70ef"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "docs",
+          "breaking": false,
+          "text": "Add site splash slogans data, playground syntax highlighting, clean hero terminal, and core maintainability guidelines.",
+          "commit": {
+            "short": "89e7747",
+            "hash": "89e77476f114a4e551eb1343a4333dc5814a952d",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/89e77476f114a4e551eb1343a4333dc5814a952d"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Center search input with subtle brand orange borders, enhance search markdown preview parser, and clean splash hero.",
+          "commit": {
+            "short": "c56822a",
+            "hash": "c56822a00ffadbb369995e64ac980a319a0335d6",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/c56822a00ffadbb369995e64ac980a319a0335d6"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "docs",
+          "breaking": false,
+          "text": "Add text charts, sparklines & audio soundtrack synchronization guides and playground demos.",
+          "commit": {
+            "short": "92db9a7",
+            "hash": "92db9a7db98772da3664470bf396a0fc89403357",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/92db9a7db98772da3664470bf396a0fc89403357"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "core",
+          "breaking": false,
+          "text": "Complete pending backlog — architecture docs, Alpine/Web Component adapters, responsive 1440px margins, and pastel orange method styling.",
+          "commit": {
+            "short": "3b021e0",
+            "hash": "3b021e05efff7503555f385c23e6bd366e64c82a",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/3b021e05efff7503555f385c23e6bd366e64c82a"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Add rich markdown styling to search preview pane and make splash title lowercase.",
+          "commit": {
+            "short": "560cd72",
+            "hash": "560cd7233f4a61a287cc490e4e6e36813b66ecf3",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/560cd7233f4a61a287cc490e4e6e36813b66ecf3"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Correct search typewriter to speed:2 (2ms/char delay) — near-instant reveal.",
+          "commit": {
+            "short": "363ef43",
+            "hash": "363ef433a8d72f97b4b493d37af8dd2ce2ac58cb",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/363ef433a8d72f97b4b493d37af8dd2ce2ac58cb"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Set search typewriter to 500 chars/sec (2ms/char) — near-instant reveal.",
+          "commit": {
+            "short": "52d678a",
+            "hash": "52d678af2bc0869fe966d38c4b7dce29cde7fa6a",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/52d678af2bc0869fe966d38c4b7dce29cde7fa6a"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Maximize search typewriter speeds — 120/90 rotate, 160/120 preview title/content.",
+          "commit": {
+            "short": "ebb8344",
+            "hash": "ebb8344e06807dc9e4abace90389f91df4aeb2f7",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/ebb8344e06807dc9e4abace90389f91df4aeb2f7"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Add View Transitions API — slide-in content, fixed header/sidebar, reduced-motion support.",
+          "commit": {
+            "short": "32a9db4",
+            "hash": "32a9db4569d0824a5a81ff3d07aa44d26497c4b6",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/32a9db4569d0824a5a81ff3d07aa44d26497c4b6"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "perf",
+          "breaking": false,
+          "text": "Eliminate FOUC via CSS preload+async and opacity guard with 300ms hard deadline.",
+          "commit": {
+            "short": "234c4b6",
+            "hash": "234c4b6a0fe12dde832ddc03cfbb9a2dfae4d32f",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/234c4b6a0fe12dde832ddc03cfbb9a2dfae4d32f"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Integrate Mermaid.js with themed dark/light token-matched diagram rendering.",
+          "commit": {
+            "short": "a1b0686",
+            "hash": "a1b0686e85d686756818d30c5ad549bf0f8a5d3b",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/a1b0686e85d686756818d30c5ad549bf0f8a5d3b"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Increase search typewriter speeds for snappier rotation and preview animations.",
+          "commit": {
+            "short": "b117890",
+            "hash": "b1178906076492f17898ed960fc7d1e6a8aeb60e",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/b1178906076492f17898ed960fc7d1e6a8aeb60e"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Update jsDelivr CDN section to provide direct URLs for ESM, UMD, and CJS.",
+          "commit": {
+            "short": "7f639bd",
+            "hash": "7f639bd0c3d7131e576f118541413f91c1a6fff1",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/7f639bd0c3d7131e576f118541413f91c1a6fff1"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "ui",
+          "breaking": false,
+          "text": "Redesign splash hero, animation matrix grid, zero-fouc styling and 2-column search.",
+          "commit": {
+            "short": "50d289e",
+            "hash": "50d289e39fc1aee7cfb0c2921cc90a898d090604",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/50d289e39fc1aee7cfb0c2921cc90a898d090604"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "playground",
+          "breaking": false,
+          "text": "Add interactive workbench with metrics HUD and debug switches.",
+          "commit": {
+            "short": "270bd5e",
+            "hash": "270bd5e02cb25d432a0d212fe7f1db355c5e338f",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/270bd5e02cb25d432a0d212fe7f1db355c5e338f"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "core",
+          "breaking": false,
+          "text": "Implement reveal engines, natural cadence, trailing fade and modular extensions.",
+          "commit": {
+            "short": "1019e7d",
+            "hash": "1019e7d08cbff77d21295fd0116e0f98b2383962",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/1019e7d08cbff77d21295fd0116e0f98b2383962"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "docs",
+          "breaking": false,
+          "text": "Resolve Hugo v0.164 deprecation warnings — hugo.Data and locale keys.",
+          "commit": {
+            "short": "abde35b",
+            "hash": "abde35bf10805defaa21e08c9754b8ae3a14b43a",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/abde35bf10805defaa21e08c9754b8ae3a14b43a"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "build",
+          "breaking": false,
+          "text": "Resolve rollup parse error, configure jsdom test env, and pass full test suite.",
+          "commit": {
+            "short": "4e7fee4",
+            "hash": "4e7fee402e7f18ed8c1c479b92d79182ab03c407",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/4e7fee402e7f18ed8c1c479b92d79182ab03c407"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "adapters",
+          "breaking": false,
+          "text": "Add Svelte action and Solid.js adapter with updated documentation.",
+          "commit": {
+            "short": "b7fd4aa",
+            "hash": "b7fd4aa0aa74f60c4d4343c034b35a795a9032d1",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/b7fd4aa0aa74f60c4d4343c034b35a795a9032d1"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "reveal",
+          "breaking": false,
+          "text": "Add Intl.Segmenter, scramble/matrix reveal, word granularity, and seq.visible.",
+          "commit": {
+            "short": "1d7d184",
+            "hash": "1d7d1848b47e2d740c6bf51575077acfddfe48d3",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/1d7d1848b47e2d740c6bf51575077acfddfe48d3"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "docs",
+          "breaking": false,
+          "text": "Add Plume-inspired Hugo documentation site, branding assets, and project configuration.",
+          "commit": {
+            "short": "fd5ab95",
+            "hash": "fd5ab957dc1bf1eb9808cb3907c18b065174bdae",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/fd5ab957dc1bf1eb9808cb3907c18b065174bdae"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "types",
+          "breaking": false,
+          "text": "Add complete TypeScript definitions and test suite.",
+          "commit": {
+            "short": "b6a0be8",
+            "hash": "b6a0be860c0383e0e2c0cc6848506eabebb7133f",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/b6a0be860c0383e0e2c0cc6848506eabebb7133f"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "sequence",
+          "breaking": false,
+          "text": "Resolve step target fallback and validate missing targets.",
+          "commit": {
+            "short": "e659ed8",
+            "hash": "e659ed8bfac2aa4c0a9413a9dd31dd10ca59359f",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/e659ed8bfac2aa4c0a9413a9dd31dd10ca59359f"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "sequence",
+          "breaking": false,
+          "text": "Allow sequence-level default target configuration.",
+          "commit": {
+            "short": "4e54260",
+            "hash": "4e5426075aad7f34dd28af1b02eec8904237c270",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/4e5426075aad7f34dd28af1b02eec8904237c270"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "erase",
+          "breaking": false,
+          "text": "Add multi-directional erase styles (end, start, middle, explode) (v2.2.0).",
+          "commit": {
+            "short": "7e1b443",
+            "hash": "7e1b44334aa54522ed08c80463d31d12bc55aa02",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/7e1b44334aa54522ed08c80463d31d12bc55aa02"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "sequence",
+          "breaking": false,
+          "text": "Add sequence orchestration engine with pause, erase, and custom calls (v2.1.0).",
+          "commit": {
+            "short": "41c7667",
+            "hash": "41c76672f4d99ac10523d84e153b687049ff92a6",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/41c76672f4d99ac10523d84e153b687049ff92a6"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "core",
+          "breaking": true,
+          "text": "Breaking: Rewrite engine with ESM, sanitizer, reduced motion, and framework adapters (v2.0.0).",
+          "commit": {
+            "short": "23cc688",
+            "hash": "23cc6881223fcb3c63637d1a1839c3ff6d4fd277",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/23cc6881223fcb3c63637d1a1839c3ff6d4fd277"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "parser",
+          "breaking": false,
+          "text": "Implement DOM traversal HTML parser for text and element tags.",
+          "commit": {
+            "short": "2d28f2b",
+            "hash": "2d28f2b28224aa18d8a699e2fabc0309a2ae0356",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/2d28f2b28224aa18d8a699e2fabc0309a2ae0356"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "renderer",
+          "breaking": false,
+          "text": "Add support for rendering HTML tags alongside text stream.",
+          "commit": {
+            "short": "71ee1c2",
+            "hash": "71ee1c247bc6b430c72717eb117d4e62b419a58f",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/71ee1c247bc6b430c72717eb117d4e62b419a58f"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "html",
+          "breaking": false,
+          "text": "Add HTML text parts parsing and split plain text character handling.",
+          "commit": {
+            "short": "f8637f9",
+            "hash": "f8637f9b578e284faa74670593525b8c429eb23c",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/f8637f9b578e284faa74670593525b8c429eb23c"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "html",
+          "breaking": false,
+          "text": "Add html mode configuration options to interface.",
+          "commit": {
+            "short": "3c1ca71",
+            "hash": "3c1ca71e13382933b290feb3fd91218e739dc974",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/3c1ca71e13382933b290feb3fd91218e739dc974"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Fixed",
+          "type": "fix",
+          "scope": "cursor",
+          "breaking": false,
+          "text": "Add non-breaking space placeholder for blinking cursor width stability.",
+          "commit": {
+            "short": "8630852",
+            "hash": "86308528bc4d35d186b22b1b495cc913d9a8d8c1",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/86308528bc4d35d186b22b1b495cc913d9a8d8c1"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        },
+        {
+          "category": "Added",
+          "type": "feat",
+          "scope": "core",
+          "breaking": false,
+          "text": "Initial typewriter effect implementation (v1.0.0).",
+          "commit": {
+            "short": "1679977",
+            "hash": "1679977bc587ae9940b4d7c0c13adb82f6cd8236",
+            "url": "https://gitlab.com/staticcanvas/typeflow/-/commit/1679977bc587ae9940b4d7c0c13adb82f6cd8236"
+          },
+          "author": {
+            "name": "sgkens",
+            "reference": "@sgkens"
+          }
+        }
+      ],
+      "included": 57,
+      "excluded_non_version_bump": 22
+    }
+  ]
+}

@@ -81,10 +81,11 @@ export default [
     ignores: [
       'node_modules/**',
       'dist/**',
-      'docs/**',
       'public/**',
-      'context-source/**',
+      'docs/**',
       'coverage/**',
+      'context-source/source_versions/**',
+      'editors/zed-lirl/grammar.js',
       '*.min.js',
     ],
   },

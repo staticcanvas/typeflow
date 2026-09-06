@@ -1,0 +1,10 @@
+{{- /*
+  Root-relative markdown links (e.g. "/playground/?typeStyle=...") need the
+  site's baseURL subpath (e.g. "/typeflow") prefixed at build time, the same
+  way relURL does for template-authored links. relURL itself does not
+  resolve that prefix when called from inside a markup render hook, so the
+  prefix is read directly from site.BaseURL and prepended by hand.
+*/ -}}
+{{- $isRootRelative := strings.HasPrefix .Destination "/" -}}
+{{- $basePath := strings.TrimSuffix "/" (urls.Parse site.BaseURL).Path -}}
+<a href="{{ if $isRootRelative }}{{ printf "%s%s" $basePath .Destination }}{{ else }}{{ .Destination }}{{ end }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text | safeHTML }}</a>

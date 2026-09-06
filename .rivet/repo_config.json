@@ -14,9 +14,9 @@
   "readmeHeader": {
     "alignment": "left",
     "badgeStyle": "flat-square",
-    "badgeColor": "#0087af",
-    "labelColor": "#1c1c1c",
-    "logoColor": "#ffffff",
+    "badgeColor": "#42275a",
+    "labelColor": "#1e1e1e",
+    "logoColor": "#e73827",
     "codecovToken": ""
   },
   "readme": {
@@ -49,17 +49,84 @@
       { "name": "revert", "description": "revert an earlier commit" }
     ],
     "scopes": [
-      { "name": "rivet", "description": "repository metadata automation", "paths": ["rivet.ps1", "glm.ps1", "rivet/**", ".rivet/**"] },
-      { "name": "core", "description": "library runtime and core animation engine", "paths": ["src/typeflow.js", "src/typeflow.d.ts", "tests/**", "index.html", "vite*.js", "bunfig.toml"] },
-      { "name": "audio", "description": "procedural Web Audio keystroke synthesis", "paths": ["src/typeflow-webaudio.js", "src/typeflow-webaudio.d.ts"] },
-      { "name": "keystroke", "description": "keystroke timing, travel distance, and typo simulation", "paths": ["src/typeflow-keystroke.js", "src/typeflow-keystroke.d.ts"] },
-      { "name": "extchars", "description": "extended Unicode decryption character sets", "paths": ["src/typeflow-extchars.js", "src/typeflow-extchars.d.ts"] },
-      { "name": "metrics", "description": "performance HUD diagnostic badge", "paths": ["src/typeflow-metrics.js", "src/typeflow-metrics.d.ts"] },
-      { "name": "debug", "description": "diagnostic tracing and logcad logging", "paths": ["src/typeflow-debug.js", "src/typeflow-debug.d.ts"] },
-      { "name": "adapters", "description": "framework adapters and custom elements", "paths": ["src/typeflow-adapters.js", "src/typeflow-element.js"] },
-      { "name": "docs", "description": "documentation site, guides, and playground", "paths": ["docs/**", "public/**", "editors/**", "branding/**", "architecture/**", "README*.md"] },
-      { "name": "release", "description": "versioning and release assets", "paths": ["CHANGELOG.md", "release-notes.md", "package*.json", "bun.lock", "jsr.jsonc", "scripts/**", "docs/data/changelog.json", "README*.md"] },
-      { "name": "ci", "description": "pipeline configuration and quality gates", "paths": [".gitlab-ci.yml", "ci-failures.md"] },
+      {
+        "name": "rivet",
+        "description": "repository metadata automation",
+        "paths": ["rivet.ps1", ".rivet/**"]
+      },
+      {
+        "name": "core",
+        "description": "library runtime and core animation engine",
+        "paths": [
+          "src/typeflow.js",
+          "src/typeflow.d.ts",
+          "tests/**",
+          "index.html",
+          "vite*.js",
+          "bunfig.toml"
+        ]
+      },
+      {
+        "name": "audio",
+        "description": "procedural Web Audio keystroke synthesis",
+        "paths": ["src/typeflow-webaudio.js", "src/typeflow-webaudio.d.ts"]
+      },
+      {
+        "name": "keystroke",
+        "description": "keystroke timing, travel distance, and typo simulation",
+        "paths": ["src/typeflow-keystroke.js", "src/typeflow-keystroke.d.ts"]
+      },
+      {
+        "name": "extchars",
+        "description": "extended Unicode decryption character sets",
+        "paths": ["src/typeflow-extchars.js", "src/typeflow-extchars.d.ts"]
+      },
+      {
+        "name": "metrics",
+        "description": "performance HUD diagnostic badge",
+        "paths": ["src/typeflow-metrics.js", "src/typeflow-metrics.d.ts"]
+      },
+      {
+        "name": "debug",
+        "description": "diagnostic tracing and logcad logging",
+        "paths": ["src/typeflow-debug.js", "src/typeflow-debug.d.ts"]
+      },
+      {
+        "name": "adapters",
+        "description": "framework adapters and custom elements",
+        "paths": ["src/typeflow-adapters.js", "src/typeflow-element.js"]
+      },
+      {
+        "name": "docs",
+        "description": "documentation site, guides, and playground",
+        "paths": [
+          "docs/**",
+          "public/**",
+          "editors/**",
+          "branding/**",
+          "architecture/**",
+          "README*.md"
+        ]
+      },
+      {
+        "name": "release",
+        "description": "versioning and release assets",
+        "paths": [
+          "CHANGELOG.md",
+          "release-notes.md",
+          "package*.json",
+          "bun.lock",
+          "jsr.jsonc",
+          "scripts/**",
+          "docs/data/changelog.json",
+          "README*.md"
+        ]
+      },
+      {
+        "name": "ci",
+        "description": "pipeline configuration and quality gates",
+        "paths": [".gitlab-ci.yml", "ci-failures.md"]
+      },
       { "name": "none", "description": "omit the commit scope", "paths": ["**"] }
     ],
     "preview": {

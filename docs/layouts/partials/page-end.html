@@ -1,0 +1,33 @@
+{{ if .File }}
+{{ $current := . }}
+{{ $pages := slice }}
+{{ range site.Menus.main }}
+  {{ with partial "menu-page.html" . }}{{ $pages = $pages | append . }}{{ end }}
+  {{ range .Children }}
+    {{ with partial "menu-page.html" . }}{{ $pages = $pages | append . }}{{ end }}
+  {{ end }}
+{{ end }}
+{{ range site.RegularPages.ByTitle }}
+  {{ if not (in $pages .) }}{{ $pages = $pages | append . }}{{ end }}
+{{ end }}
+{{ $position := -1 }}
+{{ range $index, $page := $pages }}
+  {{ if eq $page.RelPermalink $current.RelPermalink }}{{ $position = $index }}{{ end }}
+{{ end }}
+<div class="page-end" data-pagefind-ignore>
+  <div class="page-meta">
+    <a href="{{ site.Params.repository }}/-/edit/{{ site.Params.editBranch | default "main" }}/docs/content/{{ .File.Path }}" target="_blank" rel="noreferrer"><i data-lucide="pencil" aria-hidden="true"></i> Edit on GitLab</a>
+    <span>Last modified: {{ if not .Lastmod.IsZero }}<time datetime="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">{{ .Lastmod.Format "2 January 2006" }}</time>{{ else }}Not recorded{{ end }}</span>
+  </div>
+  {{ if ge $position 0 }}
+  <nav class="page-pagination" aria-label="Page navigation">
+    {{ if gt $position 0 }}
+    {{ with index $pages (sub $position 1) }}<a class="page-previous" href="{{ .RelPermalink }}" rel="prev"><span>← Previous</span><strong>{{ .Title }}</strong></a>{{ end }}
+    {{ end }}
+    {{ if lt $position (sub (len $pages) 1) }}
+    {{ with index $pages (add $position 1) }}<a class="page-next" href="{{ .RelPermalink }}" rel="next"><span>Next →</span><strong>{{ .Title }}</strong></a>{{ end }}
+    {{ end }}
+  </nav>
+  {{ end }}
+</div>
+{{ end }}
