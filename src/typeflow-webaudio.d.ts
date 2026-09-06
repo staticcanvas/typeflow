@@ -64,7 +64,11 @@ export class TypeFlowWebAudio {
   static setVolume(volume: number): void;
   static mute(force?: boolean): void;
   static play(profile?: WebAudioProfile | string, options?: WebAudioPlayOptions): void;
-  static registerAudioPreset(name: string, config: AudioPreset, options?: { overwrite?: boolean }): string;
+  static registerAudioPreset(
+    name: string,
+    config: AudioPreset,
+    options?: { overwrite?: boolean }
+  ): string;
   static removeAudioPreset(name: string): boolean;
   static resetAudioPresets(): void;
   static getAudioPreset(name: string): Readonly<AudioPreset> | null;
@@ -73,4 +77,7 @@ export class TypeFlowWebAudio {
   static destroy(): Promise<void>;
 }
 
-export function createKeystrokeAudio(profile?: WebAudioProfile | string, options?: WebAudioPlayOptions): KeystrokeAudioCallback;
+export function createKeystrokeAudio(
+  profile?: WebAudioProfile | string,
+  options?: WebAudioPlayOptions
+): KeystrokeAudioCallback;

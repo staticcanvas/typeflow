@@ -6,7 +6,12 @@
  * @module @staticcanvas/typeflow/webaudio
  */
 
-import { AUDIO_PRESETS, AUDIO_PRESET_ALIASES, AUDIO_PRESET_SCHEMA_VERSION, validateAudioPreset } from './typeflow-audio-presets.js';
+import {
+  AUDIO_PRESETS,
+  AUDIO_PRESET_ALIASES,
+  AUDIO_PRESET_SCHEMA_VERSION,
+  validateAudioPreset,
+} from './typeflow-audio-presets.js';
 export { AUDIO_PRESETS, AUDIO_PRESET_ALIASES, AUDIO_PRESET_SCHEMA_VERSION, validateAudioPreset };
 
 export class TypeFlowWebAudio {
@@ -65,7 +70,6 @@ export class TypeFlowWebAudio {
         TypeFlowWebAudio.ctx.currentTime
       );
       TypeFlowWebAudio.masterGain.connect(TypeFlowWebAudio.ctx.destination);
-
     }
 
     if (TypeFlowWebAudio.ctx.state === 'suspended') {
@@ -93,7 +97,10 @@ export class TypeFlowWebAudio {
   static setVolume(vol) {
     TypeFlowWebAudio.volume = Math.max(0, Math.min(1, vol));
     if (TypeFlowWebAudio.masterGain && TypeFlowWebAudio.ctx && !TypeFlowWebAudio.isMuted) {
-      TypeFlowWebAudio.masterGain.gain.setValueAtTime(TypeFlowWebAudio.volume, TypeFlowWebAudio.ctx.currentTime);
+      TypeFlowWebAudio.masterGain.gain.setValueAtTime(
+        TypeFlowWebAudio.volume,
+        TypeFlowWebAudio.ctx.currentTime
+      );
     }
   }
 
@@ -126,9 +133,17 @@ export class TypeFlowWebAudio {
 
   /** Registers a validated instance-safe preset. Built-in collisions require `overwrite: true`. */
   static registerAudioPreset(name, config, options = {}) {
-    const key = String(name ?? '').trim().toLowerCase();
-    if (!/^[a-z0-9][a-z0-9-]*$/.test(key)) throw new TypeError('TypeFlowWebAudio: invalid preset name.');
-    if (!options.overwrite && (key in AUDIO_PRESETS || key in AUDIO_PRESET_ALIASES || TypeFlowWebAudio.customPresets.has(key))) {
+    const key = String(name ?? '')
+      .trim()
+      .toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(key))
+      throw new TypeError('TypeFlowWebAudio: invalid preset name.');
+    if (
+      !options.overwrite &&
+      (key in AUDIO_PRESETS ||
+        key in AUDIO_PRESET_ALIASES ||
+        TypeFlowWebAudio.customPresets.has(key))
+    ) {
       throw new Error(`TypeFlowWebAudio: preset \`${key}\` already exists.`);
     }
     TypeFlowWebAudio.customPresets.set(key, validateAudioPreset(config));
@@ -137,7 +152,11 @@ export class TypeFlowWebAudio {
 
   /** Removes a custom preset. Immutable built-ins cannot be removed. */
   static removeAudioPreset(name) {
-    return TypeFlowWebAudio.customPresets.delete(String(name ?? '').trim().toLowerCase());
+    return TypeFlowWebAudio.customPresets.delete(
+      String(name ?? '')
+        .trim()
+        .toLowerCase()
+    );
   }
 
   /** Removes every custom preset without affecting immutable built-ins. */
@@ -147,7 +166,9 @@ export class TypeFlowWebAudio {
 
   /** Returns a frozen custom or built-in preset, resolving compatibility aliases. */
   static getAudioPreset(name) {
-    const key = String(name ?? '').trim().toLowerCase();
+    const key = String(name ?? '')
+      .trim()
+      .toLowerCase();
     if (TypeFlowWebAudio.customPresets.has(key)) return TypeFlowWebAudio.customPresets.get(key);
     return AUDIO_PRESETS[AUDIO_PRESET_ALIASES[key] ?? key] ?? null;
   }
@@ -155,8 +176,18 @@ export class TypeFlowWebAudio {
   /** Stops and disconnects a scoped set of voices. */
   static stopVoices(voices) {
     Array.from(voices).forEach((voice) => {
-      try { voice.oscillator.stop(); } catch { /* already stopped */ }
-      voice.nodes.forEach((node) => { try { node.disconnect(); } catch { /* already disconnected */ } });
+      try {
+        voice.oscillator.stop();
+      } catch {
+        /* already stopped */
+      }
+      voice.nodes.forEach((node) => {
+        try {
+          node.disconnect();
+        } catch {
+          /* already disconnected */
+        }
+      });
       voice.scope?.delete(voice);
       TypeFlowWebAudio.activeVoices.delete(voice);
     });
@@ -175,8 +206,18 @@ export class TypeFlowWebAudio {
       window.removeEventListener('keydown', TypeFlowWebAudio.unlockHandler);
       TypeFlowWebAudio.unlockHandler = null;
     }
-    try { TypeFlowWebAudio.masterGain?.disconnect(); } catch { /* already disconnected */ }
-    TypeFlowWebAudio.panners.forEach((panner) => { try { panner.disconnect(); } catch { /* already disconnected */ } });
+    try {
+      TypeFlowWebAudio.masterGain?.disconnect();
+    } catch {
+      /* already disconnected */
+    }
+    TypeFlowWebAudio.panners.forEach((panner) => {
+      try {
+        panner.disconnect();
+      } catch {
+        /* already disconnected */
+      }
+    });
     TypeFlowWebAudio.panners.clear();
     if (TypeFlowWebAudio.ctx?.close) await TypeFlowWebAudio.ctx.close().catch(() => {});
     TypeFlowWebAudio.ctx = null;
@@ -189,8 +230,18 @@ export class TypeFlowWebAudio {
     for (const layer of config.actions[action]) {
       while (TypeFlowWebAudio.activeVoices.size >= TypeFlowWebAudio.maxPolyphony) {
         const oldest = TypeFlowWebAudio.activeVoices.values().next().value;
-        try { oldest.oscillator.stop(); } catch { /* already stopped */ }
-        oldest.nodes.forEach((node) => { try { node.disconnect(); } catch { /* already disconnected */ } });
+        try {
+          oldest.oscillator.stop();
+        } catch {
+          /* already stopped */
+        }
+        oldest.nodes.forEach((node) => {
+          try {
+            node.disconnect();
+          } catch {
+            /* already disconnected */
+          }
+        });
         oldest.scope?.delete(oldest);
         TypeFlowWebAudio.activeVoices.delete(oldest);
       }
@@ -202,7 +253,10 @@ export class TypeFlowWebAudio {
       oscillator.type = layer.oscillator;
       oscillator.detune.setValueAtTime(layer.detune.base, now);
       oscillator.frequency.setValueAtTime(layer.frequency.start * jitter, now);
-      oscillator.frequency.exponentialRampToValueAtTime(layer.frequency.end * jitter, now + layer.duration);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        layer.frequency.end * jitter,
+        now + layer.duration
+      );
       gain.gain.setValueAtTime(layer.gain.start, now);
       gain.gain.exponentialRampToValueAtTime(layer.gain.end, now + layer.duration);
       oscillator.connect(gain);
@@ -220,11 +274,21 @@ export class TypeFlowWebAudio {
       const voice = { oscillator, nodes, scope: options.voiceScope };
       TypeFlowWebAudio.activeVoices.add(voice);
       options.voiceScope?.add(voice);
-      oscillator.addEventListener?.('ended', () => {
-        nodes.forEach((node) => { try { node.disconnect(); } catch { /* already disconnected */ } });
-        options.voiceScope?.delete(voice);
-        TypeFlowWebAudio.activeVoices.delete(voice);
-      }, { once: true });
+      oscillator.addEventListener?.(
+        'ended',
+        () => {
+          nodes.forEach((node) => {
+            try {
+              node.disconnect();
+            } catch {
+              /* already disconnected */
+            }
+          });
+          options.voiceScope?.delete(voice);
+          TypeFlowWebAudio.activeVoices.delete(voice);
+        },
+        { once: true }
+      );
       oscillator.start(now);
       oscillator.stop(now + layer.duration);
     }
@@ -258,7 +322,12 @@ export class TypeFlowWebAudio {
    * TypeFlowWebAudio.play('teletype', { char: '\n' });
    */
   static play(profile = 'mechanical-blue', options = {}) {
-    if (options.respectReducedMotion === true && typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (
+      options.respectReducedMotion === true &&
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    )
+      return;
     const ctx = TypeFlowWebAudio.getContext();
     if (!ctx || TypeFlowWebAudio.isMuted) return;
 
@@ -318,7 +387,12 @@ export class TypeFlowWebAudio {
       thudOsc.stop(t + 0.035);
     }
     // 2. Mechanical Linear / Tactile (Red / Brown style)
-    else if (normProfile === 'mechanical-red' || normProfile === 'mechanical-brown' || normProfile === 'tactile' || normProfile === 'mechanical') {
+    else if (
+      normProfile === 'mechanical-red' ||
+      normProfile === 'mechanical-brown' ||
+      normProfile === 'tactile' ||
+      normProfile === 'mechanical'
+    ) {
       const thudOsc = ctx.createOscillator();
       const thudGain = ctx.createGain();
       thudOsc.type = normProfile.includes('brown') ? 'triangle' : 'sine';
@@ -332,7 +406,11 @@ export class TypeFlowWebAudio {
       thudOsc.stop(t + 0.028);
     }
     // 3. Vintage Teletype / Solenoid Strike & Carriage Bell
-    else if (normProfile === 'teletype' || normProfile === 'vintage' || normProfile === 'typewriter') {
+    else if (
+      normProfile === 'teletype' ||
+      normProfile === 'vintage' ||
+      normProfile === 'typewriter'
+    ) {
       if (char === '\n') {
         const bellOsc = ctx.createOscillator();
         const bellGain = ctx.createGain();

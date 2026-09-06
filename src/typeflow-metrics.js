@@ -512,7 +512,9 @@ export class TypeFlowMetrics {
       if (btn) {
         const prev = btn.textContent;
         btn.textContent = 'Copied!';
-        setTimeout(() => { btn.textContent = prev; }, 1500);
+        setTimeout(() => {
+          btn.textContent = prev;
+        }, 1500);
       }
     }
   }

@@ -102,12 +102,35 @@ const ERASE_DEFAULTS = {
 };
 
 const VOID_ELEMENTS = new Set([
-  'br', 'hr', 'img', 'input', 'wbr', 'area', 'base',
-  'col', 'embed', 'link', 'meta', 'source', 'track',
+  'br',
+  'hr',
+  'img',
+  'input',
+  'wbr',
+  'area',
+  'base',
+  'col',
+  'embed',
+  'link',
+  'meta',
+  'source',
+  'track',
 ]);
 
 const DEFAULT_ALLOWED_TAGS = new Set([
-  'b', 'strong', 'i', 'em', 'mark', 'span', 'small', 'sub', 'sup', 'u', 'br', 'a', 'code',
+  'b',
+  'strong',
+  'i',
+  'em',
+  'mark',
+  'span',
+  'small',
+  'sub',
+  'sup',
+  'u',
+  'br',
+  'a',
+  'code',
 ]);
 
 const DEFAULT_ALLOWED_ATTRS = {
@@ -374,22 +397,28 @@ function cloneRevealWindow(node, start, end, granularity = 'grapheme', revealOpt
       };
     }
 
-    const trailLen = typeof revealOpts.trailFade === 'number'
-      ? revealOpts.trailFade
-      : (typeof revealOpts.trailingFadeLength === 'number'
+    const trailLen =
+      typeof revealOpts.trailFade === 'number'
+        ? revealOpts.trailFade
+        : typeof revealOpts.trailingFadeLength === 'number'
           ? revealOpts.trailingFadeLength
-          : (revealOpts.trailFade ? 4 : 0));
+          : revealOpts.trailFade
+            ? 4
+            : 0;
 
-    if (trailLen > 0 && (e - s) >= 1 && !revealOpts.isComplete) {
+    if (trailLen > 0 && e - s >= 1 && !revealOpts.isComplete) {
       const frag = doc.createDocumentFragment();
       const solidEnd = Math.max(s, e - trailLen);
       if (solidEnd > s) {
         frag.appendChild(doc.createTextNode(units.slice(s, solidEnd).join('')));
       }
       const trailCount = e - solidEnd;
-      const minOp = typeof revealOpts.trailingFadeMinOpacity === 'number'
-        ? revealOpts.trailingFadeMinOpacity
-        : (typeof revealOpts.trailMinOpacity === 'number' ? revealOpts.trailMinOpacity : 0.18);
+      const minOp =
+        typeof revealOpts.trailingFadeMinOpacity === 'number'
+          ? revealOpts.trailingFadeMinOpacity
+          : typeof revealOpts.trailMinOpacity === 'number'
+            ? revealOpts.trailMinOpacity
+            : 0.18;
       for (let i = 0; i < trailCount; i++) {
         const charIdx = solidEnd + i;
         const charSpan = doc.createElement('span');
@@ -511,7 +540,8 @@ function normalizeTypeStyle(style) {
   if (!style) return 'char';
   const s = String(style).toLowerCase();
   if (s === 'word' || s === 'words' || s === 'stream') return 'word';
-  if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random') return 'scramble';
+  if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random')
+    return 'scramble';
   if (s === 'fade-trail' || s === 'trail' || s === 'trailing' || s === 'soft') return 'fade-trail';
   if (s === 'word-fade' || s === 'fade-words' || s === 'wordfade') return 'word-fade';
   if (s === 'float-in-top' || s === 'float-top' || s === 'float-down') return 'float-in-top';
@@ -527,7 +557,8 @@ function normalizeEraseStyle(style) {
   const s = String(style).toLowerCase();
   if (s === 'start' || s === 'erosion' || s === 'left' || s === 'forward') return 'start';
   if (s === 'center' || s === 'middle' || s === 'shrink' || s === 'split') return 'center';
-  if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random') return 'scramble';
+  if (s === 'scramble' || s === 'matrix' || s === 'decrypt' || s === 'cyber' || s === 'random')
+    return 'scramble';
   if (s === 'fade-trail' || s === 'trail' || s === 'trailing' || s === 'soft') return 'fade-trail';
   if (s === 'fade' || s === 'dissolve' || s === 'crossfade') return 'fade';
   if (s === 'word-fade' || s === 'fade-words' || s === 'wordfade') return 'word-fade';
@@ -595,15 +626,27 @@ function segmentWords(text) {
 function getWordMotionTransforms(motionKind, options) {
   const distance = Math.max(0, Number(options.wordMotionDistance ?? DEFAULT_MOTION_DISTANCE) || 0);
   const depth = Math.max(0, Number(options.wordMotionDepth ?? DEFAULT_MOTION_DEPTH) || 0);
-  const scale = Math.min(1, Math.max(0.01, Number(options.wordMotionScale ?? DEFAULT_MOTION_SCALE) || DEFAULT_MOTION_SCALE));
+  const scale = Math.min(
+    1,
+    Math.max(0.01, Number(options.wordMotionScale ?? DEFAULT_MOTION_SCALE) || DEFAULT_MOTION_SCALE)
+  );
 
   switch (motionKind) {
-    case 'float-in-top': return { hidden: `translateY(-${distance}px)`, visible: 'translateY(0)' };
-    case 'float-in-bottom': return { hidden: `translateY(${distance}px)`, visible: 'translateY(0)' };
-    case 'float-in-left': return { hidden: `translateX(-${distance}px)`, visible: 'translateX(0)' };
-    case 'float-in-right': return { hidden: `translateX(${distance}px)`, visible: 'translateX(0)' };
-    case 'zoom-in-space': return { hidden: `translateZ(-${depth}px) scale(${scale})`, visible: 'translateZ(0) scale(1)' };
-    default: return null;
+    case 'float-in-top':
+      return { hidden: `translateY(-${distance}px)`, visible: 'translateY(0)' };
+    case 'float-in-bottom':
+      return { hidden: `translateY(${distance}px)`, visible: 'translateY(0)' };
+    case 'float-in-left':
+      return { hidden: `translateX(-${distance}px)`, visible: 'translateX(0)' };
+    case 'float-in-right':
+      return { hidden: `translateX(${distance}px)`, visible: 'translateX(0)' };
+    case 'zoom-in-space':
+      return {
+        hidden: `translateZ(-${depth}px) scale(${scale})`,
+        visible: 'translateZ(0) scale(1)',
+      };
+    default:
+      return null;
   }
 }
 
@@ -625,7 +668,11 @@ function buildWordMotionTree(source, layout = 'opacity', motionKind = 'word-fade
             continue;
           }
 
-          if (part.isWordLike === false && words.length > 0 && words.at(-1).parentNode === targetNode) {
+          if (
+            part.isWordLike === false &&
+            words.length > 0 &&
+            words.at(-1).parentNode === targetNode
+          ) {
             words.at(-1).appendChild(doc.createTextNode(part.segment));
             continue;
           }
@@ -708,16 +755,7 @@ class TypeFlowEngine {
     }
   }
 
-  animate(
-    el,
-    sourceTree,
-    totalUnits,
-    options,
-    startCount,
-    endCount,
-    resultText,
-    extra = {}
-  ) {
+  animate(el, sourceTree, totalUnits, options, startCount, endCount, resultText, extra = {}) {
     this.clearCursorInterval(el);
     this.active.get(el)?.stop();
     if (options.ariaLive) el.setAttribute('aria-live', options.ariaLive);
@@ -728,18 +766,22 @@ class TypeFlowEngine {
     const speed = Math.max(0, Number(options.speed ?? TYPE_DEFAULTS.speed) || 0);
     const granularity = options.granularity ?? TYPE_DEFAULTS.granularity;
     const isScramble = options.typeStyle === 'scramble' || options.eraseStyle === 'scramble';
-    const scrambleGlyphs = resolveScrambleGlyphs(options.scrambleGlyphs, options.scrambleCharset ?? options.scramblePreset);
+    const scrambleGlyphs = resolveScrambleGlyphs(
+      options.scrambleGlyphs,
+      options.scrambleCharset ?? options.scramblePreset
+    );
 
     let settled = false;
     let timeoutId = null;
     let resolveFn = null;
-    const incrementalPlainText = extra.plainText === true
-      && direction === 1
-      && options.direction === 'left'
-      && !isScramble
-      && options.typeStyle !== 'fade-trail'
-      && options.trailFade === undefined
-      && options.trailingFadeLength === undefined;
+    const incrementalPlainText =
+      extra.plainText === true &&
+      direction === 1 &&
+      options.direction === 'left' &&
+      !isScramble &&
+      options.typeStyle !== 'fade-trail' &&
+      options.trailFade === undefined &&
+      options.trailingFadeLength === undefined;
     // Plain-text source trees always contain one text node, including empty input.
     const plainUnits = incrementalPlainText
       ? segmentNodeText(sourceTree.firstChild, granularity)
@@ -756,8 +798,10 @@ class TypeFlowEngine {
 
     const render = (unitCount, cursorChar, scrambleActive = false, cursorHidden = false) => {
       if (incrementalTextNode && !scrambleActive) {
-        if (unitCount === lastIncrementalCount + 1) incrementalTextNode.data += plainUnits[lastIncrementalCount] ?? '';
-        else if (unitCount !== lastIncrementalCount) incrementalTextNode.data = plainUnits.slice(0, unitCount).join('');
+        if (unitCount === lastIncrementalCount + 1)
+          incrementalTextNode.data += plainUnits[lastIncrementalCount] ?? '';
+        else if (unitCount !== lastIncrementalCount)
+          incrementalTextNode.data = plainUnits.slice(0, unitCount).join('');
         lastIncrementalCount = unitCount;
         if (!incrementalTextNode.parentNode) el.replaceChildren(...prefix, incrementalTextNode);
         if (cursorChar) {
@@ -785,15 +829,17 @@ class TypeFlowEngine {
       const trailLen =
         typeof options.trailFade === 'number'
           ? options.trailFade
-          : (typeof options.trailingFadeLength === 'number'
-              ? options.trailingFadeLength
-              : (isTrailFade ? (options.trailingFadeLength ?? 4) : 0));
+          : typeof options.trailingFadeLength === 'number'
+            ? options.trailingFadeLength
+            : isTrailFade
+              ? (options.trailingFadeLength ?? 4)
+              : 0;
       const trailMinOpacity =
         typeof options.trailingFadeMinOpacity === 'number'
           ? options.trailingFadeMinOpacity
-          : (typeof options.trailMinOpacity === 'number'
-              ? options.trailMinOpacity
-              : 0.18);
+          : typeof options.trailMinOpacity === 'number'
+            ? options.trailMinOpacity
+            : 0.18;
 
       el.replaceChildren(
         ...prefix,
@@ -842,12 +888,13 @@ class TypeFlowEngine {
 
     const controller = {
       stop: () => settle(false),
-      promise: new Promise((resolve) => { resolveFn = resolve; }),
+      promise: new Promise((resolve) => {
+        resolveFn = resolve;
+      }),
     };
     this.active.set(el, controller);
 
-    const shouldReduceMotion =
-      options.respectReducedMotion === true && prefersReducedMotion();
+    const shouldReduceMotion = options.respectReducedMotion === true && prefersReducedMotion();
 
     if (shouldReduceMotion) {
       settle(true);
@@ -869,7 +916,10 @@ class TypeFlowEngine {
       scrambleStep = 0;
 
       render(count, options.cursor ?? '', false);
-      if (count === endCount) { settle(true); return; }
+      if (count === endCount) {
+        settle(true);
+        return;
+      }
 
       const jitter = options.speedVariance ? (Math.random() * 2 - 1) * options.speedVariance : 0;
       const cadencePause = options.naturalCadence ? calculateCadencePause(resultText, count) : 0;
@@ -892,8 +942,14 @@ class TypeFlowEngine {
     const isErasing = extra.isErasing === true;
     const motionKind = extra.motionKind ?? 'word-fade';
     const layout = options.wordLayout === 'placeholder' ? 'placeholder' : 'opacity';
-    const duration = Math.max(0, Number(options.wordFadeDuration ?? DEFAULT_WORD_FADE_DURATION) || 0);
-    const stagger = Math.max(0, Number(options.wordStagger ?? options.speed ?? DEFAULT_WORD_STAGGER) || 0);
+    const duration = Math.max(
+      0,
+      Number(options.wordFadeDuration ?? DEFAULT_WORD_FADE_DURATION) || 0
+    );
+    const stagger = Math.max(
+      0,
+      Number(options.wordStagger ?? options.speed ?? DEFAULT_WORD_STAGGER) || 0
+    );
     const transforms = getWordMotionTransforms(motionKind, options);
     const needsPerspective = motionKind === 'zoom-in-space';
     const { fragment, words } = buildWordMotionTree(sourceTree, layout, motionKind);
@@ -906,9 +962,10 @@ class TypeFlowEngine {
     let settled = false;
     let resolveFn = null;
 
-    const easing = typeof options.wordMotionEasing === 'string' && options.wordMotionEasing.trim()
-      ? options.wordMotionEasing.trim()
-      : DEFAULT_MOTION_EASING;
+    const easing =
+      typeof options.wordMotionEasing === 'string' && options.wordMotionEasing.trim()
+        ? options.wordMotionEasing.trim()
+        : DEFAULT_MOTION_EASING;
 
     words.forEach((word) => {
       word.style.transition = transforms
@@ -939,7 +996,8 @@ class TypeFlowEngine {
     const clearScheduledWork = () => {
       timers.forEach((id) => clearTimeout(id));
       timers.clear();
-      if (frameId !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frameId);
+      if (frameId !== null && typeof cancelAnimationFrame === 'function')
+        cancelAnimationFrame(frameId);
       frameId = null;
     };
     const appendCursor = () => {
@@ -988,7 +1046,9 @@ class TypeFlowEngine {
     };
     const controller = {
       stop: () => settle(false),
-      promise: new Promise((resolve) => { resolveFn = resolve; }),
+      promise: new Promise((resolve) => {
+        resolveFn = resolve;
+      }),
     };
     this.active.set(el, controller);
 
@@ -1063,7 +1123,9 @@ class TypeFlowEngine {
 
     const controller = {
       stop: () => settle(false),
-      promise: new Promise((resolve) => { resolveFn = resolve; }),
+      promise: new Promise((resolve) => {
+        resolveFn = resolve;
+      }),
     };
     this.active.set(el, controller);
 
@@ -1173,9 +1235,11 @@ class TypeFlowEngine {
     }
     options.eraseStyle = normalizeEraseStyle(options.eraseStyle);
 
-    const baseline = options.preserveBaseline ? this.baselines.get(el) ?? [] : [];
+    const baseline = options.preserveBaseline ? (this.baselines.get(el) ?? []) : [];
     const allChildren = Array.from(el.childNodes);
-    const erasableLive = baseline.length ? allChildren.filter((n) => !baseline.includes(n)) : allChildren;
+    const erasableLive = baseline.length
+      ? allChildren.filter((n) => !baseline.includes(n))
+      : allChildren;
 
     if (options.eraseStyle === 'instant') return this.instantClear(el, baseline, options);
     if (options.eraseStyle === 'fade') return this.eraseFade(el, erasableLive, baseline, options);
@@ -1232,7 +1296,11 @@ class TypeFlowEngine {
             el,
             sourceTree,
             totalUnits,
-            { ...ERASE_DEFAULTS, ...options, speed: options.eraseSpeed ?? options.speed ?? ERASE_DEFAULTS.speed },
+            {
+              ...ERASE_DEFAULTS,
+              ...options,
+              speed: options.eraseSpeed ?? options.speed ?? ERASE_DEFAULTS.speed,
+            },
             totalUnits,
             prefixLen,
             currentText.slice(0, prefixLen),
@@ -1397,7 +1465,10 @@ class TypeFlowEngine {
         } else if (step.kind === 'pause') {
           const finishedNaturally = await new Promise((resolve) => {
             const id = setTimeout(() => resolve(true), step.duration);
-            cancelPause = () => { clearTimeout(id); resolve(false); };
+            cancelPause = () => {
+              clearTimeout(id);
+              resolve(false);
+            };
           });
           cancelPause = null;
           if (!finishedNaturally) return false;
@@ -1408,13 +1479,19 @@ class TypeFlowEngine {
               resolve(true);
               return;
             }
-            const observer = new IntersectionObserver((entries) => {
-              if (entries.some((e) => e.isIntersecting)) {
-                observer.disconnect();
-                resolve(true);
-              }
-            }, { threshold: step.threshold ?? 0.1 });
-            cancelObserver = () => { observer.disconnect(); resolve(false); };
+            const observer = new IntersectionObserver(
+              (entries) => {
+                if (entries.some((e) => e.isIntersecting)) {
+                  observer.disconnect();
+                  resolve(true);
+                }
+              },
+              { threshold: step.threshold ?? 0.1 }
+            );
+            cancelObserver = () => {
+              observer.disconnect();
+              resolve(false);
+            };
             observer.observe(targetEl);
           });
           cancelObserver = null;
@@ -1523,11 +1600,28 @@ class TypeFlowEngine {
   stagger(targets, textOrTexts, config = {}) {
     let elements = [];
     if (typeof targets === 'string') {
-      elements = typeof document !== 'undefined' ? Array.from(document.querySelectorAll(targets)) : [];
+      elements =
+        typeof document !== 'undefined' ? Array.from(document.querySelectorAll(targets)) : [];
     } else if (Array.isArray(targets)) {
-      elements = targets.map((t) => { try { return resolveTarget(t); } catch { return null; } }).filter(Boolean);
+      elements = targets
+        .map((t) => {
+          try {
+            return resolveTarget(t);
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
     } else if (targets && typeof targets[Symbol.iterator] === 'function') {
-      elements = Array.from(targets).map((t) => { try { return resolveTarget(t); } catch { return null; } }).filter(Boolean);
+      elements = Array.from(targets)
+        .map((t) => {
+          try {
+            return resolveTarget(t);
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
     } else {
       try {
         const single = resolveTarget(targets);
@@ -1557,7 +1651,7 @@ class TypeFlowEngine {
         text = el.textContent || '';
       }
 
-      const itemDelay = (config.delay ?? 0) + (index * staggerDelay);
+      const itemDelay = (config.delay ?? 0) + index * staggerDelay;
       const itemConfig = { ...config, delay: itemDelay };
       const ctrl = this.type(el, text, itemConfig);
       controllers.push(ctrl);
@@ -1651,7 +1745,8 @@ class TypeFlowEngine {
     const probe = document.createElement('span');
     probe.style.cssText =
       'position:absolute;visibility:hidden;opacity:0;pointer-events:none;white-space:nowrap;';
-    const cs = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(el) : null;
+    const cs =
+      typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(el) : null;
     if (cs) {
       probe.style.font = cs.font;
       probe.style.fontSize = cs.fontSize;
@@ -1843,10 +1938,14 @@ export function createTypeFlowVue(Vue) {
   return function useTypeFlow(getText, config = {}) {
     const el = Vue.ref(null);
     let controller = null;
-    Vue.watch(getText, () => {
-      if (!el.value) return;
-      controller = TypeFlow.type(el.value, getText(), config);
-    }, { immediate: true });
+    Vue.watch(
+      getText,
+      () => {
+        if (!el.value) return;
+        controller = TypeFlow.type(el.value, getText(), config);
+      },
+      { immediate: true }
+    );
     Vue.onBeforeUnmount(() => controller?.stop());
     return el;
   };
@@ -1924,7 +2023,9 @@ export function createTypeFlowSolid(Solid) {
 
 export function createTypeFlowAlpine(Alpine) {
   if (!Alpine || typeof Alpine.directive !== 'function') {
-    throw new Error('[TypeFlow] createTypeFlowAlpine requires an Alpine instance with directive() support.');
+    throw new Error(
+      '[TypeFlow] createTypeFlowAlpine requires an Alpine instance with directive() support.'
+    );
   }
 
   Alpine.directive('typeflow', (el, { expression }, { evaluateLater, effect, cleanup }) => {
@@ -1935,7 +2036,8 @@ export function createTypeFlowAlpine(Alpine) {
       evaluate((value) => {
         controller?.stop();
         if (value === null || value === undefined) return;
-        const text = typeof value === 'object' && value !== null ? (value.text ?? '') : String(value);
+        const text =
+          typeof value === 'object' && value !== null ? (value.text ?? '') : String(value);
         const config = typeof value === 'object' && value !== null ? (value.config ?? {}) : {};
         controller = TypeFlow.type(el, text, config);
       });
@@ -1951,14 +2053,25 @@ export function createTypeFlowAlpine(Alpine) {
 // Web Components / Custom Element Adapter
 // ============================================================
 
-export function defineTypeFlowElement(customElementsRegistry = typeof customElements !== 'undefined' ? customElements : null) {
+export function defineTypeFlowElement(
+  customElementsRegistry = typeof customElements !== 'undefined' ? customElements : null
+) {
   if (!customElementsRegistry || customElementsRegistry.get('type-flow')) return;
 
   class TypeFlowCustomElement extends HTMLElement {
     #controller = null;
 
     static get observedAttributes() {
-      return ['text', 'speed', 'direction', 'cursor', 'type-style', 'erase-style', 'scramble-charset', 'audio'];
+      return [
+        'text',
+        'speed',
+        'direction',
+        'cursor',
+        'type-style',
+        'erase-style',
+        'scramble-charset',
+        'audio',
+      ];
     }
 
     connectedCallback() {

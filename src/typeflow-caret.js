@@ -15,7 +15,10 @@ const WHITESPACE_UNIT = /^\s+$/u;
 
 function segmentGraphemes(text) {
   if (typeof Intl !== 'undefined' && Intl.Segmenter) {
-    return Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), (s) => s.segment);
+    return Array.from(
+      new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text),
+      (s) => s.segment
+    );
   }
   return Array.from(text);
 }
@@ -195,7 +198,9 @@ export class TypeFlowCaret {
     };
     const controller = {
       stop: () => settle(false),
-      promise: new Promise((resolve) => { resolveFn = resolve; }),
+      promise: new Promise((resolve) => {
+        resolveFn = resolve;
+      }),
     };
     this._activeInsert = controller;
 
