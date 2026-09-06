@@ -8,7 +8,7 @@ disableKinds = ['taxonomy', 'term']
 
 [params]
   version = '2.3.0'
-  description = 'Lightweight, interruptible typewriter animation library with HTML sanitization, erase modes, and sequence orchestration.'
+  description = 'TypeFlow is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.'
   author = 'StaticCanvas'
   repository = 'https://gitlab.com/staticcanvas/typeflow'
   github = 'https://github.com/staticcanvas/typeflow'

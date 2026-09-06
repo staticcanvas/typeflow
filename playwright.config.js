@@ -8,8 +8,8 @@ export default defineConfig({
   testMatch: '**/*.pw.js',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  // A single retry absorbs the occasional hiccup from Hugo's dev server under
-  // parallel test load; it is not masking flaky application behavior.
+  // A single retry absorbs occasional browser-runner contention under the
+  // fully parallel desktop/mobile matrix; the server serves one static build.
   retries: 1,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   timeout: 30_000,
@@ -25,7 +25,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `hugo server --source docs --port ${PORT} --bind 127.0.0.1 --baseURL ${BASE_URL} --disableFastRender`,
+    command: `hugo --source docs --baseURL=${BASE_URL} --gc && python3 -m http.server ${PORT} --bind 127.0.0.1 --directory public`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

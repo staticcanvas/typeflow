@@ -14,14 +14,14 @@
     "speed": 46
   },
   {
-    "slogan": "Multi-directional reveal configurations.",
+    "slogan": "Multi-directional reveal/erase.",
     "mode": "direction: right · eraseStyle: start",
     "direction": "right",
     "eraseStyle": "start",
     "speed": 46
   },
   {
-    "slogan": "Cybernetic scramble decrypt reveal.",
+    "slogan": "Scramble reveal/erase animation",
     "mode": "typeStyle: scramble · scrambleCharset: matrix",
     "typeStyle": "scramble",
     "scrambleCharset": "matrix",

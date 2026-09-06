@@ -8,45 +8,77 @@ const [records, schema] = await Promise.all(
 );
 
 const errors = [];
-const itemSchema = schema.items;
-const allowedProperties = new Set(Object.keys(itemSchema.properties));
 
-if (!Array.isArray(records) || records.length < schema.minItems) {
-  errors.push(`dataset must contain at least ${schema.minItems} record`);
-} else {
-  records.forEach((record, index) => {
-    const location = `record ${index + 1}`;
-    if (!record || typeof record !== 'object' || Array.isArray(record)) {
-      errors.push(`${location} must be an object`);
+const resolveSchema = (candidate) => {
+  if (!candidate?.$ref) return candidate;
+  const path = candidate.$ref.replace(/^#\//, '').split('/');
+  return path.reduce((value, key) => value?.[key], schema);
+};
+
+const matchesType = (value, type) => {
+  if (type === 'array') return Array.isArray(value);
+  if (type === 'object') return value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (type === 'integer') return Number.isInteger(value);
+  if (type === 'number') return typeof value === 'number' && Number.isFinite(value);
+  return typeof value === type;
+};
+
+const validate = (value, candidate, location) => {
+  const rule = resolveSchema(candidate);
+  if (!rule) {
+    errors.push(`${location} references an unknown schema`);
+    return;
+  }
+
+  if (rule.type) {
+    const types = Array.isArray(rule.type) ? rule.type : [rule.type];
+    if (!types.some((type) => matchesType(value, type))) {
+      errors.push(`${location} must be ${types.join(' or ')}`);
       return;
     }
+  }
 
-    for (const required of itemSchema.required) {
-      if (typeof record[required] !== 'string' || record[required].trim() === '') {
-        errors.push(`${location}.${required} must be a non-empty string`);
+  if (rule.enum && !rule.enum.some((item) => Object.is(item, value))) {
+    errors.push(`${location} must be one of: ${rule.enum.join(', ')}`);
+  }
+  if (typeof value === 'string' && rule.minLength !== undefined && value.length < rule.minLength) {
+    errors.push(`${location} must contain at least ${rule.minLength} character`);
+  }
+  if (typeof value === 'number' && rule.minimum !== undefined && value < rule.minimum) {
+    errors.push(`${location} must be at least ${rule.minimum}`);
+  }
+  if (typeof value === 'number' && rule.maximum !== undefined && value > rule.maximum) {
+    errors.push(`${location} must be at most ${rule.maximum}`);
+  }
+
+  if (Array.isArray(value)) {
+    if (rule.minItems !== undefined && value.length < rule.minItems) {
+      errors.push(`${location} must contain at least ${rule.minItems} item`);
+    }
+    if (rule.uniqueItems && new Set(value.map((item) => JSON.stringify(item))).size !== value.length) {
+      errors.push(`${location} must contain unique items`);
+    }
+    if (rule.items) value.forEach((item, index) => validate(item, rule.items, `${location}[${index}]`));
+  }
+
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    for (const required of rule.required ?? []) {
+      if (!(required in value)) errors.push(`${location}.${required} is required`);
+    }
+    const properties = rule.properties ?? {};
+    for (const [name, child] of Object.entries(value)) {
+      if (properties[name]) {
+        validate(child, properties[name], `${location}.${name}`);
+      } else if (rule.additionalProperties === false) {
+        errors.push(`${location}.${name} is not defined by the schema`);
+      } else if (rule.additionalProperties && typeof rule.additionalProperties === 'object') {
+        validate(child, rule.additionalProperties, `${location}.${name}`);
       }
     }
+  }
+};
 
-    if (itemSchema.additionalProperties === false) {
-      for (const name of Object.keys(record)) {
-        if (!allowedProperties.has(name)) errors.push(`${location}.${name} is not defined by the schema`);
-      }
-    }
-
-    for (const [name, value] of Object.entries(record)) {
-      const property = itemSchema.properties[name];
-      if (!property) continue;
-
-      if (property.type === 'string' && typeof value !== 'string') errors.push(`${location}.${name} must be a string`);
-      if (property.type === 'boolean' && typeof value !== 'boolean') errors.push(`${location}.${name} must be a boolean`);
-      if (property.type === 'number' && (typeof value !== 'number' || !Number.isFinite(value))) errors.push(`${location}.${name} must be a finite number`);
-      if (property.type === 'integer' && !Number.isInteger(value)) errors.push(`${location}.${name} must be an integer`);
-      if (property.enum && !property.enum.includes(value)) errors.push(`${location}.${name} must be one of: ${property.enum.join(', ')}`);
-      if (typeof value === 'number' && property.minimum !== undefined && value < property.minimum) errors.push(`${location}.${name} must be at least ${property.minimum}`);
-      if (typeof value === 'number' && property.maximum !== undefined && value > property.maximum) errors.push(`${location}.${name} must be at most ${property.maximum}`);
-    }
-  });
-}
+validate(records, schema, 'dataset');
 
 if (errors.length > 0) {
   console.error(`Documentation data validation failed:\n- ${errors.join('\n- ')}`);

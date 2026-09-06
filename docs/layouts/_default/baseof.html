@@ -1,4 +1,7 @@
 {{ $version := site.Data.package.version | default site.Params.version }}
+{{ $runtimeVersion := printf "%s%s%s%s%s" (readFile "static/assets/docs.js") (readFile "static/webutil/libs/typeflow.esm.js") (readFile "static/webutil/libs/typeflow-metrics.esm.js") (readFile "static/webutil/libs/typeflow-debug.esm.js") (readFile "static/webutil/libs/typeflow-caret.esm.js") | md5 }}
+{{ $typeflowStyleVersion := readFile "static/assets/typeflow.css" | md5 }}
+{{ $docsStyleVersion := readFile "static/assets/docs.css" | md5 }}
 <!doctype html>
 <html lang="{{ site.Language.Lang | default "en" }}" data-theme="dark">
   <head>
@@ -332,8 +335,13 @@
       .doc-toc {
         position: sticky;
         top: var(--sidebar-top-offset);
+        align-self: start;
+        height: fit-content;
+        min-height: 0;
         max-height: calc(100vh - var(--sidebar-top-offset) - 24px);
         overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
         padding-left: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
         border-left: 1px solid var(--tf-border-subtle);
       }
@@ -494,18 +502,19 @@
         .doc-toc { display: none; }
       }
       @media (max-width: 768px) {
-        .shell { padding-inline: 14px; }
-        .page-body { grid-template-columns: 1fr; padding-inline: 14px; padding-block: 16px; }
+        .shell { padding-inline-start: max(14px, env(safe-area-inset-left)); padding-inline-end: max(14px, env(safe-area-inset-right)); }
+        .page-body { grid-template-columns: 1fr; padding-inline-start: max(14px, env(safe-area-inset-left)); padding-inline-end: max(14px, env(safe-area-inset-right)); padding-block: 16px; }
         .header-inner { grid-template-columns: auto minmax(4.5rem, 1fr) auto; gap: 8px; }
-        .search-trigger-btn { width: min(100%, 5.25rem); max-width: 5rem; padding-inline: 7px; gap: 0; }
+        .search-trigger-btn { width: min(100%, 5.25rem); max-width: 5rem; min-height: 44px; padding-inline: 7px; gap: 0; }
+        .icon-button { width: 44px; height: 44px; }
         .search-trigger-icon, .search-trigger-placeholder { display: none; }
         .search-trigger-kbd { margin-inline: auto; }
         .sidebar { display: none; }
         .main-content { padding-left: 0; }
       }
       @media (max-width: 480px) {
-        .shell { padding-inline: 10px; }
-        .page-body { padding-inline: 10px; }
+        .shell { padding-inline-start: max(10px, env(safe-area-inset-left)); padding-inline-end: max(10px, env(safe-area-inset-right)); }
+        .page-body { padding-inline-start: max(10px, env(safe-area-inset-left)); padding-inline-end: max(10px, env(safe-area-inset-right)); }
         .brand small { display: none; }
         .header-actions { gap: 6px; }
       }
@@ -531,16 +540,16 @@
     */}}
 
     {{/* preload the local CSS at top priority */}}
-    <link rel="preload" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ "assets/typeflow.css" | relURL }}?v={{ $typeflowStyleVersion }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="{{ "assets/docs.css"     | relURL }}?v={{ $docsStyleVersion }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     {{ if eq .Section "playground" }}
     <link rel="preload" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     {{ end }}
 
     {{/* noscript fallback — regular blocking link for no-JS */}}
     <noscript>
-      <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $version }}">
-      <link rel="stylesheet" href="{{ "assets/docs.css"     | relURL }}?v={{ $version }}">
+      <link rel="stylesheet" href="{{ "assets/typeflow.css" | relURL }}?v={{ $typeflowStyleVersion }}">
+      <link rel="stylesheet" href="{{ "assets/docs.css"     | relURL }}?v={{ $docsStyleVersion }}">
       {{ if eq .Section "playground" }}
       <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}?v={{ $version }}">
       {{ end }}
@@ -740,7 +749,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $version }}"></script>
+    <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $runtimeVersion }}"></script>
     {{ block "scripts" . }}{{ end }}
   </body>
 </html>

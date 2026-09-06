@@ -1249,6 +1249,7 @@ pre, code, kbd, samp {
 
 .doc-eyebrow {
   display: inline-block;
+  font-family: var(--tf-font-eyebrow);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1385,9 +1386,14 @@ pre, code, kbd, samp {
 .doc-toc {
   position: sticky;
   top: var(--sidebar-top-offset);
+  align-self: start;
+  height: fit-content;
+  min-height: 0;
   max-height: calc(100vh - var(--sidebar-top-offset) - 24px);
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--tf-border-strong) transparent;
   padding-left: var(--space-4);
@@ -1489,7 +1495,7 @@ pre {
 .doc-content .highlight code::selection,
 .doc-content .highlight code *::selection {
   color: #f8fafc;
-  background: rgba(56, 189, 248, 0.3);
+  background: #075985;
 }
 .chroma .c, .chroma .ch, .chroma .cm, .chroma .c1, .chroma .cs,
 .chroma .cp, .chroma .cpf { color: var(--tf-syntax-comment); font-style: italic; }
@@ -1528,8 +1534,8 @@ pre {
 }
 [data-theme="light"] .doc-content .highlight code::selection,
 [data-theme="light"] .doc-content .highlight code *::selection {
-  color: #0f172a;
-  background: rgba(2, 132, 199, 0.2);
+  color: #f8fafc;
+  background: #075985;
 }
 code {
   font-family: var(--tf-font-mono);
@@ -1598,7 +1604,7 @@ td code {
   font-family: var(--tf-font-mono);
   font-size: 1rem;
   line-height: 1.5;
-  min-height: 1.6em;
+  min-block-size: calc(1.5em + 30px);
   color: var(--tf-text-primary);
   overflow-wrap: break-word;
 }
@@ -1636,6 +1642,12 @@ td code {
 .copy-button:focus-visible {
   outline: 2px solid var(--tf-accent);
   outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .copy-button {
+    transition: none;
+    transform: none;
+  }
 }
 @media (hover: none) {
   .copy-button { opacity: 1; transform: none; }
@@ -2711,14 +2723,23 @@ td code {
    ============================================================ */
 
 @media (max-width: 768px) {
+  .shell {
+    padding-inline-start: max(14px, env(safe-area-inset-left));
+    padding-inline-end: max(14px, env(safe-area-inset-right));
+  }
   .header-inner {
     grid-template-columns: auto minmax(4.5rem, 1fr) auto;
     gap: 8px;
   }
   .search-trigger-btn {
     width: min(100%, 5.25rem);
+    min-height: 44px;
     padding-inline: 7px;
     gap: 0;
+  }
+  .icon-button {
+    width: 44px;
+    height: 44px;
   }
   .search-trigger-icon {
     display: none;
@@ -2728,7 +2749,8 @@ td code {
   }
   .page-body {
     grid-template-columns: 1fr;
-    padding-inline: var(--space-4);
+    padding-inline-start: max(var(--space-4), env(safe-area-inset-left));
+    padding-inline-end: max(var(--space-4), env(safe-area-inset-right));
     padding-block: var(--space-4);
   }
   .sidebar {
@@ -2846,15 +2868,6 @@ td code {
   height: 22px;
   stroke: var(--tf-accent);
   stroke-width: 2px;
-}
-
-.metric-icon {
-  width: 22px;
-  height: 22px;
-  stroke: var(--tf-accent-orange);
-  stroke-width: 2px;
-  margin-bottom: 4px;
-  display: block;
 }
 
 .path-icon {
@@ -2988,6 +3001,21 @@ td code {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: opacity 140ms ease;
+}
+
+.pg-field.is-incompatible {
+  opacity: 0.42;
+}
+
+.pg-field.is-incompatible label,
+.pg-field.is-incompatible .pg-val-badge {
+  cursor: not-allowed;
+}
+
+.pg-field.is-incompatible select,
+.pg-field.is-incompatible input {
+  cursor: not-allowed;
 }
 
 .pg-field label {
@@ -3192,6 +3220,24 @@ td code {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.pg-code-operation {
+  padding: 2px 6px;
+  border: 1px solid rgba(var(--tf-accent-rgb), 0.28);
+  border-radius: 5px;
+  color: var(--tf-accent);
+  background: var(--tf-accent-dim);
+  font-family: var(--tf-font-mono);
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-field {
+    transition: none;
+  }
 }
 
 .pg-code-pre {

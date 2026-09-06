@@ -44,6 +44,14 @@ test.describe('Header search modal', () => {
 
     await page.locator('.search-modal-esc').click();
     await expect(page.locator('#typeflow-search-modal')).toBeHidden();
+    await expect(page.locator('[data-search-trigger]')).toBeFocused();
+  });
+
+  test('opens with the platform Meta+K shortcut', async ({ page }) => {
+    await page.goto('/');
+    await page.keyboard.press('Meta+k');
+    await expect(page.locator('#typeflow-search-modal')).toBeVisible();
+    await expect(page.locator('#search-modal-input')).toBeFocused();
   });
 });
 
@@ -61,6 +69,19 @@ test.describe('Header search at narrow widths', () => {
       const box = await kbdHint.boundingBox();
       expect(box?.width).toBeGreaterThan(0);
     }
+
+    await expect(trigger.locator('.search-trigger-icon')).toBeHidden();
+    await trigger.focus();
+    await expect(trigger).toBeFocused();
+  });
+
+  test('header actions meet the minimum touch target size', async ({ page }) => {
+    await page.goto('/guides/extensions/');
+    for (const control of await page.locator('.site-header button:visible').all()) {
+      const box = await control.boundingBox();
+      expect(box?.width).toBeGreaterThanOrEqual(44);
+      expect(box?.height).toBeGreaterThanOrEqual(44);
+    }
   });
 
   test('the search modal remains usable at 320px width', async ({ page }) => {
@@ -71,5 +92,21 @@ test.describe('Header search at narrow widths', () => {
     await expect(dialog).toBeVisible();
     const box = await dialog.boundingBox();
     expect(box?.width).toBeLessThanOrEqual(320);
+  });
+
+  test('reflows at a 200% browser-zoom-equivalent viewport without horizontal page overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.goto('/');
+
+    const trigger = page.locator('[data-search-trigger]');
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await expect(page.locator('#search-modal-input')).toBeFocused();
+
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
   });
 });

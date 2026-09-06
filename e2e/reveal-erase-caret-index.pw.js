@@ -44,4 +44,22 @@ test.describe('Reveal/erase/caret index', () => {
     await expect(page.locator('#pg-fade-duration')).toHaveValue('450');
     await expect(page.locator('#pg-stagger')).toHaveValue('225');
   });
+
+  test('live demos retain their measured height while erased and after a responsive resize', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    await page.goto('/guides/reveal-erase-caret-index/');
+    const demo = page.locator('[data-tf-demo*="Words slide in from the right"]');
+    await expect(demo).toBeVisible();
+    const initialHeight = (await demo.boundingBox())?.height;
+    expect(initialHeight).toBeGreaterThan(0);
+
+    await page.evaluate(() => window.TypeFlow.stopAll());
+    await demo.evaluate((element) => element.replaceChildren());
+    expect((await demo.boundingBox())?.height).toBe(initialHeight);
+
+    await page.setViewportSize({ width: 320, height: 740 });
+    await expect.poll(async () => Number.parseFloat(await demo.evaluate((element) => element.style.minBlockSize))).toBeGreaterThanOrEqual(initialHeight);
+    const resizedReservation = await demo.evaluate((element) => Number.parseFloat(element.style.minBlockSize));
+    expect((await demo.boundingBox())?.height).toBe(resizedReservation);
+  });
 });

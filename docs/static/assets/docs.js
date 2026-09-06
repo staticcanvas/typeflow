@@ -14,9 +14,18 @@
  * @module docs
  */
 
-import { TypeFlow, seq } from '../webutil/libs/typeflow.esm.js';
-import { TypeFlowMetrics } from '../webutil/libs/typeflow-metrics.esm.js';
-import { TypeFlowDebug } from '../webutil/libs/typeflow-debug.esm.js';
+// Carry the entry module's content token into companion imports so a docs
+// deployment cannot combine a fresh slogan schema with stale runtime modules.
+const assetVersion = new URL(import.meta.url).search;
+const [
+  { TypeFlow, seq },
+  { TypeFlowMetrics },
+  { TypeFlowDebug },
+] = await Promise.all([
+  import(`../webutil/libs/typeflow.esm.js${assetVersion}`),
+  import(`../webutil/libs/typeflow-metrics.esm.js${assetVersion}`),
+  import(`../webutil/libs/typeflow-debug.esm.js${assetVersion}`),
+]);
 
 const root = document.documentElement;
 
@@ -313,6 +322,8 @@ if ('startViewTransition' in document) {
 
 // ─── Keyboard Search Shortcut & Modal Triggers ───────────────────────────────
 
+let searchReturnFocus = null;
+
 /**
  * Opens the 2-column search popup modal.
  */
@@ -320,8 +331,14 @@ export const openSearchModal = () => {
   const modal = document.getElementById('typeflow-search-modal');
   const input = document.getElementById('search-modal-input');
   if (modal) {
+    searchReturnFocus = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+      ? document.activeElement
+      : document.querySelector('[data-search-trigger]');
     modal.removeAttribute('hidden');
     document.body.style.overflow = 'hidden';
+    document.querySelectorAll('[data-search-trigger]').forEach((trigger) => {
+      trigger.setAttribute('aria-expanded', 'true');
+    });
     setTimeout(() => {
       input?.focus();
       input?.select();
@@ -334,9 +351,14 @@ export const openSearchModal = () => {
  */
 export const closeSearchModal = () => {
   const modal = document.getElementById('typeflow-search-modal');
-  if (modal) {
+  if (modal && !modal.hasAttribute('hidden')) {
     modal.setAttribute('hidden', '');
     document.body.style.overflow = '';
+    document.querySelectorAll('[data-search-trigger]').forEach((trigger) => {
+      trigger.setAttribute('aria-expanded', 'false');
+    });
+    searchReturnFocus?.focus();
+    searchReturnFocus = null;
   }
 };
 
@@ -423,6 +445,10 @@ document.querySelectorAll('[data-copy]').forEach((btn) => {
 document.querySelectorAll('pre').forEach((pre) => {
   if (pre.classList.contains('pg-code-pre') || pre.closest('.pg-code-card') || pre.querySelector('.copy-button')) return;
 
+  // Code blocks can overflow horizontally, so they must be keyboard-focusable
+  // for users who cannot drag a scrollbar or use a precision pointer.
+  if (!pre.hasAttribute('tabindex')) pre.tabIndex = 0;
+
   const btn = document.createElement('button');
   btn.className = 'copy-button';
   btn.type = 'button';
@@ -490,48 +516,39 @@ if (heroSloganEl) {
       if (Array.isArray(parsedSlogans) && parsedSlogans.length > 0) {
         staticSlogan = parsedSlogans[0];
         parsedSlogans.forEach((item) => {
+          const {
+            slogan,
+            mode,
+            typeStyle = 'char',
+            eraseStyle = 'end',
+            speed = 45,
+            cursor = '|',
+            typeConfig = {},
+            eraseConfig = {},
+            ...sharedOptions
+          } = item;
+          const typeOptions = { ...sharedOptions, ...typeConfig };
+          const eraseOptions = { ...sharedOptions, ...eraseConfig };
           sloganSteps.push(
-            seq.call(() => setMode(item.mode || item.slogan)),
-            seq.type(heroSloganEl, item.slogan, {
-              typeStyle: item.typeStyle || 'char',
-              direction: item.direction || 'left',
-              scrambleCharset: item.scrambleCharset || 'matrix',
-              scrambleRounds: item.scrambleRounds || 2,
-              trailFade: item.trailFade,
-              html: item.html,
-              speed: item.speed || 45,
-              cursor: item.cursor || '|',
-              cursorBlink: true,
-              respectReducedMotion: false,
-              wordOrder: item.wordOrder,
-              wordLayout: item.wordLayout,
-              wordFadeDuration: item.wordFadeDuration,
-              wordStagger: item.wordStagger,
-              wordSeed: item.wordSeed,
-              wordMotionDistance: item.wordMotionDistance,
-              wordMotionDepth: item.wordMotionDepth,
-              wordMotionScale: item.wordMotionScale,
-              wordMotionPerspective: item.wordMotionPerspective,
-              wordMotionEasing: item.wordMotionEasing,
+            seq.call(() => setMode(mode || slogan)),
+            seq.type(heroSloganEl, slogan, {
+              ...typeOptions,
+              typeStyle: typeOptions.typeStyle ?? typeStyle,
+              speed: typeOptions.speed ?? speed,
+              cursor: typeOptions.cursor ?? cursor,
+              cursorBlink: typeOptions.cursorBlink ?? true,
+              respectReducedMotion: typeOptions.respectReducedMotion ?? false,
             }),
             seq.pause(2600),
             seq.erase(heroSloganEl, {
-              eraseStyle: item.eraseStyle || 'end',
-              scrambleCharset: item.scrambleCharset || 'matrix',
-              scrambleRounds: 1,
-              speed: Math.max(16, Math.floor((item.speed || 45) * 0.55)),
-              duration: 350,
-              respectReducedMotion: false,
-              wordOrder: item.wordOrder,
-              wordLayout: item.wordLayout,
-              wordFadeDuration: item.wordFadeDuration,
-              wordStagger: item.wordStagger,
-              wordSeed: item.wordSeed,
-              wordMotionDistance: item.wordMotionDistance,
-              wordMotionDepth: item.wordMotionDepth,
-              wordMotionScale: item.wordMotionScale,
-              wordMotionPerspective: item.wordMotionPerspective,
-              wordMotionEasing: item.wordMotionEasing,
+              ...eraseOptions,
+              eraseStyle: eraseOptions.eraseStyle ?? eraseStyle,
+              scrambleRounds: eraseConfig.scrambleRounds ?? 1,
+              speed: eraseConfig.speed ?? Math.max(16, Math.floor(speed * 0.55)),
+              duration: eraseOptions.duration ?? 350,
+              cursor: eraseOptions.cursor ?? '',
+              cursorBlink: eraseOptions.cursorBlink ?? false,
+              respectReducedMotion: eraseOptions.respectReducedMotion ?? false,
             }),
             seq.pause(450)
           );
@@ -619,6 +636,28 @@ if (heroSloganEl) {
 function initIndexRevealEraseDemos() {
   const demoEls = document.querySelectorAll('[data-tf-demo]');
   if (!demoEls.length) return;
+  const heightReservations = [];
+
+  const reserveDemoHeight = (el, text) => {
+    const width = el.getBoundingClientRect().width;
+    if (width <= 0) return;
+    const probe = el.cloneNode(false);
+    probe.removeAttribute('id');
+    probe.removeAttribute('data-tf-demo');
+    probe.setAttribute('aria-hidden', 'true');
+    probe.textContent = text;
+    Object.assign(probe.style, {
+      position: 'fixed',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+      inset: '0 auto auto 0',
+      width: `${width}px`,
+      minBlockSize: '0',
+    });
+    document.body.appendChild(probe);
+    el.style.minBlockSize = `${Math.ceil(probe.getBoundingClientRect().height)}px`;
+    probe.remove();
+  };
 
   demoEls.forEach((el) => {
     let config;
@@ -629,6 +668,8 @@ function initIndexRevealEraseDemos() {
     }
     const text = config.text || el.textContent.trim();
     el.textContent = text;
+    heightReservations.push({ el, text });
+    reserveDemoHeight(el, text);
 
     const shared = {
       direction: config.direction || 'left',
@@ -661,6 +702,15 @@ function initIndexRevealEraseDemos() {
 
     TypeFlow.sequence(steps, { repeat: Infinity });
   });
+
+  let resizeFrame = null;
+  window.addEventListener('resize', () => {
+    if (resizeFrame !== null) cancelAnimationFrame(resizeFrame);
+    resizeFrame = requestAnimationFrame(() => {
+      heightReservations.forEach(({ el, text }) => reserveDemoHeight(el, text));
+      resizeFrame = null;
+    });
+  }, { passive: true });
 }
 
 initIndexRevealEraseDemos();
@@ -677,7 +727,7 @@ async function initIndexCaretDemos() {
   if (!demoEls.length) return;
   if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 
-  const { Caret } = await import('../webutil/libs/typeflow-caret.esm.js');
+  const { Caret } = await import(`../webutil/libs/typeflow-caret.esm.js${assetVersion}`);
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   demoEls.forEach(async (el) => {
@@ -1090,6 +1140,7 @@ const pgStatusText       = document.getElementById('pg-status-text');
 const pgMetaChars        = document.getElementById('pg-meta-chars');
 const pgMetaFont         = document.getElementById('pg-meta-font');
 const pgCodeSnippet      = document.getElementById('pg-code-snippet');
+const pgCodeOperation    = document.getElementById('pg-code-operation');
 
 const btnType            = document.getElementById('pg-btn-type');
 const btnErase           = document.getElementById('pg-btn-erase');
@@ -1107,6 +1158,25 @@ if (pgStage && btnType) {
   /** @type {import('../webutil/libs/typeflow.esm.js').TypeFlowController | null} */
   let activeController = null;
   let activeStream = null;
+  let generatedCode = '';
+  let snippetAction = 'type';
+  let snippetPayload = null;
+
+  const WORD_MOTION_STYLES = new Set([
+    'word-fade', 'float-in-top', 'float-in-bottom', 'float-in-left', 'float-in-right', 'zoom-in-space',
+  ]);
+  // Playground-only pools are emitted as `scrambleGlyphs`, not as unsupported
+  // core charset names, so preview and copied code use the same characters.
+  const PLAYGROUND_GLYPH_POOLS = {
+    hieroglyphs: '𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏',
+    greek: 'αβγδεζηθικλμνξοπρστυφχψω',
+    math: '∀∃∄∅∆∇∈∉∋∌∎∏∑−∓∔∕∖∗∘√∛∝∞',
+    chess: '♔♕♖♗♘♙♚♛♜♝♞♟',
+    geometric: '▲▼◀▶◆◇◈◉◊○●◐◑',
+    astronomy: '☉☽☿♀♁♂♃♄♅♆♇',
+    currency: '$€£¥₹₽₩₪₺₫฿',
+    arrows: '←↑→↓↔↕↖↗↘↙',
+  };
 
   const setStatus = (status, isActive = false) => {
     if (pgStatusText) pgStatusText.textContent = status;
@@ -1129,25 +1199,36 @@ if (pgStage && btnType) {
     if (pgMetaFont) pgMetaFont.textContent = `${size} · ${font}`;
   };
 
-  const getOptions = () => {
+  const getOptions = (operation = 'type') => {
+    const isErase = operation === 'erase';
+    const style = isErase ? (pgEraseStyle?.value || 'end') : (pgTypeStyle?.value || 'char');
     const opts = {
       speed: Number(pgSpeed?.value ?? 40),
       delay: Number(pgDelay?.value ?? 0),
       speedVariance: Number(pgSpeedVariance?.value ?? 0),
-      direction: pgDirection?.value || 'left',
-      typeStyle: pgTypeStyle?.value || 'char',
-      eraseStyle: pgEraseStyle?.value || 'end',
       cursor: pgCursorChar?.value ?? '|',
       cursorBlink: pgCursorBlink?.checked ?? true,
       granularity: pgGranularity?.value || 'grapheme',
-      mode: pgMode?.value || 'replace',
-      html: pgHtml?.checked ?? true,
-      naturalCadence: pgNaturalCadence?.checked ?? false,
       respectReducedMotion: pgReducedMotion?.checked ?? false,
     };
 
-    if (pgTypeStyle?.value === 'scramble' || pgEraseStyle?.value === 'scramble') {
-      opts.scrambleCharset = pgScrambleCharset?.value || 'matrix';
+    if (isErase) {
+      opts.eraseStyle = style;
+    } else {
+      opts.direction = pgDirection?.value || 'left';
+      opts.typeStyle = style;
+      opts.html = pgHtml?.checked ?? true;
+      opts.naturalCadence = pgNaturalCadence?.checked ?? false;
+      if (operation === 'type') opts.mode = pgMode?.value || 'replace';
+    }
+
+    if (style === 'scramble') {
+      const charset = pgScrambleCharset?.value || 'matrix';
+      if (PLAYGROUND_GLYPH_POOLS[charset]) {
+        opts.scrambleGlyphs = PLAYGROUND_GLYPH_POOLS[charset];
+      } else {
+        opts.scrambleCharset = charset;
+      }
       opts.scrambleRounds = Number(pgScrambleRounds?.value ?? 2);
       const colorVal = pgScrambleColor?.value;
       if (colorVal && colorVal !== 'default') {
@@ -1163,34 +1244,23 @@ if (pgStage && btnType) {
       }
     }
 
-    if (pgTypeStyle?.value === 'fade-trail' || pgEraseStyle?.value === 'fade-trail') {
-      const len = Number(pgFadeTrailLen?.value ?? 4);
-      const minOp = Number(pgFadeTrailMinOp?.value ?? 0.18);
-      opts.trailingFadeLength = len;
-      opts.trailFade = len;
-      opts.trailingFadeMinOpacity = minOp;
-      opts.trailMinOpacity = minOp;
+    if (style === 'fade-trail') {
+      opts.trailFade = Number(pgFadeTrailLen?.value ?? 4);
+      opts.trailMinOpacity = Number(pgFadeTrailMinOp?.value ?? 0.18);
     }
 
-    const WORD_MOTION_STYLES = new Set([
-      'word-fade', 'float-in-top', 'float-in-bottom', 'float-in-left', 'float-in-right', 'zoom-in-space',
-    ]);
-    if (WORD_MOTION_STYLES.has(pgTypeStyle?.value) || WORD_MOTION_STYLES.has(pgEraseStyle?.value)) {
+    if (WORD_MOTION_STYLES.has(style)) {
       opts.wordOrder = pgWordOrder?.value || 'left-to-right';
       opts.wordLayout = pgWordLayout?.value || 'opacity';
       opts.wordFadeDuration = Number(pgFadeDuration?.value ?? 280);
       if (pgStagger && Number(pgStagger.value) > 0) opts.wordStagger = Number(pgStagger.value);
     }
 
-    if (pgStagger && Number(pgStagger.value) > 0) {
-      opts.stagger = Number(pgStagger.value);
-    }
-
-    if (pgEraseStyle?.value === 'fade') {
+    if (isErase && style === 'fade') {
       opts.duration = Number(pgFadeDuration?.value ?? 250);
     }
 
-    if (pgAudio?.value && pgAudio.value !== 'none') {
+    if (pgAudio?.value && pgAudio.value !== 'none' && pgAudio.value !== 'soundtrack') {
       opts.audio = pgAudio.value;
     }
 
@@ -1289,27 +1359,130 @@ if (pgStage && btnType) {
     return output;
   };
 
-  const updateCodeSnippet = () => {
-    if (!pgCodeSnippet) return;
-    const opts = getOptions();
-    const cleanOpts = { ...opts };
-    if (!cleanOpts.speedVariance) delete cleanOpts.speedVariance;
-    if (!cleanOpts.delay) delete cleanOpts.delay;
-    if (!cleanOpts.stagger) delete cleanOpts.stagger;
-    if (cleanOpts.direction === 'left') delete cleanOpts.direction;
-    if (cleanOpts.typeStyle === 'char') delete cleanOpts.typeStyle;
-    if (cleanOpts.eraseStyle === 'end') delete cleanOpts.eraseStyle;
-    if (cleanOpts.cursor === '|') delete cleanOpts.cursor;
-    if (cleanOpts.cursorBlink === true) delete cleanOpts.cursorBlink;
-    if (cleanOpts.granularity === 'grapheme') delete cleanOpts.granularity;
-    if (cleanOpts.mode === 'replace') delete cleanOpts.mode;
-    if (cleanOpts.html === true) delete cleanOpts.html;
-    if (!cleanOpts.naturalCadence) delete cleanOpts.naturalCadence;
-    if (!cleanOpts.respectReducedMotion) delete cleanOpts.respectReducedMotion;
+  const cleanOptions = (options, operation) => {
+    const defaults = operation === 'erase'
+      ? {
+          speed: 25, delay: 0, speedVariance: 0, cursor: '|', cursorBlink: false,
+          granularity: 'grapheme', respectReducedMotion: true, eraseStyle: 'end',
+          trailMinOpacity: 0.18, wordOrder: 'left-to-right', wordLayout: 'opacity',
+          wordFadeDuration: 280, scrambleRounds: 2,
+        }
+      : {
+          speed: 50, delay: 0, speedVariance: 0, cursor: '|', cursorBlink: true,
+          granularity: 'grapheme', respectReducedMotion: true, direction: 'left',
+          typeStyle: 'char', html: false, naturalCadence: false, mode: 'replace',
+          trailMinOpacity: 0.18, wordOrder: 'left-to-right', wordLayout: 'opacity',
+          wordFadeDuration: 280, scrambleRounds: 2,
+        };
+    return Object.fromEntries(
+      Object.entries(options).filter(([key, value]) => !Object.is(defaults[key], value)),
+    );
+  };
 
-    const formatted = JSON.stringify(cleanOpts, null, 2);
-    const rawJs = `import { TypeFlow } from '@staticcanvas/typeflow';\n\nconst controller = TypeFlow.type(\n  '#target',\n  ${JSON.stringify(pgText.value)},\n  ${formatted}\n);`;
-    pgCodeSnippet.innerHTML = highlightJavaScript(rawJs);
+  const formatOptions = (operation) => JSON.stringify(
+    cleanOptions(getOptions(operation), operation),
+    null,
+    2,
+  );
+
+  const getStageCode = () => {
+    const size = `${pgFontSize?.value || 24}px`;
+    const font = pgFontFamily?.value || 'Inter';
+    const align = pgTextAlign?.value || 'left';
+    return `const target = document.querySelector('#target');\nObject.assign(target.style, {\n  fontSize: ${JSON.stringify(size)},\n  fontFamily: ${JSON.stringify(`"${font}", system-ui, sans-serif`)},\n  textAlign: ${JSON.stringify(align)}\n});`;
+  };
+
+  const getImportsCode = () => {
+    const imports = ["import { TypeFlow } from '@staticcanvas/typeflow';"];
+    if (pgMetricsToggle?.checked) imports.push("import { TypeFlowMetrics } from '@staticcanvas/typeflow/metrics';");
+    if (pgDebugToggle?.checked) imports.push("import { TypeFlowDebug } from '@staticcanvas/typeflow/debug';");
+    return imports.join('\n');
+  };
+
+  const getExtensionSetupCode = () => {
+    const setup = [];
+    if (pgMetricsToggle?.checked) setup.push("TypeFlowMetrics.mount({ position: 'bottom-right', detailed: false });");
+    if (pgDebugToggle?.checked) setup.push('TypeFlowDebug.enable({ logcad: true, console: true });');
+    if (pgAudio?.value === 'soundtrack') {
+      setup.push(`const soundtrack = new Audio('https://staticcanvas.gitlab.io/typeflow/assets/audio/alexzavesa-dance-playful-night-510786.mp3');\nsoundtrack.volume = 0.55;\nsoundtrack.loop = true;\nawait soundtrack.play();`);
+    }
+    return setup.join('\n\n');
+  };
+
+  const updateCodeSnippet = (action = snippetAction, payload = snippetPayload) => {
+    if (!pgCodeSnippet) return;
+    snippetAction = action;
+    snippetPayload = payload;
+
+    const labels = {
+      type: 'TypeFlow.type()', erase: 'TypeFlow.erase()', morph: 'TypeFlow.morph()',
+      stream: 'TypeFlow.stream()', rotate: 'TypeFlow.rotate()',
+    };
+    if (pgCodeOperation) pgCodeOperation.textContent = labels[action] || labels.type;
+
+    const sections = [getImportsCode(), getStageCode()];
+    const extensionSetup = getExtensionSetupCode();
+    if (extensionSetup) sections.push(extensionSetup);
+
+    let operationCode;
+    if (action === 'erase') {
+      operationCode = `const options = ${formatOptions('erase')};\nconst controller = TypeFlow.erase(target, options);`;
+    } else if (action === 'morph') {
+      const nextText = typeof payload === 'string' ? payload : pgText.value;
+      operationCode = `const options = ${formatOptions('morph')};\nconst controller = TypeFlow.morph(target, ${JSON.stringify(nextText)}, options);`;
+    } else if (action === 'stream') {
+      const chunks = Array.isArray(payload) ? payload : ['TypeFlow Stream Ingestion: ', 'tokens arrive asynchronously ', 'and render in sequence.'];
+      if (pgAudio?.value === 'soundtrack') {
+        operationCode = `const options = ${formatOptions('stream')};\nconst chunks = ${JSON.stringify(chunks, null, 2)};\nlet completedChunks = 0;\nconst stream = TypeFlow.stream(target, {\n  ...options,\n  onChunk: () => {\n    completedChunks += 1;\n    if (completedChunks === chunks.length) {\n      soundtrack.pause();\n      soundtrack.currentTime = 0;\n    }\n  }\n});\n\nfor (const chunk of chunks) {\n  stream.push(chunk);\n}`;
+      } else {
+        operationCode = `const options = ${formatOptions('stream')};\nconst chunks = ${JSON.stringify(chunks, null, 2)};\nconst stream = TypeFlow.stream(target, options);\n\nfor (const chunk of chunks) {\n  stream.push(chunk);\n}`;
+      }
+    } else if (action === 'rotate') {
+      const words = Array.isArray(payload) ? payload : [pgText.value];
+      operationCode = `const words = ${JSON.stringify(words, null, 2)};\nconst typeConfig = ${formatOptions('type')};\nconst eraseConfig = ${formatOptions('erase')};\n\nconst controller = TypeFlow.rotate(target, words, {\n  typeConfig,\n  eraseConfig,\n  holdDuration: 1400,\n  pauseBetween: 250,\n  repeat: 3\n});`;
+    } else {
+      operationCode = `const options = ${formatOptions('type')};\nconst controller = TypeFlow.type(target, ${JSON.stringify(pgText.value)}, options);`;
+    }
+
+    if (pgAudio?.value === 'soundtrack' && action !== 'stream') {
+      operationCode += `\n\ncontroller.promise.finally(() => {\n  soundtrack.pause();\n  soundtrack.currentTime = 0;\n});`;
+    }
+
+    sections.push(operationCode);
+    generatedCode = sections.join('\n\n');
+    pgCodeSnippet.innerHTML = highlightJavaScript(generatedCode);
+    syncControlCompatibility();
+  };
+
+  const setFieldCompatibility = (fieldId, enabled) => {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    field.classList.toggle('is-incompatible', !enabled);
+    field.setAttribute('aria-disabled', String(!enabled));
+    field.querySelectorAll('select, input').forEach((control) => {
+      control.disabled = !enabled;
+    });
+  };
+
+  const syncControlCompatibility = () => {
+    const typeStyle = pgTypeStyle?.value || 'char';
+    const eraseStyle = pgEraseStyle?.value || 'end';
+    const includesErase = snippetAction === 'erase' || snippetAction === 'rotate';
+    const includesType = snippetAction !== 'erase';
+    const usesScramble = (includesType && typeStyle === 'scramble') || (includesErase && eraseStyle === 'scramble');
+    const usesTrail = (includesType && typeStyle === 'fade-trail') || (includesErase && eraseStyle === 'fade-trail');
+    const usesWordMotion = (includesType && WORD_MOTION_STYLES.has(typeStyle))
+      || (includesErase && WORD_MOTION_STYLES.has(eraseStyle));
+
+    setFieldCompatibility('pg-charset-field', usesScramble);
+    setFieldCompatibility('pg-scramble-color-field', usesScramble);
+    setFieldCompatibility('pg-rounds-field', usesScramble);
+    setFieldCompatibility('pg-fade-trail-field', usesTrail);
+    setFieldCompatibility('pg-fade-trail-minop-field', usesTrail);
+    setFieldCompatibility('pg-word-order-field', usesWordMotion);
+    setFieldCompatibility('pg-word-layout-field', usesWordMotion);
+    setFieldCompatibility('pg-word-stagger-field', usesWordMotion);
+    setFieldCompatibility('pg-fade-duration-field', usesWordMotion || (includesErase && eraseStyle === 'fade'));
   };
 
   // Slider Badges Listeners
@@ -1356,6 +1529,14 @@ if (pgStage && btnType) {
     pgReducedMotion,
   ].forEach((el) => {
     el?.addEventListener('change', () => {
+      if (el === pgTypeStyle) {
+        snippetAction = 'type';
+        snippetPayload = null;
+      } else if (el === pgEraseStyle) {
+        snippetAction = 'erase';
+        snippetPayload = null;
+      }
+      syncControlCompatibility();
       updateStageStyles();
       updateCodeSnippet();
     });
@@ -1398,6 +1579,7 @@ if (pgStage && btnType) {
       if (pgAudio) pgAudio.value = 'none';
       if (pgFadeDuration) { pgFadeDuration.value = '400'; if (pgFadeDurationVal) pgFadeDurationVal.textContent = '400 ms'; }
     }
+    syncControlCompatibility();
     updateStageStyles();
     updateCodeSnippet();
   });
@@ -1407,7 +1589,7 @@ if (pgStage && btnType) {
     if (pgAudio?.value === 'soundtrack') {
       if (!soundtrackAudio) {
         soundtrackAudio = new Audio();
-        soundtrackAudio.src = new URL('audio/alexzavesa-dance-playful-night-510786.mp3', window.location.href).href;
+        soundtrackAudio.src = new URL('../assets/audio/alexzavesa-dance-playful-night-510786.mp3', window.location.href).href;
         soundtrackAudio.volume = 0.55;
         soundtrackAudio.loop = true;
       }
@@ -1465,6 +1647,7 @@ if (pgStage && btnType) {
     } else if (val === 'code') {
       pgText.value = 'const session = await TypeFlow.stream(target, { speed: 20 });';
     }
+    syncControlCompatibility();
     updateStageStyles();
     updateCodeSnippet();
   });
@@ -1477,8 +1660,8 @@ if (pgStage && btnType) {
     setStatus('Typing...', true);
     updateStageStyles();
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('type');
+    const opts = getOptions('type');
     opts.onComplete = (_text) => {
       syncSoundtrack(false);
       setStatus('Complete', false);
@@ -1498,8 +1681,8 @@ if (pgStage && btnType) {
     syncSoundtrack(true);
     setStatus('Erasing...', true);
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('erase');
+    const opts = getOptions('erase');
     opts.onComplete = () => {
       syncSoundtrack(false);
       setStatus('Erased', false);
@@ -1540,8 +1723,8 @@ if (pgStage && btnType) {
 
     morphIndex = (morphIndex + 1) % activePool.length;
     const nextPhrase = activePool[morphIndex];
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('morph', nextPhrase);
+    const opts = getOptions('morph');
 
     activeController = TypeFlow.morph(pgStage, nextPhrase, {
       ...opts,
@@ -1565,21 +1748,6 @@ if (pgStage && btnType) {
     setStatus('Streaming LLM Tokens...', true);
     updateStageStyles();
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
-
-    const stream = TypeFlow.stream(pgStage, {
-      ...opts,
-      onChunk: (_chunk) => {
-        setStatus(`Streaming... (${pgStage.textContent.length} chars)`, true);
-      },
-      onComplete: () => {
-        syncSoundtrack(false);
-        setStatus('Stream finished', false);
-      },
-    });
-    activeStream = stream;
-
     const chunks = pgData?.streamChunks || [
       'TypeFlow Stream Ingestion: ',
       'tokens arrive asynchronously ',
@@ -1587,6 +1755,22 @@ if (pgStage && btnType) {
       'and render fluidly ',
       'with zero DOM lag or layout shift!'
     ];
+    updateCodeSnippet('stream', chunks);
+    const opts = getOptions('stream');
+    let completedChunks = 0;
+
+    const stream = TypeFlow.stream(pgStage, {
+      ...opts,
+      onChunk: (_chunk) => {
+        completedChunks += 1;
+        setStatus(`Streaming... (${pgStage.textContent.length} chars)`, true);
+        if (completedChunks === chunks.length) {
+          syncSoundtrack(false);
+          setStatus('Stream finished', false);
+        }
+      },
+    });
+    activeStream = stream;
 
     for (let i = 0; i < chunks.length; i++) {
       await new Promise((r) => setTimeout(r, i === 0 ? 100 : 350));
@@ -1609,16 +1793,19 @@ if (pgStage && btnType) {
       'Procedural Web Audio clicks and MP3 sync.'
     ];
 
-    const opts = getOptions();
-    if (opts.audio === 'soundtrack') delete opts.audio;
+    updateCodeSnippet('rotate', words);
+    const typeConfig = getOptions('type');
+    const eraseConfig = getOptions('erase');
 
     activeController = TypeFlow.rotate(pgStage, words, {
-      typeConfig:  opts,
-      eraseConfig: opts,
+      typeConfig,
+      eraseConfig,
       holdDuration: 1400,
       pauseBetween: 250,
       repeat: 3,
-      onComplete: () => {
+    });
+    activeController.promise.then(({ completed }) => {
+      if (completed) {
         syncSoundtrack(false);
         setStatus('Rotation Complete', false);
       }
@@ -1653,6 +1840,9 @@ if (pgStage && btnType) {
     if (pgTextAlign) pgTextAlign.value = 'left';
     if (pgAudio) pgAudio.value = 'none';
 
+    snippetAction = 'type';
+    snippetPayload = null;
+    syncControlCompatibility();
     updateStageStyles();
     updateCodeSnippet();
     setStatus('Reset', false);
@@ -1671,7 +1861,7 @@ if (pgStage && btnType) {
   btnCopyCode?.addEventListener('click', async () => {
     if (!pgCodeSnippet) return;
     try {
-      await navigator.clipboard.writeText(pgCodeSnippet.textContent);
+      await navigator.clipboard.writeText(generatedCode);
       const prevHtml = btnCopyCode.innerHTML;
       btnCopyCode.innerHTML = '<i data-lucide="check"></i> Copied!';
       initIcons();
@@ -1694,6 +1884,7 @@ if (pgStage && btnType) {
     } else {
       TypeFlowMetrics.unmount();
     }
+    updateCodeSnippet();
   };
 
   pgMetricsToggle?.addEventListener('change', () => {
@@ -1717,6 +1908,7 @@ if (pgStage && btnType) {
     } else {
       TypeFlowDebug.disable();
     }
+    updateCodeSnippet();
   };
 
   pgDebugToggle?.addEventListener('change', () => {
@@ -1774,9 +1966,10 @@ if (pgStage && btnType) {
 
   // Initial load execution
   const configuredFromURL = applyPlaygroundConfigFromURL();
+  syncControlCompatibility();
   updateStageStyles();
   updateCodeSnippet();
-  activeController = TypeFlow.type(pgStage, pgText.value, getOptions());
+  activeController = TypeFlow.type(pgStage, pgText.value, getOptions('type'));
   if (configuredFromURL) pgStage.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
@@ -2390,7 +2583,20 @@ if (tocLinks.length) {
       if (entry.isIntersecting) {
         tocLinks.forEach((a) => a.classList.remove('toc-active'));
         const active = [...tocLinks].find((a) => a.getAttribute('href') === '#' + entry.target.id);
-        if (active) active.classList.add('toc-active');
+        if (active) {
+          active.classList.add('toc-active');
+          const toc = active.closest('.doc-toc');
+          if (toc) {
+            const tocBounds = toc.getBoundingClientRect();
+            const linkBounds = active.getBoundingClientRect();
+            if (linkBounds.top < tocBounds.top || linkBounds.bottom > tocBounds.bottom) {
+              toc.scrollTo({
+                top: toc.scrollTop + linkBounds.top - tocBounds.top - (toc.clientHeight / 2),
+                behavior: reduceMotion ? 'auto' : 'smooth',
+              });
+            }
+          }
+        }
       }
     });
   }, { rootMargin: '-20% 0px -70% 0px', threshold: 0 });

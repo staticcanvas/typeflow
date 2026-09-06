@@ -78,11 +78,10 @@
                   <option value="float-in-left">float-in-left (Words slide in from the left)</option>
                   <option value="float-in-right">float-in-right (Words slide in from the right)</option>
                   <option value="zoom-in-space">zoom-in-space (Words zoom in from depth)</option>
-                  <option value="stream">stream (Simulated LLM token flow)</option>
                 </select>
               </div>
 
-              <div class="pg-field">
+              <div class="pg-field" id="pg-word-order-field">
                 <label for="pg-word-order">Word Fade Order</label>
                 <select id="pg-word-order" class="pg-select">
                   <option value="left-to-right" selected>left-to-right (Document order)</option>
@@ -91,7 +90,7 @@
                 </select>
               </div>
 
-              <div class="pg-field">
+              <div class="pg-field" id="pg-word-layout-field">
                 <label for="pg-word-layout">Word Fade Layout</label>
                 <select id="pg-word-layout" class="pg-select">
                   <option value="opacity" selected>opacity (Stable final layout)</option>
@@ -181,7 +180,6 @@
                   <option value="end" selected>end (Backspace)</option>
                   <option value="start">start (Left erosion)</option>
                   <option value="center">center (Center-inward shrink)</option>
-                  <option value="smart">smart (Smart diff morphing)</option>
                   <option value="word-fade">word-fade (Stable-layout word fade)</option>
                   <option value="float-in-top">float-in-top (Words slide up and out)</option>
                   <option value="float-in-bottom">float-in-bottom (Words slide down and out)</option>
@@ -239,12 +237,12 @@
                 <input type="range" id="pg-delay" min="0" max="1500" step="50" value="0" class="pg-slider">
               </div>
 
-              <div class="pg-field">
+              <div class="pg-field" id="pg-word-stagger-field">
                 <div class="pg-field-label-row">
-                  <label for="pg-stagger">Stagger Offset
+                  <label for="pg-stagger">Word Stagger
                     <span class="tf-tooltip">
-                      <button type="button" class="tf-info-trigger" aria-label="About Stagger Offset" aria-describedby="tt-pg-stagger"><i data-lucide="info"></i></button>
-                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-stagger">Delay in ms between the start of each element's animation when typing across multiple targets via TypeFlow.stagger().</span>
+                      <button type="button" class="tf-info-trigger" aria-label="About Word Stagger" aria-describedby="tt-pg-stagger"><i data-lucide="info"></i></button>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-stagger">Delay in ms between words for word-fade and spatial word-motion styles. A value of 0 uses the selected typing speed.</span>
                     </span>
                   </label>
                   <span id="pg-stagger-val" class="pg-val-badge">0 ms</span>
@@ -252,12 +250,12 @@
                 <input type="range" id="pg-stagger" min="0" max="800" step="25" value="0" class="pg-slider">
               </div>
 
-              <div class="pg-field">
+              <div class="pg-field" id="pg-fade-duration-field">
                 <div class="pg-field-label-row">
                   <label for="pg-fade-duration">Fade Duration
                     <span class="tf-tooltip">
                       <button type="button" class="tf-info-trigger" aria-label="About Fade Duration" aria-describedby="tt-pg-fade-duration"><i data-lucide="info"></i></button>
-                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-fade-duration">Fade-out duration in ms, used when Erase Style is set to fade.</span>
+                      <span class="tf-tooltip-bubble" role="tooltip" id="tt-pg-fade-duration">Transition duration for word-motion styles, or total fade duration when Erase Style is fade.</span>
                     </span>
                   </label>
                   <span id="pg-fade-duration-val" class="pg-val-badge">250 ms</span>
@@ -485,7 +483,8 @@
         <div class="pg-code-card">
           <div class="pg-code-header">
             <div class="pg-code-title">
-              <i data-lucide="file-code" class="icon-inline"></i> Generated Configuration Code
+              <i data-lucide="file-code" class="icon-inline"></i> Generated Code
+              <span id="pg-code-operation" class="pg-code-operation">TypeFlow.type()</span>
             </div>
             <span class="tf-tooltip tf-tooltip--below">
               <button type="button" id="pg-btn-copy-code" class="button button-secondary button-sm" aria-describedby="tt-pg-btn-copy-code">
