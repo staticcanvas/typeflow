@@ -40,6 +40,18 @@
       "require": "./dist/typeflow-parallel.cjs",
       "default": "./dist/typeflow-parallel.js"
     },
+    "./keystroke": {
+      "types": "./src/typeflow-keystroke.d.ts",
+      "import": "./dist/typeflow-keystroke.mjs",
+      "require": "./dist/typeflow-keystroke.cjs",
+      "default": "./dist/typeflow-keystroke.js"
+    },
+    "./extchars": {
+      "types": "./src/typeflow-extchars.d.ts",
+      "import": "./dist/typeflow-extchars.mjs",
+      "require": "./dist/typeflow-extchars.cjs",
+      "default": "./dist/typeflow-extchars.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -55,7 +67,7 @@
     "serve:demo": "vite --open docs/static/webutil/index.html",
     "docs:build": "npm run build && hugo --source docs",
     "docs:serve": "npm run build && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
-    "build": "vite build && npm_config_mode=metrics vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=caret vite build --config vite.optional.config.js && npm_config_mode=webaudio vite build --config vite.optional.config.js && npm_config_mode=parallel vite build --config vite.optional.config.js",
+    "build": "vite build && npm_config_mode=metrics vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=caret vite build --config vite.optional.config.js && npm_config_mode=webaudio vite build --config vite.optional.config.js && npm_config_mode=parallel vite build --config vite.optional.config.js && npm_config_mode=keystroke vite build --config vite.optional.config.js && npm_config_mode=extchars vite build --config vite.optional.config.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

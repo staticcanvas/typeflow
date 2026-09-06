@@ -15,6 +15,8 @@ const MODES = {
   caret: { suffix: 'Caret', external: [] },
   webaudio: { suffix: 'WebAudio', external: [] },
   parallel: { suffix: 'Parallel', external: [] },
+  keystroke: { suffix: 'Keystroke', external: [] },
+  extchars: { suffix: 'ExtChars', external: [] },
 };
 const mode = MODES[process.env.npm_config_mode] ? process.env.npm_config_mode : 'metrics';
 const name = `${packageName}-${mode}`;
