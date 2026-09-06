@@ -4,7 +4,7 @@
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.28.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.34.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
 [![documentation](https://img.shields.io/badge/docs-online-42275a?style=flat-square&logo=gitbook&logoColor=e73827)](https://staticcanvas.gitlab.io/typeflow)
 [![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
@@ -18,8 +18,6 @@
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/typeflow?style=flat-square&logo=jsdelivr&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/typeflow)
 
 [![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.27.0/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/develop/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
-
-[![mirror](https://img.shields.io/badge/github-mirror-cyan?style=flat)](https://github.com/staticcanvas/typeflow)
 
 > **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 
@@ -72,11 +70,13 @@ TypeFlow delivers zero-dependency text animation with precise frame control, ric
 - [Development & NPM Scripts](#development-npm-scripts)
 - [Extending TypeFlow & Developer Guide](#extending-typeflow-developer-guide)
   - [1. Custom Audio Synthesizers & Keystroke Callbacks](#1-custom-audio-synthesizers-keystroke-callbacks)
+    - [Experimental Asciiam bridge](#experimental-asciiam-bridge)
   - [2. Custom Scramble Charset & Character Pools](#2-custom-scramble-charset-character-pools)
   - [3. Writing Custom Sequence Step Helpers](#3-writing-custom-sequence-step-helpers)
   - [4. Creating Custom Framework Adapters](#4-creating-custom-framework-adapters)
 - [Benchmarks](#benchmarks)
-  - [Synthetic Benchmarks (Node.js & Modern V8 Engines)](#synthetic-benchmarks-nodejs-modern-v8-engines)
+  - [Synthetic Benchmarks (Node.js and JSDOM)](#synthetic-benchmarks-nodejs-and-jsdom)
+  - [Real-browser capacity benchmark](#real-browser-capacity-benchmark)
   - [License](#license)
 
 </details>
