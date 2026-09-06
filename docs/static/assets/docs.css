@@ -1904,10 +1904,18 @@ td code {
 
 .hero-title-brand {
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 100%;
+  gap: 6px 12px;
   align-items: baseline;
   color: var(--tf-text-primary);
   -webkit-text-fill-color: var(--tf-text-primary);
   margin-bottom: 4px;
+}
+
+.hero-title-wordmark {
+  display: inline-flex;
+  align-items: baseline;
 }
 
 .hero-title-name {
@@ -2517,7 +2525,7 @@ td code {
 }
 
 .hero-version {
-  margin-left: 12px;
+  margin-left: 0;
   align-self: center;
   flex-shrink: 0;
   -webkit-text-fill-color: currentColor;

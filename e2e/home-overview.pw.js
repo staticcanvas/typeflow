@@ -30,7 +30,22 @@ test.describe('Home animation overview', () => {
   test('keeps the overview and CDN row contained at narrow widths', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 740 });
     await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
     await expect(page.locator('.overview-grid')).toHaveCSS('grid-template-columns', /\d+(\.\d+)?px/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   });
+});
+
+test('title keeps its wordmark together and wraps a longer version at 320px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  const version = page.locator('.hero-version');
+  await version.evaluate(el => { el.textContent = 'v999.999.999-preview.1'; });
+  const wordmark = await page.locator('.hero-title-wordmark').boundingBox();
+  const badge = await version.boundingBox();
+  expect(badge.y).toBeGreaterThanOrEqual(wordmark.y + wordmark.height);
+  expect(badge.x + badge.width).toBeLessThanOrEqual(320);
+  await expect(version).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });

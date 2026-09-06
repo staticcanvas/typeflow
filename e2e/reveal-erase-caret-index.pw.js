@@ -50,6 +50,8 @@ test.describe('Reveal/erase/caret index', () => {
     await page.goto('/guides/reveal-erase-caret-index/');
     const demo = page.locator('[data-tf-demo*="Words slide in from the right"]');
     await expect(demo).toBeVisible();
+    await expect.poll(() => page.evaluate(() => typeof window.TypeFlow?.stopAll)).toBe('function');
+    await expect.poll(() => demo.evaluate(el => Number.parseFloat(el.style.minBlockSize) || 0)).toBeGreaterThan(0);
     const initialHeight = (await demo.boundingBox())?.height;
     expect(initialHeight).toBeGreaterThan(0);
 
