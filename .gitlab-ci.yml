@@ -78,6 +78,7 @@ e2e:
     - echo "🟠 Running Playwright end-to-end tests..."
     - npm ci
     - npx playwright install --with-deps chromium
+    - hugo version
     - npm run build
     - npx playwright test
   artifacts:

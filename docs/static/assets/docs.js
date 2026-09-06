@@ -14,19 +14,6 @@
  * @module docs
  */
 
-// Carry the entry module's content token into companion imports so a docs
-// deployment cannot combine a fresh slogan schema with stale runtime modules.
-const assetVersion = new URL(import.meta.url).search;
-const [
-  { TypeFlow, seq },
-  { TypeFlowMetrics },
-  { TypeFlowDebug },
-] = await Promise.all([
-  import(`../webutil/libs/typeflow.esm.js${assetVersion}`),
-  import(`../webutil/libs/typeflow-metrics.esm.js${assetVersion}`),
-  import(`../webutil/libs/typeflow-debug.esm.js${assetVersion}`),
-]);
-
 const root = document.documentElement;
 
 // ─── Theme Toggle ────────────────────────────────────────────────────────────
@@ -392,6 +379,19 @@ document.querySelectorAll('[data-search-close]').forEach((btn) => {
     closeSearchModal();
   });
 });
+
+// Carry the entry module's content token into companion imports so a docs
+// deployment cannot combine a fresh slogan schema with stale runtime modules.
+const assetVersion = new URL(import.meta.url).search;
+const [
+  { TypeFlow, seq },
+  { TypeFlowMetrics },
+  { TypeFlowDebug },
+] = await Promise.all([
+  import(`../webutil/libs/typeflow.esm.js${assetVersion}`),
+  import(`../webutil/libs/typeflow-metrics.esm.js${assetVersion}`),
+  import(`../webutil/libs/typeflow-debug.esm.js${assetVersion}`),
+]);
 
 // Dynamic rotating search suggestions in the header search trigger
 const searchPlaceholderEl = document.querySelector('.search-trigger-placeholder');

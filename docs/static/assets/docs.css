@@ -1419,6 +1419,7 @@ pre, code, kbd, samp {
 
 /* Hugo-generated TOC nav */
 .doc-toc nav {
+  padding-bottom: 8px;
   font-size: 12.5px;
 }
 .doc-toc nav ul {
@@ -2728,7 +2729,7 @@ td code {
     padding-inline-end: max(14px, env(safe-area-inset-right));
   }
   .header-inner {
-    grid-template-columns: auto minmax(4.5rem, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) 44px auto;
     gap: 8px;
   }
   .search-trigger-btn {
@@ -3628,3 +3629,9 @@ td code {
 
 .terminal-type-layer { position: relative; }
 .terminal-type-layer > [data-live-code] { position: absolute; inset: 0; }
+
+@media (max-width: 480px) {
+  /* Keep the logo, search, repository links, and menu within a 320px viewport. */
+  .header-inner .brand-text { display: none; }
+  .header-inner .brand { min-width: 0; }
+}

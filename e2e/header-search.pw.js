@@ -110,3 +110,38 @@ test.describe('Header search at narrow widths', () => {
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
   });
 });
+
+test('search shortcut works while animation modules are still loading', async ({ page }) => {
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  await page.route('**/webutil/libs/typeflow*.js*', async route => {
+    await held;
+    await route.continue();
+  });
+  try {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.keyboard.press('Control+k');
+    await expect(page.locator('#typeflow-search-modal')).toBeVisible();
+    await expect(page.locator('#search-modal-input')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#typeflow-search-modal')).toBeHidden();
+  } finally {
+    release();
+  }
+});
+
+test('320px header fits with fallback fonts and every utility control visible', async ({ page }) => {
+  await page.route('**/fonts.googleapis.com/**', route => route.abort());
+  await page.route('**/fonts.gstatic.com/**', route => route.abort());
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto('/getting-started/');
+  for (const selector of ['.header-inner .brand', '[data-search-trigger]', '.header-repo-link', '[data-theme-toggle]', '[data-menu-toggle]']) {
+    for (const control of await page.locator(selector).all()) {
+      await expect(control).toBeVisible();
+      const bounds = await control.boundingBox();
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+    }
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+});

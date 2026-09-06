@@ -2,9 +2,9 @@
 {{ $current := . }}
 {{ $pages := slice }}
 {{ range site.Menus.main }}
-  {{ with .Page }}{{ $pages = $pages | append . }}{{ end }}
+  {{ with partial "menu-page.html" . }}{{ $pages = $pages | append . }}{{ end }}
   {{ range .Children }}
-    {{ with .Page }}{{ $pages = $pages | append . }}{{ end }}
+    {{ with partial "menu-page.html" . }}{{ $pages = $pages | append . }}{{ end }}
   {{ end }}
 {{ end }}
 {{ range site.RegularPages.ByTitle }}

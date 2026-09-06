@@ -504,7 +504,7 @@
       @media (max-width: 768px) {
         .shell { padding-inline-start: max(14px, env(safe-area-inset-left)); padding-inline-end: max(14px, env(safe-area-inset-right)); }
         .page-body { grid-template-columns: 1fr; padding-inline-start: max(14px, env(safe-area-inset-left)); padding-inline-end: max(14px, env(safe-area-inset-right)); padding-block: 16px; }
-        .header-inner { grid-template-columns: auto minmax(4.5rem, 1fr) auto; gap: 8px; }
+        .header-inner { grid-template-columns: minmax(0, 1fr) 44px auto; gap: 8px; }
         .search-trigger-btn { width: min(100%, 5.25rem); max-width: 5rem; min-height: 44px; padding-inline: 7px; gap: 0; }
         .icon-button { width: 44px; height: 44px; }
         .search-trigger-icon, .search-trigger-placeholder { display: none; }
@@ -516,6 +516,7 @@
         .shell { padding-inline-start: max(10px, env(safe-area-inset-left)); padding-inline-end: max(10px, env(safe-area-inset-right)); }
         .page-body { padding-inline-start: max(10px, env(safe-area-inset-left)); padding-inline-end: max(10px, env(safe-area-inset-right)); }
         .brand small { display: none; }
+        .header-inner .brand-text { display: none; }
         .header-actions { gap: 6px; }
       }
       @media (max-width: 380px) {
@@ -641,12 +642,12 @@
             {{ range .Children }}
             <a class="sidebar-link"
                href="{{ .URL | relURL }}"
-               {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
+               {{ with partial "menu-page.html" . }}{{ if eq $.RelPermalink .RelPermalink }}aria-current="page"{{ end }}{{ end }}>{{ .Name }}</a>
             {{ end }}
             {{ else }}
             <a class="sidebar-link"
                href="{{ .URL | relURL }}"
-               {{ if eq $.RelPermalink .URL }}aria-current="page"{{ end }}>{{ .Name }}</a>
+               {{ with partial "menu-page.html" . }}{{ if eq $.RelPermalink .RelPermalink }}aria-current="page"{{ end }}{{ end }}>{{ .Name }}</a>
             {{ end }}
           {{ end }}
           {{ end }}
