@@ -1,4 +1,7 @@
 
+## Development preview (unreleased)
+
+- Experimental: add opt-in `TypeFlow.parallel()` and `seq.parallel()` prototypes with bounded concurrency, nested groups, ordered settled results, and controller cancellation propagation. This is not a stable API.
 
 <!-- rivet:release-notes:start -->
 

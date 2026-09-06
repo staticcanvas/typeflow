@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased development changes
+
+### Added
+
+- Add stable spatial word-motion reveal/erase styles with reduced-motion behavior, semantic DOM cleanup, declarations, documentation, examples, and browser regression coverage.
+- Add the optional schema-v1 Web Audio preset registry with immutable built-ins, validation, compatibility aliases, scoped interruption cleanup, declarations, documentation, and teardown tests.
+- Add the explicitly opt-in experimental parallel companion; its API is not yet stable.
+
+### Migration
+
+- Existing core methods and built-in audio names remain compatible. See the 0.28 migration guide for additive style values and opt-in extension imports.
+
 ## [v0.36.7]
 
 <!-- rivet:changelog:start -->

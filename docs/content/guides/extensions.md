@@ -111,14 +111,38 @@ TypeFlow.type('#terminal', 'Connecting to mainframe...', {
 });
 ```
 
-### Supported Sound Profiles
+### Versioned sound presets
+
+Built-ins are immutable schema-v1 records with separate type and erase action
+envelopes. The extension validates oscillator, frequency, gain, duration,
+filter, detune, and variance bounds before accepting a custom preset.
+
 - `'mechanical-blue'` / `'clicky'`: Crisp high-transient click with body thud.
 - `'mechanical-brown'` / `'tactile'`: Damped tactile bump.
-- `'mechanical-red'`: Smooth linear bottom-out.
-- `'teletype'` / `'vintage'`: Electro-mechanical strike + carriage return bell on `\n`.
-- `'cyber-synth'` / `'synth'`: FM neon laser chirp.
-- `'terminal-8bit'` / `'beep'`: Retro square-wave pulse.
-- `'bubble'` / `'pop'`: Acoustic liquid pop.
+- `'mechanical-red'` / `'mechanical'`: Smooth linear bottom-out.
+- `'soft-keyboard'` / `'bubble'`: Filtered, quiet key response.
+- `'typewriter'` / `'teletype'`: Electro-mechanical strike.
+- `'synth'` / `'cyber-synth'`: Neon oscillator chirp.
+- `'terminal-beep'` / `'terminal-8bit'` / `'beep'`: Retro square-wave pulse.
+- `'correction'`: Distinct erase/correction feedback.
+
+```javascript
+import { AUDIO_PRESETS, TypeFlowWebAudio } from '@staticcanvas/typeflow/webaudio';
+
+const custom = structuredClone(AUDIO_PRESETS['soft-keyboard']);
+custom.actions.type[0].frequency.start = 640;
+
+TypeFlowWebAudio.registerAudioPreset('product-soft', custom);
+TypeFlowWebAudio.play('product-soft');
+TypeFlowWebAudio.removeAudioPreset('product-soft');
+```
+
+The `AudioContext` is created only after browser user activation. The shared
+master graph is reused and active voices are capped. A callback returned by
+`createKeystrokeAudio()` owns a scoped voice set; interrupting its TypeFlow
+controller automatically stops and disconnects that set without affecting
+other callbacks. `stopAll()` and `destroy()` remain available for global
+teardown. Use `action: 'erase'` to select a preset's correction envelope.
 
 ---
 

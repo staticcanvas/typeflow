@@ -19,6 +19,8 @@
 
 [![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.27.0/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/develop/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
+[![mirror](https://img.shields.io/badge/github-mirror-cyan?style=flat)](https://github.com/staticcanvas/typeflow)
+
 > **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 
 </div>
@@ -370,6 +372,7 @@ TypeFlow is built with a sub-7.2 KB hyper-optimized core engine. For developers 
 | `@staticcanvas/typeflow/metrics`   | `TypeFlowMetrics`   | Floating diagnostic HUD metrics badge tracking FPS, active instances, typed/erased counters, render latency, and DOM mutations.                |
 | `@staticcanvas/typeflow/debug`     | `TypeFlowDebug`     | Diagnostic tracing with `@staticcanvas/logcad` integration, colored console groups, and controller event history.                              |
 | `@staticcanvas/typeflow/webaudio`  | `TypeFlowWebAudio`  | Zero-asset Web Audio procedural synthesis with clicky mechanical switches (Blue, Red, Brown), teletype, cyber synths, and stereo panning.      |
+| `@staticcanvas/typeflow/parallel`  | `installParallel`   | Experimental, explicit opt-in parallel step orchestration with bounded concurrency and ordered results.                                        |
 | `@staticcanvas/typeflow/keystroke` | `TypeFlowKeystroke` | Human typing simulation: QWERTY physical finger travel distance, thought pauses, and realistic typo injection with auto-correction backspaces. |
 | `@staticcanvas/typeflow/extchars`  | `TypeFlowExtChars`  | Extended Unicode glyph presets for decrypt effects: Egyptian Hieroglyphs, Runic, Ogham, Coptic, Katakana, Box-Drawing, and Braille.            |
 
@@ -391,40 +394,43 @@ TypeFlow.type('#terminal', 'System diagnostics active.', {
 
 ### `TypeFlowConfig`
 
-| Property               | Type                                                                                                          | Default                         | Description                                                                                       |
-| :--------------------- | :------------------------------------------------------------------------------------------------------------ | :------------------------------ | :------------------------------------------------------------------------------------------------ |
-| `speed`                | `number`                                                                                                      | `50` (type) / `25` (erase)      | Milliseconds per character / word unit.                                                           |
-| `delay`                | `number`                                                                                                      | `0`                             | Delay before animation starts in milliseconds.                                                    |
-| `speedVariance`        | `number`                                                                                                      | `0`                             | Random variance range in milliseconds per unit.                                                   |
-| `naturalCadence`       | `boolean`                                                                                                     | `false`                         | Automatic micro-pauses at punctuation (. , ! ?) and word breaks.                                  |
-| `granularity`          | `"grapheme" \| "word"`                                                                                        | `"grapheme"`                    | Unit segmentation mode using `Intl.Segmenter`.                                                    |
-| `direction`            | `"left" \| "right" \| "center"`                                                                               | `"left"`                        | Typing reveal direction (LTR, RTL, center-outward).                                               |
-| `typeStyle`            | `"char" \| "word" \| "scramble" \| "fade-trail" \| "word-fade"`                                              | `"char"`                        | Typing reveal style; `word-fade` retains final word positions while transitioning opacity.        |
-| `wordOrder`            | `"left-to-right" \| "right-to-left" \| "random"`                                                                 | `"left-to-right"`               | Word reveal or erase order without changing the element's bidi direction.                         |
-| `wordLayout`           | `"opacity" \| "placeholder"`                                                                                       | `"opacity"`                     | Stable word layout strategy used by `word-fade`.                                                  |
-| `wordFadeDuration`     | `number`                                                                                                      | `280`                            | Opacity transition duration for each word in milliseconds.                                        |
-| `wordStagger`          | `number`                                                                                                      | Current `speed`                  | Delay between consecutive word transitions.                                                       |
-| `wordSeed`             | `string \| number`                                                                                            | `undefined`                      | Reproducible shuffle seed when `wordOrder` is `"random"`.                                        |
-| `trailFade`            | `number \| boolean`                                                                                           | `undefined`                     | Soft trailing opacity gradient length in characters (e.g. `3` or `4`).                            |
-| `scrambleCharset`      | `"matrix" \| "ascii" \| "ascii-extended" \| "blocks" \| "binary" \| "hex" \| "braille" \| "runic" \| "cyber"` | `undefined`                     | Built-in scramble glyph charset preset.                                                           |
-| `scrambleGlyphs`       | `string`                                                                                                      | `"!<>-_\\/[]{}—=+*^?#________"` | Custom character pool used during scramble reveals.                                               |
-| `scrambleRounds`       | `number`                                                                                                      | `2`                             | Number of glyph iterations per character.                                                         |
-| `audio`                | `"mechanical" \| "beep" \| "synth" \| boolean \| (() => void)`                                                | `undefined`                     | Procedural Web Audio synthesized keystrokes or audio callback.                                    |
-| `cursor`               | `string`                                                                                                      | `"\|"`                          | Cursor character appended during animation. Set to `""` to disable.                               |
-| `cursorBlink`          | `boolean`                                                                                                     | `true`                          | Enables post-completion cursor blinking.                                                          |
-| `html`                 | `boolean`                                                                                                     | `false`                         | Enables sanitized HTML parsing mode.                                                              |
-| `mode`                 | `"replace" \| "append"`                                                                                       | `"replace"`                     | Clears target or appends to existing DOM child nodes.                                             |
-| `allowedTags`          | `string[]`                                                                                                    | Default allowlist               | Array of permitted HTML tag names.                                                                |
-| `allowedAttributes`    | `Record<string, string[]>`                                                                                    | Default map                     | Map of allowed attributes per HTML tag.                                                           |
-| `sanitizer`            | `(html: string) => string`                                                                                    | `undefined`                     | Custom sanitizer function overriding default sanitizer.                                           |
-| `respectReducedMotion` | `boolean`                                                                                                     | `true`                          | Instantly completes animation when reduced motion is preferred.                                   |
-| `ariaLive`             | `"off" \| "polite" \| "assertive"`                                                                            | `undefined`                     | ARIA live region policy applied to target element.                                                |
-| `eraseStyle`           | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade" \| "word-fade"`           | `"end"`                         | Erase technique direction or visual transition mode.                                              |
-| `duration`             | `number`                                                                                                      | `250`                           | Transition duration in ms when `eraseStyle: "fade"`.                                              |
-| `preserveBaseline`     | `boolean`                                                                                                     | `true`                          | Preserves base content when erasing `append` mode elements.                                       |
-| `onStart`              | `() => void`                                                                                                  | `undefined`                     | Callback invoked when animation begins.                                                           |
-| `onComplete`           | `(text: string) => void`                                                                                      | `undefined`                     | Callback invoked upon animation completion.                                                       |
-| `onInterrupt`          | `() => void`                                                                                                  | `undefined`                     | Callback invoked when controller is aborted before completion.                                    |
+| Property               | Type                                                                                                                                  | Default                         | Description                                                                   |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------ | :---------------------------------------------------------------------------- |
+| `speed`                | `number`                                                                                                                              | `50` (type) / `25` (erase)      | Milliseconds per character / word unit.                                       |
+| `delay`                | `number`                                                                                                                              | `0`                             | Delay before animation starts in milliseconds.                                |
+| `speedVariance`        | `number`                                                                                                                              | `0`                             | Random variance range in milliseconds per unit.                               |
+| `naturalCadence`       | `boolean`                                                                                                                             | `false`                         | Automatic micro-pauses at punctuation (. , ! ?) and word breaks.              |
+| `granularity`          | `"grapheme" \| "word"`                                                                                                                | `"grapheme"`                    | Unit segmentation mode using `Intl.Segmenter`.                                |
+| `direction`            | `"left" \| "right" \| "center"`                                                                                                       | `"left"`                        | Typing reveal direction (LTR, RTL, center-outward).                           |
+| `typeStyle`            | `"char" \| "word" \| "scramble" \| "fade-trail" \| "word-fade" \| "float-in-*" \| "zoom-in-space"`                                    | `"char"`                        | Typing reveal style, including stable-layout opacity and spatial word motion. |
+| `wordOrder`            | `"left-to-right" \| "right-to-left" \| "random"`                                                                                      | `"left-to-right"`               | Word reveal or erase order without changing the element's bidi direction.     |
+| `wordLayout`           | `"opacity" \| "placeholder"`                                                                                                          | `"opacity"`                     | Stable word layout strategy used by `word-fade`.                              |
+| `wordFadeDuration`     | `number`                                                                                                                              | `280`                           | Opacity transition duration for each word in milliseconds.                    |
+| `wordStagger`          | `number`                                                                                                                              | Current `speed`                 | Delay between consecutive word transitions.                                   |
+| `wordSeed`             | `string \| number`                                                                                                                    | `undefined`                     | Reproducible shuffle seed when `wordOrder` is `"random"`.                     |
+| `trailFade`            | `number \| boolean`                                                                                                                   | `undefined`                     | Soft trailing opacity gradient length in characters (e.g. `3` or `4`).        |
+| `trailMinOpacity`      | `number`                                                                                                                              | `0.18`                          | Lowest opacity used by characters in the trailing fade.                       |
+| `scrambleCharset`      | `"matrix" \| "ascii" \| "ascii-extended" \| "blocks" \| "binary" \| "hex" \| "braille" \| "runic" \| "cyber"`                         | `undefined`                     | Built-in scramble glyph charset preset.                                       |
+| `scrambleGlyphs`       | `string`                                                                                                                              | `"!<>-_\\/[]{}—=+*^?#________"` | Custom character pool used during scramble reveals.                           |
+| `scrambleRounds`       | `number`                                                                                                                              | `2`                             | Number of glyph iterations per character.                                     |
+| `scrambleColor`        | `string`                                                                                                                              | `undefined`                     | CSS color applied to the active scramble glyph.                               |
+| `scrambleGradient`     | `string`                                                                                                                              | `undefined`                     | CSS gradient applied to the active scramble glyph; overrides `scrambleColor`. |
+| `audio`                | `"mechanical" \| "beep" \| "synth" \| boolean \| (() => void)`                                                                        | `undefined`                     | Procedural Web Audio synthesized keystrokes or audio callback.                |
+| `cursor`               | `string`                                                                                                                              | `"\|"`                          | Cursor character appended during animation. Set to `""` to disable.           |
+| `cursorBlink`          | `boolean`                                                                                                                             | `true`                          | Enables post-completion cursor blinking.                                      |
+| `html`                 | `boolean`                                                                                                                             | `false`                         | Enables sanitized HTML parsing mode.                                          |
+| `mode`                 | `"replace" \| "append"`                                                                                                               | `"replace"`                     | Clears target or appends to existing DOM child nodes.                         |
+| `allowedTags`          | `string[]`                                                                                                                            | Default allowlist               | Array of permitted HTML tag names.                                            |
+| `allowedAttributes`    | `Record<string, string[]>`                                                                                                            | Default map                     | Map of allowed attributes per HTML tag.                                       |
+| `sanitizer`            | `(html: string) => string`                                                                                                            | `undefined`                     | Custom sanitizer function overriding default sanitizer.                       |
+| `respectReducedMotion` | `boolean`                                                                                                                             | `true`                          | Instantly completes animation when reduced motion is preferred.               |
+| `ariaLive`             | `"off" \| "polite" \| "assertive"`                                                                                                    | `undefined`                     | ARIA live region policy applied to target element.                            |
+| `eraseStyle`           | `"end" \| "start" \| "center" \| "scramble" \| "fade-trail" \| "instant" \| "fade" \| "word-fade" \| "float-in-*" \| "zoom-in-space"` | `"end"`                         | Erase direction or visual transition mode.                                    |
+| `duration`             | `number`                                                                                                                              | `250`                           | Transition duration in ms when `eraseStyle: "fade"`.                          |
+| `preserveBaseline`     | `boolean`                                                                                                                             | `true`                          | Preserves base content when erasing `append` mode elements.                   |
+| `onStart`              | `() => void`                                                                                                                          | `undefined`                     | Callback invoked when animation begins.                                       |
+| `onComplete`           | `(text: string) => void`                                                                                                              | `undefined`                     | Callback invoked upon animation completion.                                   |
+| `onInterrupt`          | `() => void`                                                                                                                          | `undefined`                     | Callback invoked when controller is aborted before completion.                |
 
 ### `TypeFlowController`
 
@@ -457,28 +463,30 @@ TypeFlow.type('#terminal', 'System diagnostics active.', {
 
 TypeFlow provides a full suite of NPM scripts for local development, automated testing, synthetic benchmarking, bundle validation, and documentation generation:
 
-| Script                       | Command                                                                | Description                                                              |
-| :--------------------------- | :--------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| **`npm run dev`**            | `vite`                                                                 | Starts the local Vite development server for rapid iteration.            |
-| **`npm run build`**          | `vite build`                                                           | Compiles production ESM, CJS, and UMD bundles into `dist/`.              |
-| **`npm test`**               | `vitest run`                                                           | Runs the full Vitest unit test suite.                                    |
-| **`npm run test:coverage`**  | `vitest run --coverage`                                                | Executes tests with V8 code coverage report.                             |
-| **`npm run benchmark`**      | `node --expose-gc scripts/run-benchmark.mjs`                            | Runs the repeated 10k, 50k, 100k, and concurrency-tier synthetic suite.  |
-| **`npm run benchmark:quick`**| `node --expose-gc scripts/run-benchmark.mjs --quick`                    | Runs three samples over a reduced concurrency matrix.                    |
-| **`npm run benchmark:md`**   | `node --expose-gc scripts/run-benchmark.mjs --markdown`                 | Generates a Markdown result table.                                      |
-| **`npm run benchmark:json`** | `node --expose-gc scripts/run-benchmark.mjs --json`                     | Generates the benchmark report as JSON.                                 |
-| **`npm run check:size`**     | `node scripts/check-bundle-size.mjs`                                   | Verifies the core bundle against the 10 KiB gzip budget.                 |
-| **`npm run validate:docs-data`** | `node scripts/validate-doc-data.mjs`                               | Validates documentation splash data against its schema.                 |
-| **`npm run check:quality`**  | `npm run validate:docs-data && npm run build && npm run check:size && npm test` | Runs deterministic release quality checks.                    |
-| **`npm run docs:build`**     | `npm run build && hugo --source docs`                                  | Compiles the static documentation and playground website into `public/`. |
-| **`npm run release:docs:preview`** | Rivet release-document dry run | Previews generated release notes and Hugo changelog data from the latest reachable stable tag. |
-| **`npm run release:docs`** | Rivet release-document sync | Updates `CHANGELOG.md`, `release-notes.md`, and `docs/data/changelog.json`; requires Rivet at `./rivet`. |
-| **`npm run release:docs:rebuild:preview`** | Rivet history dry run | Previews a complete release-history rebuild across reachable tags. |
-| **`npm run release:docs:rebuild`** | Rivet history sync | Rebuilds the canonical changelog and generated Hugo projection across all reachable tags. |
-| **`npm run docs:serve`**     | `npm run build && hugo server --source docs...`                        | Launches local live-reloading Hugo documentation server.                 |
-| **`npm run lint`**           | `eslint .`                                                             | Validates codebase with ESLint.                                          |
-| **`npm run lint:fix`**       | `eslint . --fix`                                                       | Automatically resolves fixable lint issues.                              |
-| **`npm run format`**         | `prettier --write .`                                                   | Formats all source files with Prettier.                                  |
+| Script                                     | Command                                                                         | Description                                                                                              |
+| :----------------------------------------- | :------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------- |
+| **`npm run dev`**                          | `vite`                                                                          | Starts the local Vite development server for rapid iteration.                                            |
+| **`npm run build`**                        | `vite build`                                                                    | Compiles production ESM, CJS, and UMD bundles into `dist/`.                                              |
+| **`npm test`**                             | `vitest run`                                                                    | Runs the full Vitest unit test suite.                                                                    |
+| **`npm run test:coverage`**                | `vitest run --coverage`                                                         | Executes tests with V8 code coverage report.                                                             |
+| **`npm run benchmark`**                    | `node --expose-gc scripts/run-benchmark.mjs`                                    | Runs the repeated 10k, 50k, 100k, and concurrency-tier synthetic suite.                                  |
+| **`npm run benchmark:quick`**              | `node --expose-gc scripts/run-benchmark.mjs --quick`                            | Runs three samples over a reduced concurrency matrix.                                                    |
+| **`npm run benchmark:md`**                 | `node --expose-gc scripts/run-benchmark.mjs --markdown`                         | Generates a Markdown result table.                                                                       |
+| **`npm run benchmark:json`**               | `node --expose-gc scripts/run-benchmark.mjs --json`                             | Generates the benchmark report as JSON.                                                                  |
+| **`npm run benchmark:browser`**            | Playwright Chromium + Firefox                                                   | Generates real-browser capacity JSON and Markdown with frame, heap, DOM, long-task, and leak metrics.    |
+| **`npm run benchmark:browser:quick`**      | Reduced Playwright tier matrix                                                  | Regenerates a fast local browser benchmark sample.                                                       |
+| **`npm run check:size`**                   | `node scripts/check-bundle-size.mjs`                                            | Verifies the core bundle against the 10 KiB gzip budget.                                                 |
+| **`npm run validate:docs-data`**           | `node scripts/validate-doc-data.mjs`                                            | Validates documentation splash data against its schema.                                                  |
+| **`npm run check:quality`**                | `npm run validate:docs-data && npm run build && npm run check:size && npm test` | Runs deterministic release quality checks.                                                               |
+| **`npm run docs:build`**                   | `npm run build && hugo --source docs`                                           | Compiles the static documentation and playground website into `public/`.                                 |
+| **`npm run release:docs:preview`**         | Rivet release-document dry run                                                  | Previews generated release notes and Hugo changelog data from the latest reachable stable tag.           |
+| **`npm run release:docs`**                 | Rivet release-document sync                                                     | Updates `CHANGELOG.md`, `release-notes.md`, and `docs/data/changelog.json`; requires Rivet at `./rivet`. |
+| **`npm run release:docs:rebuild:preview`** | Rivet history dry run                                                           | Previews a complete release-history rebuild across reachable tags.                                       |
+| **`npm run release:docs:rebuild`**         | Rivet history sync                                                              | Rebuilds the canonical changelog and generated Hugo projection across all reachable tags.                |
+| **`npm run docs:serve`**                   | `npm run build && hugo server --source docs...`                                 | Launches local live-reloading Hugo documentation server.                                                 |
+| **`npm run lint`**                         | `eslint .`                                                                      | Validates codebase with ESLint.                                                                          |
+| **`npm run lint:fix`**                     | `eslint . --fix`                                                                | Automatically resolves fixable lint issues.                                                              |
+| **`npm run format`**                       | `prettier --write .`                                                            | Formats all source files with Prettier.                                                                  |
 
 ---
 
@@ -511,6 +519,18 @@ TypeFlow.type('#headline', 'Custom Synthesized Audio', {
   speed: 40,
 });
 ```
+
+#### Experimental Asciiam bridge
+
+An Asciiam adapter is being explored as a separate, opt-in integration. The
+adapter would translate TypeFlow's unrestricted `audio` callback into small,
+library-neutral keystroke events that Asciiam can consume and render on its
+canvas. TypeFlow remains responsible only for text animation and event timing;
+Asciiam remains responsible for audio visualization and canvas rendering.
+
+This bridge is experimental, is not part of the stable TypeFlow API, and is
+intentionally kept out of the documentation site until the event contract is
+implemented and versioned. Neither library will require the other.
 
 ### 2. Custom Scramble Charset & Character Pools
 
@@ -602,6 +622,14 @@ Generate JSON without npm's command banner when piping the result:
 ```bash
 npm run --silent benchmark:json > typeflow-benchmark.json
 ```
+
+### Real-browser capacity benchmark
+
+Run `npm run benchmark:browser` to measure active animation tiers in Chromium
+and Firefox. The command writes [machine-readable results](benchmarks/results/browser-capacity.json)
+and a [generated report](benchmarks/results/browser-capacity.md), including the
+machine/browser environment and the exact capacity budgets. Metrics unavailable
+in a browser remain `null`; they are never inferred from JSDOM or another engine.
 
 ---
 

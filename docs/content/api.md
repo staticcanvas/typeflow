@@ -65,6 +65,7 @@ export interface TypeFlowConfig {
   wordMotionPerspective?: number;
   wordMotionEasing?: string;
   trailFade?: number | boolean;
+  trailMinOpacity?: number;
   cursor?: string;
   cursorBlink?: boolean;
   html?: boolean;
@@ -72,6 +73,8 @@ export interface TypeFlowConfig {
   scrambleCharset?: "matrix" | "ascii" | "ascii-extended" | "blocks" | "binary" | "hex" | "braille" | "runic" | "cyber";
   scrambleGlyphs?: string;
   scrambleRounds?: number;
+  scrambleColor?: string;
+  scrambleGradient?: string;
   audio?: "mechanical" | "beep" | "synth" | boolean | (() => void);
   allowedTags?: string[];
   allowedAttributes?: Record<string, string[]>;
@@ -109,9 +112,12 @@ export interface TypeFlowConfig {
 | `wordMotionPerspective` | `number` | `600` | CSS `perspective` in pixels applied to the target element while `zoom-in-space` runs. |
 | `wordMotionEasing` | `string` | `"ease"` | CSS timing function for `float-in-*`/`zoom-in-space` transitions. |
 | `trailFade` | `number \| boolean` | `undefined` | Length of trailing fade gradient in characters. |
+| `trailMinOpacity` | `number` | `0.18` | Lowest opacity used by characters in a trailing fade. |
 | `scrambleCharset` | `"matrix" \| "ascii" \| ...` | `undefined` | Built-in scramble glyph charset preset name. |
 | `scrambleGlyphs`| `string` | `"!<>-_\\/[]{}—=+*^?#________"` | Character pool used during scramble reveals. |
 | `scrambleRounds`| `number` | `2` | Number of glyph iterations per unit. |
+| `scrambleColor` | `string` | `undefined` | CSS color applied to the active scramble glyph. |
+| `scrambleGradient` | `string` | `undefined` | CSS gradient applied to the active scramble glyph; overrides `scrambleColor`. |
 | `audio` | `"mechanical" \| "beep" \| "synth" \| boolean \| fn` | `undefined` | Procedural Web Audio synthesized keystrokes or custom sound callback. |
 | `cursor` | `string` | `"\|"` | Cursor glyph string. Set to `""` to omit cursor. |
 | `cursorBlink` | `boolean` | `true` | Enables post-completion cursor blinking effect. |
@@ -220,6 +226,38 @@ TypeFlow.sequence([
 ], { repeat: 1 });
 ```
 
+### `TypeFlow.parallel(steps, options?)` — experimental
+
+> This API is opt-in and experimental. Its shape may change before it is
+> promoted to the stable API.
+
+Runs ordinary `seq` steps concurrently while preserving input order in the
+result array. `concurrency` bounds active children. With `all-settled` (the
+default), every step runs; with `fail-fast`, the first error or interrupted
+child stops active siblings. The controller promise always resolves, including
+errors as `{ status: 'rejected', reason }` entries. Calling `stop()` propagates
+to active children and pending waits. A later operation on a repeated target
+interrupts the earlier operation, following the normal TypeFlow target rule.
+
+```javascript
+import { TypeFlow, seq } from '@staticcanvas/typeflow';
+import { installParallel } from '@staticcanvas/typeflow/parallel';
+
+// Explicit opt-in: this adds parallel() only for callers importing the extension.
+installParallel(TypeFlow, seq);
+
+const group = TypeFlow.parallel([
+  seq.type('#status-a', 'Connected', { delay: 100 }),
+  seq.erase('#status-b', { eraseStyle: 'fade' }),
+  seq.parallel([
+    seq.type('#nested-a', 'Nested A'),
+    seq.type('#nested-b', 'Nested B')
+  ], { concurrency: 1 })
+], { concurrency: 2, settlement: 'all-settled' });
+
+const { completed, results } = await group.promise;
+```
+
 ### `TypeFlow.rotate(target, words, config?)`
 Cyclically types and erases an array of strings.
 
@@ -273,6 +311,8 @@ import { TypeFlowWebAudio, createKeystrokeAudio } from '@staticcanvas/typeflow/w
 
 TypeFlowWebAudio.play('mechanical-blue', { pan: 0.1 });
 const audioCallback = createKeystrokeAudio('teletype');
+const controller = TypeFlow.type('#target', 'Scoped audio', { audio: audioCallback });
+controller.stop(); // also stops and disconnects this callback's active voices
 ```
 
 ### `TypeFlowKeystroke` (`@staticcanvas/typeflow/keystroke`)
