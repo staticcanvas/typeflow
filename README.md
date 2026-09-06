@@ -40,7 +40,6 @@ TypeFlow delivers zero-dependency text animation with precise frame control, ric
 
 - [Overview](#overview)
 - [Features](#features)
-- [Arcutecture](#arcutecture)
 - [Installation](#installation)
   - [NPM](#npm)
   - [JSR](#jsr)
@@ -98,18 +97,6 @@ TypeFlow delivers zero-dependency text animation with precise frame control, ric
 - **Rotator Pattern & DOM Watcher**: Built-in helper for cyclic word replacements and automated mutation listeners.
 - **Reduced Motion Compliance**: Respects `prefers-reduced-motion` settings automatically.
 - **Framework Integrations**: First-class runtime adapters for React (`createTypeFlowReact`), Vue (`createTypeFlowVue`), Svelte (`createTypeFlowSvelte`), Solid.js (`createTypeFlowSolid`), and Alpine.js (`createTypeFlowAlpine`), plus native Web Components and framework-friendly Astro usage.
-
-## **Arcutecture**
-
-```mermaid
-graph TD
-    A[Input: Plain Text / HTML] --> B[Sanitizer & Source Tree Parser]
-    B --> C[Reveal Engine]
-    C --> D[TypeFlow Controller]
-    D --> E[DOM Stream Rendering]
-    D --> F[Sequence & Rotating Text Orchestrator]
-    D --> G[DOM Mutation Watcher]
-```
 
 ## **Installation**
 
