@@ -36,11 +36,13 @@ The `@staticcanvas/typeflow` package provides ESM, CommonJS, and UMD distributio
 | Export Path | Format | Target | Description |
 | :--- | :--- | :--- | :--- |
 | `@staticcanvas/typeflow` | ESM / CJS / UMD | `dist/typeflow.mjs` | Core typewriter engine and sequence helpers. |
-| `@staticcanvas/typeflow/metrics` | ESM | `src/typeflow-metrics.js` | Real-time floating performance HUD and diagnostic badge. |
-| `@staticcanvas/typeflow/debug` | ESM | `src/typeflow-debug.js` | Diagnostic tracing and `@staticcanvas/logcad` integration. |
-| `@staticcanvas/typeflow/webaudio` | ESM | `src/typeflow-webaudio.js` | Zero-asset procedural Web Audio synthesizer. |
-| `@staticcanvas/typeflow/keystroke` | ESM | `src/typeflow-keystroke.js` | Human typing dynamics, finger travel, and typo simulation. |
-| `@staticcanvas/typeflow/extchars` | ESM | `src/typeflow-extchars.js` | Extended Unicode glyph sets for decrypt scramble reveals. |
+| `@staticcanvas/typeflow/metrics` | ESM / CJS / UMD | `dist/typeflow-metrics.mjs` | Real-time floating performance HUD and diagnostic badge. |
+| `@staticcanvas/typeflow/debug` | ESM / CJS / UMD | `dist/typeflow-debug.mjs` | Diagnostic tracing and `@staticcanvas/logcad` integration. |
+| `@staticcanvas/typeflow/webaudio` | ESM / CJS / UMD | `dist/typeflow-webaudio.mjs` | Zero-asset procedural Web Audio synthesizer. |
+| `@staticcanvas/typeflow/parallel` | ESM / CJS / UMD | `dist/typeflow-parallel.mjs` | Explicit opt-in parallel step orchestration with bounded concurrency. |
+| `@staticcanvas/typeflow/keystroke` | ESM / CJS / UMD | `dist/typeflow-keystroke.mjs` | Human typing dynamics, finger travel, and typo simulation. |
+| `@staticcanvas/typeflow/extchars` | ESM / CJS / UMD | `dist/typeflow-extchars.mjs` | Extended Unicode glyph sets for decrypt scramble reveals. |
+| `@staticcanvas/typeflow/caret` | ESM / CJS / UMD | `dist/typeflow-caret.mjs` | Persistent, editable cursor bound to an element's text. |
 | `jsr:@staticcanvas/typeflow` | ESM | `src/typeflow.js` | JSR package distribution for Deno and Node. |
 
 ## `TypeFlowConfig` Options

@@ -86,6 +86,7 @@ TypeFlow delivers zero-dependency text animation with precise frame control, ric
 - **Safe HTML Support**: Parses and types structured markup while keeping HTML tags balanced and sanitized against script injection.
 - **`Intl.Segmenter` Powered**: Accurate grapheme and word segmentation for international character clusters and compound emojis (`🚀`, `👨‍👩‍👧‍👦`).
 - **Multi-Directional Reveals & Erasing**: Type left-to-right, right-to-left, or expand center-outward (`direction: 'center'`). Erase via backspace (`end`), left erosion (`start`), inward shrink (`center`), opacity fade (`fade`), or matrix decrypt (`scramble`).
+- **Spatial Word-Motion Styles**: Layout-stable word reveals and erases — `word-fade`, directional `float-in-top/bottom/left/right`, and depth-scaled `zoom-in-space` — with configurable stagger, distance, and easing.
 - **Scramble Charset Presets**: Built-in glyph presets (`matrix`, `blocks`, `ascii`, `ascii-extended`, `binary`, `hex`, `braille`, `runic`, `cyber`) and custom glyph overrides.
 - **Procedural Web Audio Keystrokes**: Zero-asset procedural audio clicks, terminal pings, and cyber synth sounds (`audio: 'mechanical' | 'beep' | 'synth'`).
 - **Smart Morph Diff Typing**: Computes longest common prefixes and only backspaces changed trailing characters (`TypeFlow.morph()`).
@@ -96,6 +97,7 @@ TypeFlow delivers zero-dependency text animation with precise frame control, ric
 - **Sequence Orchestration & Viewport Triggers**: Coordinate multi-step animations (`type`, `erase`, `pause`, `visible`, `call`) with `seq.visible()` IntersectionObserver delays.
 - **Rotator Pattern & DOM Watcher**: Built-in helper for cyclic word replacements and automated mutation listeners.
 - **Reduced Motion Compliance**: Respects `prefers-reduced-motion` settings automatically.
+- **Interactive Caret**: Standalone, zero-dependency editable cursor (`Caret()`) — `jump()`/`move()` reposition instantly, `deleteChar()`/`deleteWord()` edit in place, `insert()` types new text at the caret position.
 - **Framework Integrations**: First-class runtime adapters for React (`createTypeFlowReact`), Vue (`createTypeFlowVue`), Svelte (`createTypeFlowSvelte`), Solid.js (`createTypeFlowSolid`), and Alpine.js (`createTypeFlowAlpine`), plus native Web Components and framework-friendly Astro usage.
 
 ## **Installation**
@@ -253,6 +255,8 @@ function Headline() {
 }
 ```
 
+`createTypeFlowSequenceReact(React)` returns a companion `useTypeFlowSequence(buildSteps, deps)` hook for multi-step `seq` orchestration inside a component.
+
 #### Vue
 
 ```vue
@@ -269,6 +273,8 @@ const headlineRef = useTypeFlow(() => text.value, { speed: 50 });
   <h1 ref="headlineRef"></h1>
 </template>
 ```
+
+`createTypeFlowSequenceVue(Vue)` returns a companion `useTypeFlowSequence(buildSteps)` hook that returns a runner function for multi-step `seq` orchestration.
 
 #### Svelte
 
@@ -352,7 +358,7 @@ TypeFlow does not ship an Angular-specific factory. Angular applications can use
 
 ## Companion Extensions
 
-TypeFlow is built with a sub-7.2 KB hyper-optimized core engine. For developers requiring advanced capabilities, TypeFlow provides five modular, tree-shakeable companion extensions:
+TypeFlow is built with a sub-7.2 KB hyper-optimized core engine. For developers requiring advanced capabilities, TypeFlow provides seven modular, tree-shakeable companion extensions:
 
 | Package Subpath                    | Module Name         | Description                                                                                                                                    |
 | :--------------------------------- | :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -362,6 +368,7 @@ TypeFlow is built with a sub-7.2 KB hyper-optimized core engine. For developers 
 | `@staticcanvas/typeflow/parallel`  | `installParallel`   | Experimental, explicit opt-in parallel step orchestration with bounded concurrency and ordered results.                                        |
 | `@staticcanvas/typeflow/keystroke` | `TypeFlowKeystroke` | Human typing simulation: QWERTY physical finger travel distance, thought pauses, and realistic typo injection with auto-correction backspaces. |
 | `@staticcanvas/typeflow/extchars`  | `TypeFlowExtChars`  | Extended Unicode glyph presets for decrypt effects: Egyptian Hieroglyphs, Runic, Ogham, Coptic, Katakana, Box-Drawing, and Braille.            |
+| `@staticcanvas/typeflow/caret`     | `Caret`             | Persistent, editable cursor bound to an element's text: `jump()`/`move()` reposition it, `deleteChar()`/`deleteWord()` edit at that position, `insert()` types new text in.  |
 
 ```javascript
 // Example: Metrics HUD + Procedural Web Audio
@@ -395,6 +402,11 @@ TypeFlow.type('#terminal', 'System diagnostics active.', {
 | `wordFadeDuration`     | `number`                                                                                                                              | `280`                           | Opacity transition duration for each word in milliseconds.                    |
 | `wordStagger`          | `number`                                                                                                                              | Current `speed`                 | Delay between consecutive word transitions.                                   |
 | `wordSeed`             | `string \| number`                                                                                                                    | `undefined`                     | Reproducible shuffle seed when `wordOrder` is `"random"`.                     |
+| `wordMotionDistance`   | `number`                                                                                                                              | `24`                             | Translate distance in pixels for `float-in-*` word-motion styles.            |
+| `wordMotionDepth`      | `number`                                                                                                                              | `160`                            | `translateZ` depth in pixels for the `zoom-in-space` word-motion style.      |
+| `wordMotionScale`      | `number`                                                                                                                              | `0.82`                           | Starting scale (0-1) for the `zoom-in-space` word-motion style.              |
+| `wordMotionPerspective`| `number`                                                                                                                              | `600`                            | CSS `perspective` in pixels applied to the target element for `zoom-in-space`. |
+| `wordMotionEasing`     | `string`                                                                                                                              | `"ease"`                         | CSS timing function for `float-in-*` and `zoom-in-space` word transitions.   |
 | `trailFade`            | `number \| boolean`                                                                                                                   | `undefined`                     | Soft trailing opacity gradient length in characters (e.g. `3` or `4`).        |
 | `trailMinOpacity`      | `number`                                                                                                                              | `0.18`                          | Lowest opacity used by characters in the trailing fade.                       |
 | `scrambleCharset`      | `"matrix" \| "ascii" \| "ascii-extended" \| "blocks" \| "binary" \| "hex" \| "braille" \| "runic" \| "cyber"`                         | `undefined`                     | Built-in scramble glyph charset preset.                                       |
