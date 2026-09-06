@@ -707,56 +707,120 @@ async function initIndexCaretDemos() {
 
 initIndexCaretDemos();
 
-// ─── Hero Staggered Terminal Demo ─────────────────────────────────────────────
+// ─── Hero installation and usage Rolodex windows ──────────────────────────────
 
-/**
- * Runs a 3-line staggered typewriter sequence in the hero terminal using
- * {@link TypeFlow.stagger}.
- */
-const line1 = document.getElementById('hero-type-1');
-const line2 = document.getElementById('hero-type-2');
-const line3 = document.getElementById('hero-type-3');
-
-if (line1 && line2 && line3) {
-  const terminalLines = [line1, line2, line3];
-  const terminalTexts = [
-    'npm install @staticcanvas/typeflow',
-    'import { TypeFlow } from "@staticcanvas/typeflow";',
-    'TypeFlow.type("#target", "Fast. Resilient. Safe.", { speed: 30 });'
-  ];
-
-  const runTerminalStagger = () => {
-    terminalLines.forEach((l) => {
-      TypeFlow.stop(l);
-      l.textContent = '';
+for (const terminal of document.querySelectorAll('[data-hero-rolodex]')) {
+  const slides = [...terminal.querySelectorAll('[data-rolodex-slide]')];
+  // Keep an inert copy beneath the animated code to reserve its full layout.
+  const examples = slides.map((slide) => {
+    const code = slide.querySelector('code');
+    const html = code.innerHTML;
+    const layer = document.createElement('span');
+    layer.className = 'terminal-type-layer';
+    const size = code.cloneNode(true);
+    size.classList.add('terminal-code-size');
+    size.setAttribute('aria-hidden', 'true');
+    size.inert = true;
+    code.dataset.liveCode = '';
+    code.replaceWith(layer);
+    layer.append(size, code);
+    return { code, html };
+  });
+  const label = terminal.querySelector('[data-rolodex-label]');
+  const pauseButton = terminal.querySelector('[data-rolodex-pause]');
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let index = 0;
+  let paused = motion.matches;
+  let timer;
+  let animation;
+  let typing;
+  const pose = (angle, offset, opacity) => ({
+    transform: `perspective(900px) translateY(${offset}px) rotateX(${angle}deg)`,
+    opacity,
+  });
+  const show = () => {
+    slides.forEach((slide, i) => {
+      slide.inert = i !== index;
+      slide.setAttribute('aria-hidden', String(i !== index));
     });
-    TypeFlow.stagger(terminalLines, terminalTexts, {
-      speed: 28,
-      stagger: 320,
+    label.textContent = slides[index].dataset.label;
+    terminal.dataset.example = slides[index].dataset.example;
+  };
+  const schedule = () => {
+    clearTimeout(timer);
+    if (!paused && !typing && !document.hidden && terminal.isConnected) timer = setTimeout(rotate, 6500);
+  };
+  const finishTyping = () => {
+    typing?.stop();
+    typing = null;
+    const { code, html } = examples[index];
+    TypeFlow.stop(code);
+    code.innerHTML = html;
+  };
+  const typeExample = () => {
+    clearTimeout(timer);
+    if (paused || motion.matches || document.hidden) return;
+    const { code, html } = examples[index];
+    const controller = TypeFlow.type(code, html, {
+      html: true,
+      speed: terminal.classList.contains('terminal-install') ? 28 : 12,
       cursor: '|',
       cursorBlink: true,
-      respectReducedMotion: false,
-    }).promise.then(() => {
-      setTimeout(async () => {
-        await Promise.all(
-          terminalLines.map((l) =>
-            TypeFlow.erase(l, { eraseStyle: 'fade', duration: 300 }).promise
-          )
-        );
-        terminalLines.forEach((l) => {
-          TypeFlow.stop(l);
-          l.textContent = '';
-        });
-        setTimeout(runTerminalStagger, 800);
-      }, 5000);
+      respectReducedMotion: true,
+    });
+    typing = controller;
+    controller.promise.then(() => {
+      if (typing !== controller) return;
+      typing = null;
+      schedule();
     });
   };
-
-  if (reduceMotion) {
-    terminalLines.forEach((line, index) => { line.textContent = terminalTexts[index]; });
-  } else {
-    runTerminalStagger();
-  }
+  const animate = async (frames, duration) => {
+    animation = terminal.animate(frames, {
+      duration, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards',
+    });
+    await animation.finished;
+  };
+  const rotate = async () => {
+    try {
+      finishTyping();
+      if (!motion.matches) await animate([pose(0, 0, 1), pose(-65, -20, 0)], 360);
+      index = (index + 1) % slides.length;
+      show();
+      animation?.cancel();
+      typeExample();
+      if (!motion.matches) await animate([pose(65, 20, 0), pose(0, 0, 1)], 480);
+    } catch (error) {
+      if (error.name !== 'AbortError') throw error;
+    } finally {
+      animation?.cancel();
+      animation = null;
+      schedule();
+    }
+  };
+  const syncPause = () => {
+    pauseButton.textContent = paused ? 'Play' : 'Pause';
+    pauseButton.setAttribute('aria-pressed', String(paused));
+    pauseButton.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} ${terminal.classList.contains('terminal-install') ? 'installation' : 'usage'} rotation`);
+    if (paused) {
+      animation?.cancel();
+      finishTyping();
+    }
+    schedule();
+  };
+  pauseButton.addEventListener('click', () => { paused = !paused; syncPause(); });
+  motion.addEventListener('change', () => { paused = motion.matches; syncPause(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      animation?.cancel();
+      finishTyping();
+    }
+    schedule();
+  });
+  window.addEventListener('pagehide', () => { clearTimeout(timer); animation?.cancel(); finishTyping(); });
+  show();
+  syncPause();
+  typeExample();
 }
 
 // ─── Lucide Icons Initialization ─────────────────────────────────────────────
@@ -784,21 +848,21 @@ const initAnimationMatrixGrid = () => {
     },
     'word-word': {
       stageId: 'matrix-stage-2',
-      text: 'High-velocity token streaming word by word.',
+      text: 'Type and erase one word at a time.',
       typeOpts: { typeStyle: 'word', speed: 50, cursor: '|' },
       eraseOpts: { eraseStyle: 'word', speed: 30 },
       hold: 2400,
     },
     'fade-trail': {
       stageId: 'matrix-stage-3',
-      text: 'Smooth trailing fade opacity gradient dissolve.',
+      text: 'Fade characters along the trailing edge.',
       typeOpts: { typeStyle: 'fade-trail', trailFade: 5, trailingFadeLength: 5, speed: 36, cursor: '' },
       eraseOpts: { eraseStyle: 'fade-trail', trailFade: 5, trailingFadeLength: 5, speed: 22 },
       hold: 2500,
     },
     'scramble-matrix': {
       stageId: 'matrix-stage-4',
-      text: 'CYBERNETIC MATRIX CIPHER DECRYPT INITIALIZED',
+      text: 'Reveal text with matrix characters.',
       typeOpts: { typeStyle: 'scramble', scrambleCharset: 'matrix', scrambleRounds: 2, speed: 38, cursor: '■' },
       eraseOpts: { eraseStyle: 'scramble', scrambleCharset: 'matrix', speed: 20 },
       hold: 2400,
@@ -826,7 +890,7 @@ const initAnimationMatrixGrid = () => {
     },
     'scramble-runes': {
       stageId: 'matrix-stage-8',
-      text: 'ᚠᚢᚦᚨᚱᚲ ANCIENT RUNIC GLYPH DECODER',
+      text: 'Reveal text with runic characters.',
       typeOpts: { typeStyle: 'scramble', scrambleCharset: 'runic', scrambleRounds: 2, speed: 38, cursor: '|' },
       eraseOpts: { eraseStyle: 'end', speed: 22 },
       hold: 2400,
@@ -840,16 +904,16 @@ const initAnimationMatrixGrid = () => {
     },
     'instant-reset': {
       stageId: 'matrix-stage-10',
-      text: 'Instantaneous zero-frame tactical clear and reset.',
+      text: 'Clear the text without an erase animation.',
       typeOpts: { speed: 34, cursor: '|' },
       eraseOpts: { eraseStyle: 'instant' },
       hold: 2200,
     },
     'scramble-hieroglyphs': {
       stageId: 'matrix-stage-11',
-      text: '𓂀𓃀𓃁 HIEROGLYPHIC SACRED SCRAMBLE DECRYPT',
-      typeOpts: { typeStyle: 'scramble', scrambleCharset: 'hieroglyphs', scrambleRounds: 2, speed: 38, cursor: '▍' },
-      eraseOpts: { eraseStyle: 'scramble', scrambleCharset: 'hieroglyphs', speed: 20 },
+      text: 'Reveal text with hieroglyph characters.',
+      typeOpts: { typeStyle: 'scramble', scrambleGlyphs: '𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇', scrambleRounds: 2, speed: 38, cursor: '▍' },
+      eraseOpts: { eraseStyle: 'scramble', scrambleGlyphs: '𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇', speed: 20 },
       hold: 2400,
     },
     'stagger-engine': {
