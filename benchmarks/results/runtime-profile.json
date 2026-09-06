@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-05T05:48:03.888Z",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+  "replaceChildrenCalls": 160,
+  "rows": [
+    {
+      "name": "segmentation-grapheme",
+      "durationMs": 22.799999997019768,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "segmentation-word",
+      "durationMs": 4.399999998509884,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "sanitized-tree-cloning",
+      "durationMs": 0.8999999985098839,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "replaceChildren-text",
+      "durationMs": 1.6999999955296516,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "style-and-layout",
+      "durationMs": 65.89999999850988,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "paint-frame-settlement",
+      "durationMs": 469.1000000014901,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "timer-dispatch",
+      "durationMs": 2.899999998509884,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "node-allocation",
+      "durationMs": 2,
+      "heapDeltaBytes": 0
+    },
+    {
+      "name": "typeflow-ast-window-end-to-end",
+      "durationMs": 743.6999999955297,
+      "heapDeltaBytes": 0
+    }
+  ]
+}

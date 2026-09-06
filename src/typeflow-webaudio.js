@@ -6,11 +6,19 @@
  * @module @staticcanvas/typeflow/webaudio
  */
 
+import { AUDIO_PRESETS, AUDIO_PRESET_ALIASES, AUDIO_PRESET_SCHEMA_VERSION, validateAudioPreset } from './typeflow-audio-presets.js';
+export { AUDIO_PRESETS, AUDIO_PRESET_ALIASES, AUDIO_PRESET_SCHEMA_VERSION, validateAudioPreset };
+
 export class TypeFlowWebAudio {
   static ctx = null;
   static masterGain = null;
   static isMuted = false;
   static volume = 0.25;
+  static maxPolyphony = 24;
+  static customPresets = new Map();
+  static activeVoices = new Set();
+  static panners = new Map();
+  static unlockHandler = null;
 
   /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
    * @description Initializes or returns the shared Web Audio Context singleton.
@@ -30,7 +38,27 @@ export class TypeFlowWebAudio {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return null;
 
-      TypeFlowWebAudio.ctx = new AudioCtx();
+      const activation = window.navigator?.userActivation;
+      if (activation && !activation.isActive && !activation.hasBeenActive) {
+        if (!TypeFlowWebAudio.unlockHandler) {
+          const unlock = () => {
+            window.removeEventListener('pointerdown', unlock);
+            window.removeEventListener('keydown', unlock);
+            TypeFlowWebAudio.unlockHandler = null;
+            TypeFlowWebAudio.getContext();
+          };
+          TypeFlowWebAudio.unlockHandler = unlock;
+          window.addEventListener('pointerdown', unlock, { once: true });
+          window.addEventListener('keydown', unlock, { once: true });
+        }
+        return null;
+      }
+
+      try {
+        TypeFlowWebAudio.ctx = new AudioCtx();
+      } catch {
+        return null;
+      }
       TypeFlowWebAudio.masterGain = TypeFlowWebAudio.ctx.createGain();
       TypeFlowWebAudio.masterGain.gain.setValueAtTime(
         TypeFlowWebAudio.isMuted ? 0 : TypeFlowWebAudio.volume,
@@ -38,16 +66,6 @@ export class TypeFlowWebAudio {
       );
       TypeFlowWebAudio.masterGain.connect(TypeFlowWebAudio.ctx.destination);
 
-      // Unlock AudioContext on initial gesture if suspended
-      const unlock = () => {
-        if (TypeFlowWebAudio.ctx && TypeFlowWebAudio.ctx.state === 'suspended') {
-          TypeFlowWebAudio.ctx.resume();
-        }
-        window.removeEventListener('pointerdown', unlock);
-        window.removeEventListener('keydown', unlock);
-      };
-      window.addEventListener('pointerdown', unlock, { once: true });
-      window.addEventListener('keydown', unlock, { once: true });
     }
 
     if (TypeFlowWebAudio.ctx.state === 'suspended') {
@@ -106,6 +124,112 @@ export class TypeFlowWebAudio {
     }
   }
 
+  /** Registers a validated instance-safe preset. Built-in collisions require `overwrite: true`. */
+  static registerAudioPreset(name, config, options = {}) {
+    const key = String(name ?? '').trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(key)) throw new TypeError('TypeFlowWebAudio: invalid preset name.');
+    if (!options.overwrite && (key in AUDIO_PRESETS || key in AUDIO_PRESET_ALIASES || TypeFlowWebAudio.customPresets.has(key))) {
+      throw new Error(`TypeFlowWebAudio: preset \`${key}\` already exists.`);
+    }
+    TypeFlowWebAudio.customPresets.set(key, validateAudioPreset(config));
+    return key;
+  }
+
+  /** Removes a custom preset. Immutable built-ins cannot be removed. */
+  static removeAudioPreset(name) {
+    return TypeFlowWebAudio.customPresets.delete(String(name ?? '').trim().toLowerCase());
+  }
+
+  /** Removes every custom preset without affecting immutable built-ins. */
+  static resetAudioPresets() {
+    TypeFlowWebAudio.customPresets.clear();
+  }
+
+  /** Returns a frozen custom or built-in preset, resolving compatibility aliases. */
+  static getAudioPreset(name) {
+    const key = String(name ?? '').trim().toLowerCase();
+    if (TypeFlowWebAudio.customPresets.has(key)) return TypeFlowWebAudio.customPresets.get(key);
+    return AUDIO_PRESETS[AUDIO_PRESET_ALIASES[key] ?? key] ?? null;
+  }
+
+  /** Stops and disconnects a scoped set of voices. */
+  static stopVoices(voices) {
+    Array.from(voices).forEach((voice) => {
+      try { voice.oscillator.stop(); } catch { /* already stopped */ }
+      voice.nodes.forEach((node) => { try { node.disconnect(); } catch { /* already disconnected */ } });
+      voice.scope?.delete(voice);
+      TypeFlowWebAudio.activeVoices.delete(voice);
+    });
+  }
+
+  /** Stops and disconnects all voices created by this extension. */
+  static stopAll() {
+    TypeFlowWebAudio.stopVoices(TypeFlowWebAudio.activeVoices);
+  }
+
+  /** Tears down voices and the shared AudioContext so repeated setup is clean. */
+  static async destroy() {
+    TypeFlowWebAudio.stopAll();
+    if (TypeFlowWebAudio.unlockHandler && typeof window !== 'undefined') {
+      window.removeEventListener('pointerdown', TypeFlowWebAudio.unlockHandler);
+      window.removeEventListener('keydown', TypeFlowWebAudio.unlockHandler);
+      TypeFlowWebAudio.unlockHandler = null;
+    }
+    try { TypeFlowWebAudio.masterGain?.disconnect(); } catch { /* already disconnected */ }
+    TypeFlowWebAudio.panners.forEach((panner) => { try { panner.disconnect(); } catch { /* already disconnected */ } });
+    TypeFlowWebAudio.panners.clear();
+    if (TypeFlowWebAudio.ctx?.close) await TypeFlowWebAudio.ctx.close().catch(() => {});
+    TypeFlowWebAudio.ctx = null;
+    TypeFlowWebAudio.masterGain = null;
+  }
+
+  static playPreset(ctx, config, options, destination) {
+    const action = options.action === 'erase' ? 'erase' : 'type';
+    const now = ctx.currentTime;
+    for (const layer of config.actions[action]) {
+      while (TypeFlowWebAudio.activeVoices.size >= TypeFlowWebAudio.maxPolyphony) {
+        const oldest = TypeFlowWebAudio.activeVoices.values().next().value;
+        try { oldest.oscillator.stop(); } catch { /* already stopped */ }
+        oldest.nodes.forEach((node) => { try { node.disconnect(); } catch { /* already disconnected */ } });
+        oldest.scope?.delete(oldest);
+        TypeFlowWebAudio.activeVoices.delete(oldest);
+      }
+      const variance = options.pitchVariance ?? layer.detune.variance;
+      const jitter = 1 + (Math.random() * 2 - 1) * variance;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const nodes = [oscillator, gain];
+      oscillator.type = layer.oscillator;
+      oscillator.detune.setValueAtTime(layer.detune.base, now);
+      oscillator.frequency.setValueAtTime(layer.frequency.start * jitter, now);
+      oscillator.frequency.exponentialRampToValueAtTime(layer.frequency.end * jitter, now + layer.duration);
+      gain.gain.setValueAtTime(layer.gain.start, now);
+      gain.gain.exponentialRampToValueAtTime(layer.gain.end, now + layer.duration);
+      oscillator.connect(gain);
+      let tail = gain;
+      if (layer.filter && typeof ctx.createBiquadFilter === 'function') {
+        const filter = ctx.createBiquadFilter();
+        filter.type = layer.filter.type;
+        filter.frequency.setValueAtTime(layer.filter.frequency, now);
+        filter.Q.setValueAtTime(layer.filter.q, now);
+        gain.connect(filter);
+        tail = filter;
+        nodes.push(filter);
+      }
+      tail.connect(destination);
+      const voice = { oscillator, nodes, scope: options.voiceScope };
+      TypeFlowWebAudio.activeVoices.add(voice);
+      options.voiceScope?.add(voice);
+      oscillator.addEventListener?.('ended', () => {
+        nodes.forEach((node) => { try { node.disconnect(); } catch { /* already disconnected */ } });
+        options.voiceScope?.delete(voice);
+        TypeFlowWebAudio.activeVoices.delete(voice);
+      }, { once: true });
+      oscillator.start(now);
+      oscillator.stop(now + layer.duration);
+    }
+  }
+
   /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
    * @description Synthesizes and plays a procedural audio keystroke sound in real time without audio assets.
    * @param {string} [profile='mechanical-blue'] - Sound profile name ('mechanical-blue', 'mechanical-red', 'mechanical-brown', 'teletype', 'cyber-synth', 'terminal-8bit', 'bubble').
@@ -134,6 +258,7 @@ export class TypeFlowWebAudio {
    * TypeFlowWebAudio.play('teletype', { char: '\n' });
    */
   static play(profile = 'mechanical-blue', options = {}) {
+    if (options.respectReducedMotion === true && typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = TypeFlowWebAudio.getContext();
     if (!ctx || TypeFlowWebAudio.isMuted) return;
 
@@ -144,13 +269,23 @@ export class TypeFlowWebAudio {
     // Optional spatial stereo panner
     let dest = TypeFlowWebAudio.masterGain;
     if (typeof ctx.createStereoPanner === 'function' && typeof options.pan === 'number') {
-      const panner = ctx.createStereoPanner();
-      panner.pan.setValueAtTime(Math.max(-1, Math.min(1, options.pan)), t);
-      panner.connect(TypeFlowWebAudio.masterGain);
+      const pan = Math.max(-1, Math.min(1, options.pan));
+      let panner = TypeFlowWebAudio.panners.get(pan);
+      if (!panner) {
+        panner = ctx.createStereoPanner();
+        panner.pan.setValueAtTime(pan, t);
+        panner.connect(TypeFlowWebAudio.masterGain);
+        TypeFlowWebAudio.panners.set(pan, panner);
+      }
       dest = panner;
     }
 
     const normProfile = String(profile).toLowerCase();
+    const presetConfig = TypeFlowWebAudio.getAudioPreset(normProfile);
+    if (presetConfig) {
+      TypeFlowWebAudio.playPreset(ctx, presetConfig, options, dest);
+      return;
+    }
 
     // 1. Mechanical Clicky Switch (Blue style)
     if (normProfile === 'mechanical-blue' || normProfile === 'clicky') {
@@ -292,9 +427,10 @@ export class TypeFlowWebAudio {
  * });
  */
 export function createKeystrokeAudio(profile = 'mechanical-blue', options = {}) {
-  return () => {
-    TypeFlowWebAudio.play(profile, options);
-  };
+  const voiceScope = new Set();
+  const play = () => TypeFlowWebAudio.play(profile, { ...options, voiceScope });
+  play.stop = () => TypeFlowWebAudio.stopVoices(voiceScope);
+  return play;
 }
 
 if (typeof window !== 'undefined') {

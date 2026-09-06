@@ -99,6 +99,30 @@ const htmlPayload = (minimumLength) => htmlUnit.repeat(Math.ceil(minimumLength /
 const immediate = { speed: 0, delay: 0, cursor: '', cursorBlink: false, respectReducedMotion: true };
 const results = [];
 
+const segmentationFixtures = {
+  ascii: 'TypeFlow measures plain ASCII segmentation. ',
+  emoji: '👩🏽‍💻🚀🧑‍🚀✨ ',
+  combining: 'Cafe\u0301 nai\u0308ve re\u0301sume\u0301 ',
+  bidirectional: 'Status حالة עברית 42 ',
+  cjk: '类型流逐字显示文本。こんにちは世界。',
+  mixed: 'TypeFlow 👩🏽‍💻 حالة 世界 Cafe\u0301 42. ',
+};
+
+for (const [fixtureName, unit] of Object.entries(segmentationFixtures)) {
+  const payload = unit.repeat(Math.ceil(10_000 / unit.length)).slice(0, 10_000);
+  for (const granularity of ['grapheme', 'word']) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity });
+    results.push(await measure({
+      scenario: `segmentation-${granularity}-${fixtureName}`,
+      tier: payload.length,
+      operation: async () => {
+        const segments = Array.from(segmenter.segment(payload), (entry) => entry.segment);
+        if (segments.join('') !== payload) throw new Error(`${granularity} segmentation changed ${fixtureName} content`);
+      },
+    }));
+  }
+}
+
 for (const tier of payloadTiers) {
   const plain = plainPayload(tier);
   const html = htmlPayload(tier);

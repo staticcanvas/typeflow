@@ -67,12 +67,18 @@ export interface TypeFlowConfig {
   wordMotionEasing?: string;
   /** Soft trailing opacity gradient length in characters (e.g. 3) or boolean during reveal/erase. */
   trailFade?: number | boolean;
+  /** Lowest opacity used by trailing fade characters. Default: 0.18. */
+  trailMinOpacity?: number;
   /** Built-in scramble charset preset name. */
   scrambleCharset?: "matrix" | "ascii" | "ascii-extended" | "blocks" | "binary" | "hex" | "braille" | "runic" | "cyber";
   /** Custom scramble glyph characters when typeStyle or eraseStyle is 'scramble'. */
   scrambleGlyphs?: string;
   /** Number of scramble iterations per unit before settling. Default: 2 */
   scrambleRounds?: number;
+  /** CSS color applied to the active scramble glyph. */
+  scrambleColor?: string;
+  /** CSS gradient applied to the active scramble glyph. Overrides scrambleColor. */
+  scrambleGradient?: string;
   /** Zero-dependency Web Audio synthesizer sound effect or custom audio callback. */
   audio?: "mechanical" | "beep" | "synth" | boolean | (() => void);
   /** Extra tags allowed in html mode, merged with the safe default list. */

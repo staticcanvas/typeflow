@@ -67,7 +67,7 @@ export default defineConfig({
           dir: bundleDist,
           entryFileNames: `${packageName}.min.js`,
           exports: 'named',
-          plugins: [terser({ format: { comments: /^!/ }, compress: true, mangle: true })],
+          plugins: [terser({ format: { comments: /^!/ }, compress: { passes: 3, pure_getters: true }, mangle: true })],
         },
         {
           format: 'umd',
@@ -93,7 +93,7 @@ export default defineConfig({
           format: 'es',
           dir: bundleDist,
           entryFileNames: `${packageName}.esm.min.js`,
-          plugins: [terser({ format: { comments: /^!/ }, compress: true, mangle: true })],
+          plugins: [terser({ format: { comments: /^!/ }, compress: { passes: 3, pure_getters: true }, mangle: true })],
         },
       ],
     },

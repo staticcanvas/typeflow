@@ -213,6 +213,14 @@ function playKeystrokeSound(audioOption) {
   }
 }
 
+function stopKeystrokeSound(audioOption) {
+  try {
+    audioOption.stop();
+  } catch {
+    // Optional audio cleanup must not interrupt controller cancellation.
+  }
+}
+
 // ============================================================
 // Intl.Segmenter Helper & Unit Slicing
 // ============================================================
@@ -227,6 +235,18 @@ function segmentText(text, granularity = 'grapheme') {
     return matches ? matches : [text];
   }
   return Array.from(text);
+}
+
+const SEGMENTED_NODE_CACHE = new WeakMap();
+function segmentNodeText(node, granularity = 'grapheme') {
+  const text = node.textContent ?? '';
+  let entry = SEGMENTED_NODE_CACHE.get(node);
+  if (!entry || entry.text !== text) {
+    entry = { text, values: new Map() };
+    SEGMENTED_NODE_CACHE.set(node, entry);
+  }
+  if (!entry.values.has(granularity)) entry.values.set(granularity, segmentText(text, granularity));
+  return entry.values.get(granularity);
 }
 
 function resolveScrambleGlyphs(glyphs, charset) {
@@ -307,7 +327,7 @@ function buildSourceTree(input, plainText, allowedTags, allowedAttrs) {
 
 function countTextUnits(node, granularity = 'grapheme') {
   if (node.nodeType === 3) {
-    return segmentText(node.textContent ?? '', granularity).length;
+    return segmentNodeText(node, granularity).length;
   }
   let total = 0;
   node.childNodes.forEach((child) => (total += countTextUnits(child, granularity)));
@@ -316,8 +336,7 @@ function countTextUnits(node, granularity = 'grapheme') {
 
 function cloneRevealWindow(node, start, end, granularity = 'grapheme', revealOpts = {}) {
   if (node.nodeType === 3) {
-    const text = node.textContent ?? '';
-    const units = segmentText(text, granularity);
+    const units = segmentNodeText(node, granularity);
     const len = units.length;
     if (end <= 0 || start >= len) {
       return { clone: null, start: Math.max(0, start - len), end: Math.max(0, end - len) };
@@ -714,6 +733,20 @@ class TypeFlowEngine {
     let settled = false;
     let timeoutId = null;
     let resolveFn = null;
+    const incrementalPlainText = extra.plainText === true
+      && direction === 1
+      && options.direction === 'left'
+      && !isScramble
+      && options.typeStyle !== 'fade-trail'
+      && options.trailFade === undefined
+      && options.trailingFadeLength === undefined;
+    // Plain-text source trees always contain one text node, including empty input.
+    const plainUnits = incrementalPlainText
+      ? segmentNodeText(sourceTree.firstChild, granularity)
+      : null;
+    const incrementalTextNode = plainUnits ? document.createTextNode('') : null;
+    let incrementalCursor = null;
+    let lastIncrementalCount = 0;
 
     const clearTimers = () => {
       if (timeoutId !== null) clearTimeout(timeoutId);
@@ -722,6 +755,21 @@ class TypeFlowEngine {
     };
 
     const render = (unitCount, cursorChar, scrambleActive = false, cursorHidden = false) => {
+      if (incrementalTextNode && !scrambleActive) {
+        if (unitCount === lastIncrementalCount + 1) incrementalTextNode.data += plainUnits[lastIncrementalCount] ?? '';
+        else if (unitCount !== lastIncrementalCount) incrementalTextNode.data = plainUnits.slice(0, unitCount).join('');
+        lastIncrementalCount = unitCount;
+        if (!incrementalTextNode.parentNode) el.replaceChildren(...prefix, incrementalTextNode);
+        if (cursorChar) {
+          if (!incrementalCursor) incrementalCursor = createCursorSpan(cursorChar, cursorHidden);
+          incrementalCursor.textContent = cursorChar;
+          incrementalCursor.style.visibility = cursorHidden ? 'hidden' : 'visible';
+          if (!incrementalCursor.parentNode) el.appendChild(incrementalCursor);
+        } else if (incrementalCursor?.parentNode) {
+          incrementalCursor.remove();
+        }
+        return;
+      }
       const bounds = calculateWindowBounds(
         unitCount,
         totalUnits,
@@ -786,6 +834,7 @@ class TypeFlowEngine {
         options.onComplete?.(resultText);
       } else {
         this.clearCursorInterval(el);
+        stopKeystrokeSound(options.audio);
         options.onInterrupt?.();
       }
       resolveFn?.({ completed, text: resultText });
@@ -928,7 +977,11 @@ class TypeFlowEngine {
           options.onComplete?.(extra.resultText ?? '');
         }
       } else {
-        words.forEach((word) => { word.style.willChange = 'auto'; });
+        // Word-motion lays out the complete source before animating it, so an
+        // interrupted operation can restore semantic source nodes without
+        // losing partially constructed text or retaining presentation spans.
+        el.replaceChildren(...prefix, sourceTree.cloneNode(true));
+        stopKeystrokeSound(options.audio);
         options.onInterrupt?.();
       }
       resolveFn?.({ completed, text: isErasing ? '' : (extra.resultText ?? '') });
@@ -1002,6 +1055,7 @@ class TypeFlowEngine {
         el.replaceChildren(...baseline);
         options.onComplete?.('');
       } else {
+        stopKeystrokeSound(options.audio);
         options.onInterrupt?.();
       }
       resolveFn?.({ completed, text: '' });
@@ -1070,6 +1124,9 @@ class TypeFlowEngine {
   type(target, text, config = {}) {
     const el = resolveTarget(target);
     const options = { ...TYPE_DEFAULTS, ...config };
+    if (Object.prototype.hasOwnProperty.call(config, 'scrambleGlyphs')) {
+      options.scrambleCharset = undefined;
+    }
     options.direction = normalizeDirection(options.direction);
     options.typeStyle = normalizeTypeStyle(options.typeStyle);
     if (options.typeStyle === 'word') options.granularity = 'word';
@@ -1104,12 +1161,16 @@ class TypeFlowEngine {
       prefix,
       blinkOnFinish: true,
       isErasing: false,
+      plainText: !options.html,
     });
   }
 
   erase(target, config = {}) {
     const el = resolveTarget(target);
     const options = { ...ERASE_DEFAULTS, ...config };
+    if (Object.prototype.hasOwnProperty.call(config, 'scrambleGlyphs')) {
+      options.scrambleCharset = undefined;
+    }
     options.eraseStyle = normalizeEraseStyle(options.eraseStyle);
 
     const baseline = options.preserveBaseline ? this.baselines.get(el) ?? [] : [];

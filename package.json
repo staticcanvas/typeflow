@@ -28,6 +28,18 @@
       "require": "./dist/typeflow-caret.cjs",
       "default": "./dist/typeflow-caret.js"
     },
+    "./webaudio": {
+      "types": "./src/typeflow-webaudio.d.ts",
+      "import": "./dist/typeflow-webaudio.mjs",
+      "require": "./dist/typeflow-webaudio.cjs",
+      "default": "./dist/typeflow-webaudio.js"
+    },
+    "./parallel": {
+      "types": "./src/typeflow-parallel.d.ts",
+      "import": "./dist/typeflow-parallel.mjs",
+      "require": "./dist/typeflow-parallel.cjs",
+      "default": "./dist/typeflow-parallel.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -43,7 +55,7 @@
     "serve:demo": "vite --open docs/static/webutil/index.html",
     "docs:build": "npm run build && hugo --source docs",
     "docs:serve": "npm run build && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
-    "build": "vite build && npm_config_mode=metrics vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=caret vite build --config vite.optional.config.js",
+    "build": "vite build && npm_config_mode=metrics vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=caret vite build --config vite.optional.config.js && npm_config_mode=webaudio vite build --config vite.optional.config.js && npm_config_mode=parallel vite build --config vite.optional.config.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -57,6 +69,9 @@
     "benchmark:quick": "node --expose-gc scripts/run-benchmark.mjs --quick",
     "benchmark:md": "node --expose-gc scripts/run-benchmark.mjs --markdown",
     "benchmark:json": "node --expose-gc scripts/run-benchmark.mjs --json",
+    "benchmark:browser": "npm run build && hugo --source docs --baseURL=http://127.0.0.1/ --gc && node scripts/run-browser-benchmark.mjs",
+    "benchmark:browser:quick": "npm run build && hugo --source docs --baseURL=http://127.0.0.1/ --gc && node scripts/run-browser-benchmark.mjs --quick",
+    "benchmark:profile": "npm run build && hugo --source docs --baseURL=http://127.0.0.1/ --gc && node scripts/profile-runtime.mjs",
     "check:size": "node scripts/check-bundle-size.mjs",
     "validate:docs-data": "node scripts/validate-doc-data.mjs",
     "validate:doc-links": "hugo --source docs --gc && node scripts/validate-doc-links.mjs",
