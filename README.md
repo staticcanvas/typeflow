@@ -4,7 +4,7 @@
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.34.1-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.34.2-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
 [![documentation](https://img.shields.io/badge/docs-online-42275a?style=flat-square&logo=gitbook&logoColor=e73827)](https://staticcanvas.gitlab.io/typeflow)
 [![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
@@ -17,9 +17,7 @@
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://jsr.io/%40staticcanvas/typeflow)
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/typeflow?style=flat-square&logo=jsdelivr&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/typeflow)
 
-[![mirror](https://img.shields.io/badge/github-mirror-cyan?style=flat-square&logo=jsr&labelColor=%231c1c1c&color=%230087af&logoColor=%23eb9234)](https://github.com/staticcanvas/typeflow)
-
-[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.34.0-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/develop/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.34.2-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.34.2-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
 > **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 
@@ -360,7 +358,7 @@ TypeFlow does not ship an Angular-specific factory. Angular applications can use
 
 ## Companion Extensions
 
-TypeFlow is built with a sub-7.2 KB hyper-optimized core engine. For developers requiring advanced capabilities, TypeFlow provides seven modular, tree-shakeable companion extensions:
+TypeFlow keeps its zero-dependency core below a 10.25 KiB gzip budget. Seven optional companion extensions provide additional capabilities:
 
 | Package Subpath                    | Module Name         | Description                                                                                                                                                                 |
 | :--------------------------------- | :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -476,7 +474,7 @@ TypeFlow provides a full suite of NPM scripts for local development, automated t
 | **`npm run benchmark:json`**               | `node --expose-gc scripts/run-benchmark.mjs --json`                             | Generates the benchmark report as JSON.                                                                  |
 | **`npm run benchmark:browser`**            | Playwright Chromium + Firefox                                                   | Generates real-browser capacity JSON and Markdown with frame, heap, DOM, long-task, and leak metrics.    |
 | **`npm run benchmark:browser:quick`**      | Reduced Playwright tier matrix                                                  | Regenerates a fast local browser benchmark sample.                                                       |
-| **`npm run check:size`**                   | `node scripts/check-bundle-size.mjs`                                            | Verifies the core bundle against the 10 KiB gzip budget.                                                 |
+| **`npm run check:size`**                   | `node scripts/check-bundle-size.mjs`                                            | Verifies the core bundle against the 10.25 KiB gzip budget and minimum 128-byte headroom.                 |
 | **`npm run validate:docs-data`**           | `node scripts/validate-doc-data.mjs`                                            | Validates documentation splash data against its schema.                                                  |
 | **`npm run check:quality`**                | `npm run validate:docs-data && npm run build && npm run check:size && npm test` | Runs deterministic release quality checks.                                                               |
 | **`npm run docs:build`**                   | `npm run build && hugo --source docs`                                           | Compiles the static documentation and playground website into `public/`.                                 |

@@ -7,14 +7,21 @@
   // The name must be scoped with an '@' (e.g. @username/pkgname)
   "name": "@staticcanvas/typeflow",
   // Must be a valid SemVer version (e.g. 0.1.0, 1.0.0-rc.1)
-  "version": "0.34.1",
+  "version": "0.34.2",
   // ---------------------------------------------------------
   // EXPORTS
   // ---------------------------------------------------------
   // Defines what files users can import.
   // "." is the default import
   "exports": {
-    ".": "./src/typeflow.js"
+    ".": "./src/typeflow.js",
+    "./metrics": "./src/typeflow-metrics.js",
+    "./debug": "./src/typeflow-debug.js",
+    "./caret": "./src/typeflow-caret.js",
+    "./webaudio": "./src/typeflow-webaudio.js",
+    "./parallel": "./src/typeflow-parallel.js",
+    "./keystroke": "./src/typeflow-keystroke.js",
+    "./extchars": "./src/typeflow-extchars.js",
   },
   // ---------------------------------------------------------
   // PUBLISHING CONTROLS

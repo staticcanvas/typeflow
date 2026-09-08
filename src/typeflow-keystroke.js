@@ -1,3 +1,4 @@
+/* @ts-self-types="./typeflow-keystroke.d.ts" */
 /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
  * @description TypeFlow Keystroke - Human Cadence, Finger Distance & Typo Simulation Engine.
  * Models physical QWERTY coordinate finger travel, burstiness, thought pauses,

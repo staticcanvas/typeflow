@@ -25,7 +25,7 @@ keywords:
 weight: 6
 ---
 
-TypeFlow is built with a hyper-optimized core engine (<10 KB gzipped). For developers requiring advanced capabilities, TypeFlow provides six modular, tree-shakeable companion extensions.
+TypeFlow keeps its zero-dependency core below a 10.25 KiB gzip budget. Optional capabilities are published as modular companion extensions.
 
 ```mermaid
 graph LR

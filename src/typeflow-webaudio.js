@@ -1,3 +1,4 @@
+/* @ts-self-types="./typeflow-webaudio.d.ts" */
 /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
  * @description TypeFlow WebAudio - Procedural Audio Synthesis for Typing Interfaces.
  * Synthesizes zero-asset, real-time procedural keystrokes including mechanical switches,

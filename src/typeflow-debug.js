@@ -1,3 +1,4 @@
+/* @ts-self-types="./typeflow-debug.d.ts" */
 /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
  * @description TypeFlow Debug - Diagnostic Tracing and LogCAD Integration.
  * Provides lifecycle telemetry, animation step timings, event hooks, and structured

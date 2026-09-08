@@ -29,7 +29,10 @@ function stageWebUtilityAssets() {
       const brandingDestination = resolve('docs/static/webutil/assets/branding');
       mkdirSync(brandingDestination, { recursive: true });
       if (existsSync(resolve(`branding/${packageName}-logo.svg`))) {
-        cpSync(resolve(`branding/${packageName}-logo.svg`), resolve(brandingDestination, `${packageName}-logo.svg`));
+        cpSync(
+          resolve(`branding/${packageName}-logo.svg`),
+          resolve(brandingDestination, `${packageName}-logo.svg`)
+        );
       }
       const docsData = resolve('docs/data');
       mkdirSync(docsData, { recursive: true });
@@ -67,7 +70,13 @@ export default defineConfig({
           dir: bundleDist,
           entryFileNames: `${packageName}.min.js`,
           exports: 'named',
-          plugins: [terser({ format: { comments: /^!/ }, compress: { passes: 3, pure_getters: true }, mangle: true })],
+          plugins: [
+            terser({
+              format: { comments: /^!/ },
+              compress: { passes: 3, pure_getters: true },
+              mangle: true,
+            }),
+          ],
         },
         {
           format: 'umd',
@@ -93,7 +102,13 @@ export default defineConfig({
           format: 'es',
           dir: bundleDist,
           entryFileNames: `${packageName}.esm.min.js`,
-          plugins: [terser({ format: { comments: /^!/ }, compress: { passes: 3, pure_getters: true }, mangle: true })],
+          plugins: [
+            terser({
+              format: { comments: /^!/ },
+              compress: { passes: 3, pure_getters: true },
+              mangle: true,
+            }),
+          ],
         },
       ],
     },
@@ -104,7 +119,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.js'],
-      exclude: ['**/node_modules/**', 'tests/**', `src/${packageName}-metrics.js`, `src/${packageName}-debug.js`],
+      exclude: [
+        '**/node_modules/**',
+        'tests/**',
+        `src/${packageName}-metrics.js`,
+        `src/${packageName}-debug.js`,
+      ],
     },
   },
   plugins: [

@@ -17,6 +17,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Existing core methods and built-in audio names remain compatible. See the 0.28 migration guide for additive style values and opt-in extension imports.
 
+## [0.34.2]
+
+> 2026-09-08
+
+### Fixed
+
+- Restore NodeNext declaration resolution for the root, metrics, debug, and caret npm exports.
+- Publish all eight public entry points through JSR with explicit declaration references.
+- Make GitLab package discovery exact, paginated, and stable across scalar and array responses.
+- Wait for the complete release manifest before creating links and SHA-256 metadata.
+- Keep release archives outside npm and JSR package payloads.
+- Use version-matched release notes and the canonical JSR URL.
+- Enforce public GitLab Pages access during documentation deployment.
+
+### Changed
+
+- Validate release tag alignment, package exports, archive placement, JSR declarations, and bundle-size headroom before publication.
+
 ## [0.34.0]
 
 > 2026-09-07
