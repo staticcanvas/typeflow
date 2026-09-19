@@ -1,6 +1,6 @@
 {
   "name": "@staticcanvas/typeflow",
-  "version": "0.34.1",
+  "version": "0.34.4",
   "description": "Typeflow library.",
   "type": "module",
   "main": "./dist/typeflow.cjs",
@@ -9,21 +9,25 @@
   "types": "./src/typeflow.d.ts",
   "exports": {
     ".": {
+      "types": "./src/typeflow.d.ts",
       "import": "./dist/typeflow.mjs",
       "require": "./dist/typeflow.cjs",
       "default": "./dist/typeflow.js"
     },
     "./metrics": {
+      "types": "./src/typeflow-metrics.d.ts",
       "import": "./dist/typeflow-metrics.mjs",
       "require": "./dist/typeflow-metrics.cjs",
       "default": "./dist/typeflow-metrics.js"
     },
     "./debug": {
+      "types": "./src/typeflow-debug.d.ts",
       "import": "./dist/typeflow-debug.mjs",
       "require": "./dist/typeflow-debug.cjs",
       "default": "./dist/typeflow-debug.js"
     },
     "./caret": {
+      "types": "./src/typeflow-caret.d.ts",
       "import": "./dist/typeflow-caret.mjs",
       "require": "./dist/typeflow-caret.cjs",
       "default": "./dist/typeflow-caret.js"

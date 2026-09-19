@@ -14,17 +14,17 @@ To ensure TypeFlow remains lightweight, robust, and maintainable across long-ter
 2. **Zero Runtime Dependencies for Core Engine**:
    - The core TypeFlow engine bundle (`dist/typeflow.esm.js`, `dist/typeflow.min.js`, `dist/typeflow.cjs`) must strictly maintain **zero runtime dependencies** ($0$ NPM dependencies). Specialized subpath modules (such as metrics telemetry or debugging) must be decoupled as opt-in extensions.
 
-3. **Collision-Safe & Viewport-Bounded Positioning**:
-   - All tooltip positioning must calculate safe bounding rects, accommodate custom scrolling containers, and handle boundary clipping without layout thrashing.
+3. **Shared Tooltip Engine**:
+   - Documentation tooltips must use declarative `data-lume` attributes and the pinned `@staticcanvas/lume` jsDelivr assets in the documentation layout. Do not add a second tooltip positioning or lifecycle implementation.
 
 4. **Dual-Target Monospace & Web Readability**:
    - Code formatting, component layouts, and documentation must render with equal visual clarity across both standard graphical web browsers and strict monospace terminal/TUI environments.
 
 5. **Zero Cumulative Layout Shift (CLS = 0.00)**:
-   - Tooltip show/hide animations must never trigger container reflows. Floating tooltips must use fixed/absolute positioning with computed transform offsets.
+   - Keep tooltip presentation in the shared Lume layer so activation does not add in-flow elements or trigger container reflows.
 
 6. **Strict WCAG 2.2 Accessibility Compliance**:
-   - Honor `prefers-reduced-motion` unconditionally across all animation presets. Ensure dynamic `aria-describedby` / `aria-details` relationships and proper keyboard `Escape` dismissals.
+   - Honor `prefers-reduced-motion` unconditionally across all animation presets. Preserve Lume's dynamic `aria-describedby`, focus, and keyboard `Escape` dismissal behavior when adding tooltip triggers.
 
 7. **Editorial Factuality & Clean Technical Documentation**:
    - Technical documentation, architecture guides, and API references must maintain absolute factuality, precision, and zero-emoji editorial rigor. Use Unicode geometric symbols (`■`, `◆`, `▶`) when visual hierarchy is required.

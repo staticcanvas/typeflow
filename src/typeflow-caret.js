@@ -1,3 +1,4 @@
+/* @ts-self-types="./typeflow-caret.d.ts" */
 /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
  * @description TypeFlow Caret - Interactive Cursor Positioning & Mid-String Editing.
  * A persistent, editable cursor bound to an element's text: jump or move to any

@@ -1,3 +1,4 @@
+/* @ts-self-types="./typeflow-extchars.d.ts" */
 /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
  * @description TypeFlow ExtChars - Extended Unicode Glyph Presets & Scramble Pools.
  * Provides specialized ancient alphabets, mathematical operators, Katakana,

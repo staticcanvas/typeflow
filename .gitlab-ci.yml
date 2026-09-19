@@ -9,11 +9,11 @@ default:
 
 variables:
   NODE_VERSION: '25.2.1'
-  AUTOMATOR_DEVOPS_REF: 'cec29eddec3c78342c75d7b18360a8da61db158a'
   NPM_CONFIG_CACHE: '$CI_PROJECT_DIR/.npm'
   NPM_CONFIG_PRODUCTION: 'false'
   NPM_CONFIG_AUDIT: 'false'
   NPM_CONFIG_PREFER_OFFLINE: 'true'
+  PAGES_ACCESS_LEVEL: 'public'
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
@@ -124,16 +124,21 @@ build:
       fi
       if [ -n "$CI_COMMIT_TAG" ]; then
         echo "Tag $CI_COMMIT_TAG triggered the pipeline; package.json version $VERSION is the release source of truth."
+        TAG_VERSION=$(printf '%s' "$CI_COMMIT_TAG" | sed -E 's/^v//; s/-release(\+.*)?$//')
+        if [ "$TAG_VERSION" != "$VERSION" ]; then
+          echo "Release tag version $TAG_VERSION does not match package.json version $VERSION."
+          exit 1
+        fi
       fi
     - echo "PROJECT_VERSION=$VERSION" >> build.env
     - echo "PROJECT_NAME=$PROJECT_NAME" >> build.env
     - npm ci
     - npm run build
     - npm run check:size
-    - mkdir -p "dist/${CI_PROJECT_NAME}/dist"
-    - tar -czf "/tmp/${CI_PROJECT_NAME}-${VERSION}.tar.gz" -C "dist/${CI_PROJECT_NAME}" dist
-    - (cd "dist/${CI_PROJECT_NAME}" && zip -qr "/tmp/${CI_PROJECT_NAME}-${VERSION}.zip" dist)
-    - mv "/tmp/${CI_PROJECT_NAME}-${VERSION}.tar.gz" "/tmp/${CI_PROJECT_NAME}-${VERSION}.zip" "dist/${CI_PROJECT_NAME}/dist/"
+    - mkdir -p "dist/release-artifacts"
+    - tar -czf "dist/release-artifacts/${CI_PROJECT_NAME}-${VERSION}.tar.gz" -C "dist/${CI_PROJECT_NAME}" dist
+    - (cd "dist/${CI_PROJECT_NAME}" && zip -qr "../release-artifacts/${CI_PROJECT_NAME}-${VERSION}.zip" dist)
+    - find "dist/${CI_PROJECT_NAME}/dist" "dist/release-artifacts" -maxdepth 1 -type f -printf '%f\n' | sort -u > dist/release-manifest.txt
     - echo "✅ Build complete!"
     - ls -lah dist/
   artifacts:
@@ -156,10 +161,10 @@ validate:release:
       artifacts: true
   script:
     - npm ci
-    - npm run validate:release -- "dist/${CI_PROJECT_NAME}"
+    - npm run validate:release -- "dist/${CI_PROJECT_NAME}" "dist/release-artifacts"
     - |
       pwsh -NoProfile -Command '
-        $files = @("tools/Get-ReleaseDownloads.ps1", "tools/Request-GenericPackage.ps1")
+        $files = @("tools/Get-ReleaseDownloads.ps1", "tools/Request-GenericPackage.ps1", "tools/New-ReleaseMetadata.ps1")
         foreach ($file in $files) {
           $tokens = $null
           $errors = $null
@@ -185,20 +190,18 @@ deploy:generic:
   resource_group: generic-registry
   before_script:
     - echo "🔵 Preparing Generic Registry upload..."
-    - cd dist/${CI_PROJECT_NAME}/dist
   script:
     - echo "🟢 Uploading artifacts for version ${PROJECT_VERSION}..."
-    # Define the list of files to upload
-    - FILES=$(find . -maxdepth 1 -type f -print)
     - |
-      for FILE in $FILES; do
-        FILENAME=$(basename "$FILE")
-        echo "🔵 Uploading '$FILENAME' to Generic Gilab package registry...\n"
+      while IFS= read -r FILENAME; do
+        FILE="dist/${CI_PROJECT_NAME}/dist/${FILENAME}"
+        if [ ! -f "$FILE" ]; then FILE="dist/release-artifacts/${FILENAME}"; fi
+        test -f "$FILE" || { echo "Manifest artifact '$FILENAME' is missing."; exit 1; }
+        echo "🔵 Uploading '$FILENAME' to Generic GitLab package registry..."
         curl --fail-with-body --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "$FILE" \
              "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${PROJECT_VERSION}/${FILENAME}"
-        echo "\n ✅ Uploaded '$FILENAME'\n"
-      done
-    - echo "✅ All artifacts uploaded to Generic Registry \n"
+      done < dist/release-manifest.txt
+    - echo "✅ All artifacts uploaded to Generic Registry"
   environment:
     name: Generic
     url: https://gitlab.com/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/-/packages/generic/${CI_PROJECT_NAME}/${PROJECT_VERSION}
@@ -282,7 +285,7 @@ publish:jsr:auto:
     - npx jsr publish --token ${JSR_API_KEY} --allow-dirty
   environment:
     name: JSR
-    url: https://jsr.io/${PACKAGE_NAME}/v/${PACKAGE_VERSION}
+    url: https://jsr.io/${PACKAGE_NAME}@${PACKAGE_VERSION}
 
 generate:generic:release:metadata:
   extends: .release_on_semver_tag
@@ -298,138 +301,15 @@ generate:generic:release:metadata:
     - job: publish:jsr:auto
       artifacts: false
 
-  before_script:
-    - echo "🔵 Preparing release notes generation..."
-    # pull in automator scripts
-    - git clone https://gitlab.com/phellams/automator-devops.git
-    - git -C automator-devops checkout --detach "$AUTOMATOR_DEVOPS_REF"
-    # fetch full git history for accurate release notes
-    - git fetch --tags --prune --unshallow || git fetch --tags --prune
   script:
-    # ---------------------------------------------------------
-    # STEP 1: Create the PowerShell Script
-    # We write the content to 'generate_meta.ps1' first.
-    # We use 'EOF' (quoted) to prevent Bash from trying to expand variables.
-    # This allows PowerShell to handle the variables instead.
-    # ---------------------------------------------------------
-    - |
-      cat <<'EOF' > generate_meta.ps1
-
-      # Import Modules
-      using module ./automator-devops/scripts/core/Request-GenericPackage.psm1
-      using module ./automator-devops/scripts/core/Get-RemoteFileHash.psm1
-      using module ./automator-devops/scripts/core/Get-ReleaseNotes.psm1
-
-      Write-Host "🟢 Generating Generic Package Registry download links for version $env:PROJECT_VERSION..."
-
-      # 1. Fetch Links (Use Splatting for readability)
-      $params = @{
-          ProjectId      = $env:CI_PROJECT_ID
-          PackageName    = $env:CI_PROJECT_NAME
-          ProjectName    = $env:CI_PROJECT_NAME
-          Namespace      = $env:CI_PROJECT_NAMESPACE
-          PackageVersion = $env:PROJECT_VERSION
-          ApiKey         = $env:CI_JOB_TOKEN
-          ApiUrl         = $env:CI_API_V4_URL
-          ci             = $true
-      }
-      $links = Request-GenericPackage @params
-
-      # 🔍 DEBUG: Print the count to the logs so we know if it worked
-      Write-Host "🔹 Found $($links.Count) matching files."
-
-      # 2. Define the extensions you want to capture
-      $suffixes = @(
-          '.esm.js', '.esm.js.map',
-          '.esm.min.js', '.esm.min.js.map',
-          '.js', '.min.js',
-          '.js.map', '.min.js.map'
-      )
-
-      # 3. Filter and Select (Loop logic)
-      # NOTE: wrapped in @() — PowerShell unwraps a single-item pipeline result
-      # into a scalar, which breaks the += appends below and the array shape
-      # ConvertTo-Json/jq expect further down.
-      $all_links = @($suffixes | ForEach-Object {
-          $targetFile = "$env:CI_PROJECT_NAME$_"
-
-          # Find the file, sort by newest, take the first one
-          $links | Where-Object { $_.file_name -eq $targetFile } |
-                  Sort-Object created_at -Descending |
-                  Select-Object -First 1
-      })
-
-      # Archives include the release version in their filename.
-      $all_links += @($links | Where-Object {
-          $_.file_name -like "$env:CI_PROJECT_NAME-*.zip" -or
-          $_.file_name -like "$env:CI_PROJECT_NAME-*.tar.gz"
-      })
-
-      # Optional diagnostics are published alongside the core browser builds.
-      $all_links += @($links | Where-Object {
-          $_.file_name -like "$env:CI_PROJECT_NAME-metrics*" -or
-          $_.file_name -like "$env:CI_PROJECT_NAME-debug*"
-      })
-
-      # 🔍 DEBUG: Print the count to the logs so we know if it worked
-      Write-Host "🔹 Found $($all_links.Count) matching files."
-
-      # 4. Export JSON
-      $OutputDir = "dist/$env:CI_PROJECT_NAME"
-      New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
-
-      if ($all_links.Count -gt 0) {
-        # -AsArray: ConvertTo-Json collapses a single-element array into a
-        # bare JSON object rather than a one-element array. jq downstream
-        # (release:gitlab) requires an array regardless of match count.
-        $all_links | ConvertTo-Json -Depth 5 -AsArray | Out-File -FilePath "$OutputDir/generic-package-links.json"
-
-        # Create Checksums
-        $all_links | Select-Object file_name, checksum | ConvertTo-Json -Depth 2 -AsArray | Out-File -FilePath "$OutputDir/generic-package-checksums.json"
-
-        Write-Host "✅ JSON files generated successfully."
-      } else {
-        Write-Error "❌ No matching files found! The JSON will be empty."
-        exit 1
-      }
-
-      Write-Host "✅ Generic Package Registry download links generated at $OutputDir/generic-package-links.json"
-
-      # Create Checksums
-      Write-Host "🟢 Generic Package Checksums"
-      $all_links | Select-Object file_name, checksum | ConvertTo-Json -Depth 2 -AsArray | Out-File -FilePath "dist/$ENV:CI_PROJECT_NAME/generic-package-checksums.json" -Encoding utf8
-      Write-Host "✅ Generic Package Registry checksums generated at $OutputDir/generic-package-checksums.json"
-
-      # Generate Release Notes
-      Write-Host "🟢 Generating release notes..."
-      $Release_notes = Get-ReleaseNotes -AheadOnly -FeatureNotes -BreakingChanges -FeatureAdditions -Notes -FeatureUpdates -CommitLink -CommitLinkPrefix gitlab -NameSpace $env:CI_PROJECT_NAMESPACE
-      if (-not [string]::IsNullOrWhiteSpace($Release_notes)) {
-        $Release_notes | Out-File -FilePath "$OutputDir/release-notes.md" -Encoding utf8
-        Write-Host "✅ Release notes generated at $OutputDir/release-notes.md"
-      } elseif (Test-Path "release-notes.md") {
-        Copy-Item -Path "release-notes.md" -Destination "$OutputDir/release-notes.md" -Force
-        Write-Host "✅ Copied root release-notes.md to $OutputDir/release-notes.md"
-      } else {
-        Write-Host "⚠️ No release notes generated and no root release-notes.md found."
-      }
-
-      EOF
-
-    # ---------------------------------------------------------
-    # STEP 2: Execute the Script
-    # ---------------------------------------------------------
-    - pwsh ./generate_meta.ps1
-
-    # ---------------------------------------------------------
-    # STEP 3: Upload (Bash)
-    # ---------------------------------------------------------
+    - echo "🔵 Waiting for the complete Generic Registry package and generating release metadata..."
+    - pwsh -NoProfile ./tools/New-ReleaseMetadata.ps1 -ProjectId "$CI_PROJECT_ID" -PackageName "$CI_PROJECT_NAME" -PackageVersion "$PROJECT_VERSION" -ProjectName "$CI_PROJECT_NAME" -Namespace "$CI_PROJECT_NAMESPACE" -ManifestPath dist/release-manifest.txt -ApiUrl "$CI_API_V4_URL" -ApiToken "$CI_JOB_TOKEN"
     - |
       echo "🟢 Uploading metadata to Generic Registry..."
 
       # Safety check: Ensure directory exists
       cd "dist/${CI_PROJECT_NAME}" || { echo "❌ Directory not found"; exit 1; }
 
-      # Define the files you want to upload
       FILES="generic-package-checksums.json generic-package-links.json"
 
       for FILE in $FILES; do
@@ -440,7 +320,8 @@ generate:generic:release:metadata:
             --upload-file "$FILE" \
             "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${PROJECT_VERSION}/${FILE}"
         else
-          echo "⚠️ Warning: '$FILE' not found in $(pwd), skipping."
+          echo "Metadata file '$FILE' was not generated."
+          exit 1
         fi
       done
 
@@ -448,8 +329,6 @@ generate:generic:release:metadata:
 
   artifacts:
     paths:
-      # Use wildcard if you aren't 100% sure of the project name casing,
-      # otherwise ensure this matches the $OutputDir created above.
       - dist/*/generic-package-links.json
       - dist/*/generic-package-checksums.json
       - dist/*/release-notes.md
@@ -501,7 +380,7 @@ release:gitlab:
       * https://www.npmjs.com/package/@${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/v/${PROJECT_VERSION}
 
       ### ▪️ JSR (JavaScript Registry)
-      * https://www.jsr.io/npm/@${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/v/${PROJECT_VERSION}
+      * https://jsr.io/@${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}@${PROJECT_VERSION}
 
       ### ▪️ Unpkg CDN
       * ***ESM***: \`https://unpkg.com/@${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}@${PROJECT_VERSION}/dist/${CI_PROJECT_NAME}.esm.js\`
@@ -594,6 +473,13 @@ pages:
     - when: never
   script:
     - echo "📚 Building Hugo documentation..."
+    - |
+      PAGES_TOKEN="${GITLAB_API_KEY:-${GITLAB_TOKEN:-}}"
+      test -n "$PAGES_TOKEN" || { echo "A GitLab API token is required to enforce Pages access."; exit 1; }
+      curl --fail-with-body --request PUT \
+        --header "PRIVATE-TOKEN: ${PAGES_TOKEN}" \
+        --data-urlencode "pages_access_level=${PAGES_ACCESS_LEVEL}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
     - npm ci
     - pwsh ./tools/Get-ReleaseDownloads.ps1 -ProjectId "$CI_PROJECT_ID" -PackageName "$CI_PROJECT_NAME" -ProjectName "$CI_PROJECT_NAME" -Namespace "$CI_PROJECT_NAMESPACE" -ApiUrl "$CI_API_V4_URL" -ApiToken "$CI_JOB_TOKEN" -OutputPath docs/data/releases.json
     - mkdir -p docs/static/data

@@ -11,6 +11,7 @@ const packageName = JSON.parse(readFileSync(join(projectRoot, 'package.json'), '
   .name.split('/')
   .pop();
 const packageRoot = resolve(projectRoot, process.argv[2] || `dist/${packageName}`);
+const archiveRoot = resolve(projectRoot, process.argv[3] || 'dist/release-artifacts');
 const bundleRoot = join(packageRoot, 'dist');
 
 const requiredBundles = [
@@ -22,12 +23,68 @@ const requiredBundles = [
 ];
 const files = existsSync(bundleRoot) ? readdirSync(bundleRoot) : [];
 const missingBundles = requiredBundles.filter((file) => !files.includes(file));
-const archives = files.filter((file) => file.endsWith('.zip') || file.endsWith('.tar.gz'));
+const nestedArchives = files.filter((file) => file.endsWith('.zip') || file.endsWith('.tar.gz'));
+const archiveFiles = existsSync(archiveRoot) ? readdirSync(archiveRoot) : [];
+const expectedArchives = [
+  `${packageName}-${packageVersion()}.zip`,
+  `${packageName}-${packageVersion()}.tar.gz`,
+];
+
+function packageVersion() {
+  return JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8')).version;
+}
 
 if (missingBundles.length) {
   throw new Error(
     `Release artifact validation failed: missing bundles [${missingBundles.join(', ')}].`
   );
+}
+
+if (nestedArchives.length) {
+  throw new Error(
+    `Package staging must not contain nested release archives: ${nestedArchives.join(', ')}.`
+  );
+}
+
+const missingArchives = expectedArchives.filter((file) => !archiveFiles.includes(file));
+if (missingArchives.length) {
+  throw new Error(
+    `Release artifact validation failed: missing archives [${missingArchives.join(', ')}].`
+  );
+}
+
+const packageJson = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8'));
+const jsrConfig = JSON.parse(
+  readFileSync(join(projectRoot, 'jsr.jsonc'), 'utf8')
+    .replace(/^\s*\/\/.*$/gm, '')
+    .replace(/,\s*([}\]])/g, '$1')
+);
+const expectedExports = [
+  '.',
+  './metrics',
+  './debug',
+  './caret',
+  './webaudio',
+  './parallel',
+  './keystroke',
+  './extchars',
+];
+for (const exportName of expectedExports) {
+  const packageExport = packageJson.exports[exportName];
+  if (!packageExport?.types || !existsSync(resolve(projectRoot, packageExport.types))) {
+    throw new Error(`Package export ${exportName} requires an existing types condition.`);
+  }
+  if (
+    !jsrConfig.exports[exportName] ||
+    !existsSync(resolve(projectRoot, jsrConfig.exports[exportName]))
+  ) {
+    throw new Error(`JSR export ${exportName} requires an existing source target.`);
+  }
+  const jsrSource = readFileSync(resolve(projectRoot, jsrConfig.exports[exportName]), 'utf8');
+  const typeDirective = `/* @ts-self-types="./${packageExport.types.split('/').pop()}" */`;
+  if (!jsrSource.startsWith(typeDirective)) {
+    throw new Error(`JSR export ${exportName} must reference its declaration with @ts-self-types.`);
+  }
 }
 
 const downloadsPagePath = join(projectRoot, 'docs/content/downloads.md');
@@ -59,5 +116,5 @@ if (existsSync(releaseDataPath)) {
 }
 
 console.log(
-  `Release validation passed: ${requiredBundles.length} required bundles and ${archives.length} archives.`
+  `Release validation passed: ${requiredBundles.length} required bundles, ${expectedArchives.length} archives, and ${expectedExports.length} typed exports.`
 );

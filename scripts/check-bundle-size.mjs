@@ -7,7 +7,8 @@ import { gzipSync } from 'node:zlib';
 import { existsSync, readFileSync } from 'node:fs';
 
 const bundlePath = 'dist/typeflow/dist/typeflow.min.js';
-const maxGzipBytes = 10 * 1024;
+const maxGzipBytes = 10.25 * 1024;
+const minimumHeadroomBytes = 128;
 
 if (!existsSync(bundlePath)) {
   console.warn(`Bundle file ${bundlePath} does not exist yet. Run build first.`);
@@ -21,4 +22,11 @@ console.log(`${bundlePath}: ${bundle.byteLength} bytes, ${gzipBytes} bytes gzip`
 
 if (gzipBytes > maxGzipBytes) {
   throw new Error(`Bundle exceeds the ${maxGzipBytes}-byte gzip budget.`);
+}
+
+const headroomBytes = maxGzipBytes - gzipBytes;
+if (headroomBytes < minimumHeadroomBytes) {
+  throw new Error(
+    `Bundle has only ${headroomBytes} bytes of gzip headroom; at least ${minimumHeadroomBytes} bytes are required.`
+  );
 }

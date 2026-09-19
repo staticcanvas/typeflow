@@ -1,3 +1,4 @@
+/* @ts-self-types="./typeflow-parallel.d.ts" */
 /**
  * EXPERIMENTAL opt-in parallel orchestration for TypeFlow.
  * This module intentionally does not import core, keeping stable bundles small.

@@ -35,7 +35,7 @@ During each character tick, TypeFlow clones only the visible character slice whi
 
 TypeFlow enforces safe HTML defaults:
 
-- **Allowed Tags**: `b`, `strong`, `i`, `em`, `mark`, `span`, `small`, `sub`, `sup`, `u`, `br`, `a`, `code`.
+- **Allowed Tags**: `b`, `strong`, `i`, `em`, `mark`, `span`, `small`, `sub`, `sup`, `u`, `br`, `a`, `code`, `ul`, `ol`, `li`.
 - **Attribute Filtering**: Strips all inline event handlers (`onclick`, `onload`, etc.) and javascript URI schemes (`javascript:`, `data:`).
 - **Target `_blank` Protection**: Automatically adds `rel="noopener noreferrer"` to external anchor links.
 

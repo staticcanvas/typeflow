@@ -1,6 +1,6 @@
+/* @ts-self-types="./typeflow.d.ts" */
 /**
  * TypeFlow - A lightweight, interruptible, framework-agnostic typewriter library
- * @version 2.3.0
  * @license MIT
  *
  * Zero dependencies. Safe by default (no innerHTML string concatenation).
@@ -131,6 +131,9 @@ const DEFAULT_ALLOWED_TAGS = new Set([
   'br',
   'a',
   'code',
+  'ul',
+  'ol',
+  'li',
 ]);
 
 const DEFAULT_ALLOWED_ATTRS = {

@@ -7,4 +7,4 @@
 */ -}}
 {{- $isRootRelative := strings.HasPrefix .Destination "/" -}}
 {{- $basePath := strings.TrimSuffix "/" (urls.Parse site.BaseURL).Path -}}
-<a href="{{ if $isRootRelative }}{{ printf "%s%s" $basePath .Destination }}{{ else }}{{ .Destination }}{{ end }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text | safeHTML }}</a>
+<a href="{{ if $isRootRelative }}{{ printf "%s%s" $basePath .Destination }}{{ else }}{{ .Destination }}{{ end }}"{{ with .Title }} data-lume="{{ . }}"{{ end }}>{{ .Text | safeHTML }}</a>

@@ -1,3 +1,4 @@
+/* @ts-self-types="./typeflow-metrics.d.ts" */
 /** * * * * * * * * * * * * * * * * * * * * * * * * * * **
  * @description TypeFlow Metrics - Real-time Performance HUD & Diagnostic Tooltip.
  * Mounts an accessible, zero-CLS floating metrics badge/window in the viewport
