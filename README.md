@@ -4,7 +4,7 @@
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.34.3-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.34.4-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
 [![documentation](https://img.shields.io/badge/docs-online-42275a?style=flat-square&logo=gitbook&logoColor=e73827)](https://staticcanvas.gitlab.io/typeflow)
 [![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/typeflow?style=flat-square&logo=gitlab&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://gitlab.com/staticcanvas/typeflow/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
@@ -17,7 +17,7 @@
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://jsr.io/%40staticcanvas/typeflow)
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/typeflow?style=flat-square&logo=jsdelivr&labelColor=%231e1e1e&color=%2342275a&logoColor=%23e73827)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/typeflow)
 
-[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.34.3-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.34.3-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/v0.34.1-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Ftypeflow/jobs/artifacts/develop/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
 > **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.
 

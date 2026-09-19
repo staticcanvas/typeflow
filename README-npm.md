@@ -4,7 +4,7 @@
 
 [![npm-version](https://img.shields.io/npm/v/@staticcanvas/typeflow?style=flat-square&color=%2342275a)](https://www.npmjs.com/package/@staticcanvas/typeflow)
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/typeflow?style=flat-square&logo=jsr&color=%2342275a)](https://jsr.io/%40staticcanvas/typeflow)
-[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.34.3-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
+[![codecov](https://codecov.io/gl/staticcanvas/typeflow/branch/v0.34.4-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/typeflow)
 [![license](https://img.shields.io/npm/l/@staticcanvas/typeflow?style=flat-square&color=%2342275a)](https://gitlab.com/staticcanvas/typeflow)
 
 > **TypeFlow** is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.

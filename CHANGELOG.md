@@ -5,45 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased development changes
+## [Unreleased]
 
-### Added
-
-- Add stable spatial word-motion reveal/erase styles with reduced-motion behavior, semantic DOM cleanup, declarations, documentation, examples, and browser regression coverage.
-- Add the optional schema-v1 Web Audio preset registry with immutable built-ins, validation, compatibility aliases, scoped interruption cleanup, declarations, documentation, and teardown tests.
-- Add the explicitly opt-in experimental parallel companion; its API is not yet stable.
-
-### Fixed
-
-- Preserve `<ul>`, `<ol>`, and `<li>` in HTML mode by adding them to the default sanitizer allowlist; they were previously unwrapped, leaving only their text content (#1).
-
-### Migration
-
-- Existing core methods and built-in audio names remain compatible. See the 0.28 migration guide for additive style values and opt-in extension imports.
-
-## [0.34.2]
-
-> 2026-09-08
-
-### Fixed
-
-- Restore NodeNext declaration resolution for the root, metrics, debug, and caret npm exports.
-- Publish all eight public entry points through JSR with explicit declaration references.
-- Make GitLab package discovery exact, paginated, and stable across scalar and array responses.
-- Wait for the complete release manifest before creating links and SHA-256 metadata.
-- Keep release archives outside npm and JSR package payloads.
-- Use version-matched release notes and the canonical JSR URL.
-- Enforce public GitLab Pages access during documentation deployment.
+<!-- rivet:changelog:start -->
 
 ### Changed
 
-- Validate release tag alignment, package exports, archive placement, JSR declarations, and bundle-size headroom before publication.
+- Update gitignore add issues exlude. ([6442034](https://gitlab.com/staticcanvas/typeflow/-/commit/64420345f3eaa28963394fe680191c96d92ce45e) — @sgkens)
+- Prepare v0.34.3. ([7ced42f](https://gitlab.com/staticcanvas/typeflow/-/commit/7ced42f8f7d584acab88a606f9091c1aed2a798f) — @sgkens)
+- Trim repository topics. ([6a9056f](https://gitlab.com/staticcanvas/typeflow/-/commit/6a9056f7619f13aeebaae4454aa750bf4e8720b7) — @sgkens)
+- Remove generated logo assets. ([e7d5b7e](https://gitlab.com/staticcanvas/typeflow/-/commit/e7d5b7e42098a5ba632f3b086fb2ce5eb3ae01dc) — @sgkens)
+- Replace custom tooltips with shared Lume engine. ([f688acb](https://gitlab.com/staticcanvas/typeflow/-/commit/f688acbda41fff5b1b46865e5ba662454d9517e6) — @sgkens)
+- Update readme add github mirror shields.io badge. ([607bf89](https://gitlab.com/staticcanvas/typeflow/-/commit/607bf89068a29f5b7f8af98d2595a35a0fce829d) — @sgkens)
 
-## [0.34.0]
+### Fixed
+
+- Preserve ul/ol/li in HTML mode. ([32bd3fb](https://gitlab.com/staticcanvas/typeflow/-/commit/32bd3fbf917e6a10b3e022e99a264b25764a06ed) — @sgkens)
+- Harden 0.34.2 publication. ([2fca2f4](https://gitlab.com/staticcanvas/typeflow/-/commit/2fca2f462487fbbae60dbcfe875aad271288f7ee) — @sgkens)
+- Enumerate GitLab package responses. ([1564657](https://gitlab.com/staticcanvas/typeflow/-/commit/1564657a91a4d791936e1f9ddf93c452a301c644) — @sgkens)
+
+<!-- rivet:changelog:end -->
+
+## [0.34.1-release]
 
 > 2026-09-07
 
-<!-- rivet:changelog:start -->
+### Changed
+
+- Update release metadata and documenation for v0.34.1. ([012a102](https://gitlab.com/staticcanvas/typeflow/-/commit/012a102f9c649c95f38989a9728aa9866f978b34) — @sgkens)
+
+### Fixed
+
+- Prevent release metadata JSON from collapsing to an object. ([ebabdf1](https://gitlab.com/staticcanvas/typeflow/-/commit/ebabdf15976f615abea8de7a255b581e9006c847) — @sgkens)
+
+## [0.34.0-release]
+
+> 2026-09-07
 
 ### Added
 
@@ -93,7 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Prevent release metadata JSON from collapsing to an object. ([ebabdf1](https://gitlab.com/staticcanvas/typeflow/-/commit/ebabdf15976f615abea8de7a255b581e9006c847) — @sgkens)
 - Wrap splash version and stabilize animation lifecycle tests. ([64326da](https://gitlab.com/staticcanvas/typeflow/-/commit/64326da8c7929defb715827f2b6cfaeb46ab1fe2) — @sgkens)
 - Support CI Hugo menus and narrow-screen controls. ([741134f](https://gitlab.com/staticcanvas/typeflow/-/commit/741134f87ae83a6426e4fcb1c2605dd3fb19338a) — @sgkens)
 - Align playground controls and generated examples. ([285d02c](https://gitlab.com/staticcanvas/typeflow/-/commit/285d02c3c779adf2b347fc24e08d19b40f3449ed) — @sgkens)
@@ -101,33 +97,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add missing guide pages to the sidebar navigation menu. ([c49f7eb](https://gitlab.com/staticcanvas/typeflow/-/commit/c49f7ebeb9a6ed1f5c7a40e9269e493b35c9fa78) — @sgkens)
 - Slow down word-motion splash slogans to a perceptible pace. ([b7beee5](https://gitlab.com/staticcanvas/typeflow/-/commit/b7beee59c37f3079c8ffe14c1e75de4f3969fc60) — @sgkens)
 - Align splash slogans with their animation type and fix schema drift. ([0d193b4](https://gitlab.com/staticcanvas/typeflow/-/commit/0d193b4c4b76f756c39ed6834d3e52e5b98c444e) — @sgkens)
-
-<!-- rivet:changelog:end -->
-
-## [v0.36.7]
-
-### Added
-
-- Add SEO and LLM discovery. ([8ebb0d1](https://gitlab.com/staticcanvas/typeflow/-/commit/8ebb0d122a622087e742ce9341d5c1a65e3fc59b) — @sgkens)
-
-### Changed
-
-- Refresh v0.27.0 browser bundles. ([d6bca59](https://gitlab.com/staticcanvas/typeflow/-/commit/d6bca597ea7d4b957825ba4607ba5beb52463e69) — @sgkens)
-- Align test and lint configuration. ([d6e2730](https://gitlab.com/staticcanvas/typeflow/-/commit/d6e273092ea18b4817b14e81452e3c6858bfb0b3) — @sgkens)
-- Fix codecov invalid project reference. ([cb699a4](https://gitlab.com/staticcanvas/typeflow/-/commit/cb699a4469dc5da1f1d6aa6f667a8f105d1b922f) — @sgkens)
-- Fix ci 'invalid: workflow:rules:rule when unknown value: on_success'. ([cfb1209](https://gitlab.com/staticcanvas/typeflow/-/commit/cfb12096ad1b9bc7d9c69ce968fd0d7710ce3de7) — @sgkens)
-- Update versioning meta to v0.27.0. ([7ad4953](https://gitlab.com/staticcanvas/typeflow/-/commit/7ad49536df3de8a9232ea594e8a2f2b554b77168) — @sgkens)
-- Update. ([62f0d07](https://gitlab.com/staticcanvas/typeflow/-/commit/62f0d07c6c807b2ed6cf2386e26137630cb105c4) — @sgkens)
-- Update readme-npm and readme.md. ([779fa66](https://gitlab.com/staticcanvas/typeflow/-/commit/779fa66f9b254eb365a9a1c7a2fe30d4027e6cbb) — @sgkens)
-- Ignore .rivet tool state, drop stale hawk entries. ([1a71973](https://gitlab.com/staticcanvas/typeflow/-/commit/1a71973c9155b67ba327fb653c672ef4a34eff1d) — @sgkens)
-- Remove root-level rivet automation files. ([92ec42d](https://gitlab.com/staticcanvas/typeflow/-/commit/92ec42dc8a8cbb67eae16e442956488bab11acd7) — @sgkens)
-- Add brand licensing notes and playground library assets. ([b98175c](https://gitlab.com/staticcanvas/typeflow/-/commit/b98175ce5b607a350a6f6498dc2f09be8c4033ba) — @sgkens)
-- Fix tag workflow rule and codecov/release-notes naming. ([e3ef214](https://gitlab.com/staticcanvas/typeflow/-/commit/e3ef21422f0aecfe04800f8472e27355d8225f74) — @sgkens)
-- Restructure package exports and tooling. ([285fe7f](https://gitlab.com/staticcanvas/typeflow/-/commit/285fe7fa2398a0f23f30f06685b5e103e23bb215) — @sgkens)
-- Add hawk playground and scope Pagefind indexing. ([04818bb](https://gitlab.com/staticcanvas/typeflow/-/commit/04818bbc7aa1ffa72bc6b8433552a5b2af04265f) — @sgkens)
-- Gitignore nested hawk checkout and its dev-loop output. ([0d15de3](https://gitlab.com/staticcanvas/typeflow/-/commit/0d15de3459fe735f4807df36ada6626bee0c96ab) — @sgkens)
-- Remove glmeta old automation module. ([dad8a4d](https://gitlab.com/staticcanvas/typeflow/-/commit/dad8a4d2da3a8d10b224c3263b6d13f0b437ba96) — @sgkens)
-- Add playground tooltips and update docs, CI, and repo metadata tools. ([07cedb6](https://gitlab.com/staticcanvas/typeflow/-/commit/07cedb6c0d3dbb48329de85da3ba68e3e38eb669) — @sgkens)
 
 ## [0.27.0]
 
