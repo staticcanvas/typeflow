@@ -1,5 +1,5 @@
 {{ $version := site.Data.package.version | default site.Params.version }}
-{{ $runtimeVersion := printf "%s%s%s%s%s" (readFile "static/assets/docs.js") (readFile "static/webutil/libs/typeflow.esm.js") (readFile "static/webutil/libs/typeflow-metrics.esm.js") (readFile "static/webutil/libs/typeflow-debug.esm.js") (readFile "static/webutil/libs/typeflow-caret.esm.js") | md5 }}
+{{ $runtimeVersion := printf "%s%s%s%s%s%s" (readFile "static/assets/docs.js") (readFile "static/assets/lume-init.js") (readFile "static/webutil/libs/typeflow.esm.js") (readFile "static/webutil/libs/typeflow-metrics.esm.js") (readFile "static/webutil/libs/typeflow-debug.esm.js") (readFile "static/webutil/libs/typeflow-caret.esm.js") | md5 }}
 {{ $typeflowStyleVersion := readFile "static/assets/typeflow.css" | md5 }}
 {{ $docsStyleVersion := readFile "static/assets/docs.css" | md5 }}
 <!doctype html>
@@ -540,6 +540,9 @@
       prevents invisible text in the interim).
     */}}
 
+    {{/* Lume tooltip engine stylesheet, pinned to the released jsDelivr asset. */}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@staticcanvas/lume@0.37.1/src/lume.css" integrity="sha384-ghKGicwwIk4X+GrRwmPhx/kOmT+8tj8vKQ6s03hOVvpgiMG9hv/ijac3l1iIE41V" crossorigin="anonymous">
+
     {{/* preload the local CSS at top priority */}}
     <link rel="preload" href="{{ "assets/typeflow.css" | relURL }}?v={{ $typeflowStyleVersion }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="preload" href="{{ "assets/docs.css"     | relURL }}?v={{ $docsStyleVersion }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -612,8 +615,8 @@
         </button>
 
         <nav class="header-actions" aria-label="Utility navigation">
-          <a class="icon-button header-repo-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer" aria-label="GitLab repository" title="GitLab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m22 13-3-10-3 7H8L5 3 2 13l10 8Z"/><path d="m2 13 6-3 4 11 4-11 6 3M8 10h8"/></svg></a>
-          <a class="icon-button header-repo-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer" aria-label="GitHub repository" title="GitHub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 6v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.2-1.5 6.2-6.9a5.4 5.4 0 0 0-1.5-3.7 5 5 0 0 0-.1-3.7S17.5.7 15 2.5a13 13 0 0 0-6 0C6.5.7 5.3 1.1 5.3 1.1a5 5 0 0 0-.1 3.7 5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.2 6.6 6.2 6.9a3.4 3.4 0 0 0-.9 2.7V22"/></svg></a>
+          <a class="icon-button header-repo-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer" aria-label="GitLab repository" data-lume="GitLab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m22 13-3-10-3 7H8L5 3 2 13l10 8Z"/><path d="m2 13 6-3 4 11 4-11 6 3M8 10h8"/></svg></a>
+          <a class="icon-button header-repo-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer" aria-label="GitHub repository" data-lume="GitHub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 6v-3.9a3.4 3.4 0 0 0-.9-2.7c3-.3 6.2-1.5 6.2-6.9a5.4 5.4 0 0 0-1.5-3.7 5 5 0 0 0-.1-3.7S17.5.7 15 2.5a13 13 0 0 0-6 0C6.5.7 5.3 1.1 5.3 1.1a5 5 0 0 0-.1 3.7 5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.2 6.6 6.2 6.9a3.4 3.4 0 0 0-.9 2.7V22"/></svg></a>
           <button class="icon-button" type="button" data-theme-toggle aria-label="Toggle color theme">◐</button>
           {{ if not (or .IsHome .Params.fullWidth) }}
           <button class="icon-button mobile-menu-button" type="button" data-menu-toggle aria-expanded="false" aria-controls="site-sidebar" aria-label="Open navigation">☰</button>
@@ -749,6 +752,8 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@staticcanvas/lume@0.37.1/dist/lume.js" integrity="sha384-gRSt7CLnYU4bR6/dNQyEGXjCIgNC+ODnY+G3Rvjl3nmq++zAI7UUy7EewXJT5LBk" crossorigin="anonymous"></script>
+    <script src="{{ "assets/lume-init.js" | relURL }}?v={{ $runtimeVersion }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <script type="module" src="{{ "assets/docs.js" | relURL }}?v={{ $runtimeVersion }}"></script>
     {{ block "scripts" . }}{{ end }}

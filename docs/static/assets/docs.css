@@ -1731,12 +1731,23 @@ td code {
 }
 
 /* ============================================================
-   Tooltip
+   Lume tooltip integration
    ============================================================ */
 
-.tf-tooltip {
-  position: relative;
-  display: inline-flex;
+.lume-tooltip {
+  --lume-bg: var(--tf-bg-surface-elevated);
+  --lume-panel: var(--tf-bg-surface);
+  --lume-text: var(--tf-text-primary);
+  --lume-muted: var(--tf-text-secondary);
+  --lume-border: var(--tf-border-default);
+  --lume-border-hi: var(--tf-border-strong);
+  --lume-accent: var(--tf-accent);
+  --lume-font-family: var(--tf-font-sans);
+  --lume-font-mono: var(--tf-font-mono);
+  --lume-font-size: 0.78125rem;
+  --lume-max-width: min(20rem, calc(100vw - 1.25rem));
+  font-weight: 500;
+  text-align: center;
 }
 
 .tf-info-trigger {
@@ -1761,85 +1772,6 @@ td code {
   width: 100%;
   height: 100%;
   stroke-width: 2.25px;
-}
-
-.tf-tooltip-bubble {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  z-index: 300;
-  width: max-content;
-  max-width: 240px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: var(--tf-bg-surface-elevated);
-  border: 1px solid var(--tf-border-strong);
-  color: var(--tf-text-primary);
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1.4;
-  text-align: center;
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, 4px);
-  transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.tf-tooltip-bubble::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: var(--tf-border-strong);
-}
-.tf-tooltip-bubble::after {
-  content: '';
-  position: absolute;
-  top: calc(100% - 1px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 4px solid transparent;
-  border-top-color: var(--tf-bg-surface-elevated);
-}
-
-.tf-tooltip:hover .tf-tooltip-bubble,
-.tf-tooltip:focus-within .tf-tooltip-bubble {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-
-/* Downward variant — for triggers near the top of the viewport
-   where an upward bubble would clip against the sticky header. */
-.tf-tooltip--below .tf-tooltip-bubble {
-  bottom: auto;
-  top: calc(100% + 8px);
-  transform: translate(-50%, -4px);
-}
-.tf-tooltip--below .tf-tooltip-bubble::before,
-.tf-tooltip--below .tf-tooltip-bubble::after {
-  top: auto;
-  border-top-color: transparent;
-}
-.tf-tooltip--below .tf-tooltip-bubble::before {
-  bottom: 100%;
-  border-bottom-color: var(--tf-border-strong);
-}
-.tf-tooltip--below .tf-tooltip-bubble::after {
-  bottom: calc(100% - 1px);
-  border-bottom-color: var(--tf-bg-surface-elevated);
-}
-.tf-tooltip--below:hover .tf-tooltip-bubble,
-.tf-tooltip--below:focus-within .tf-tooltip-bubble {
-  transform: translate(-50%, 0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tf-tooltip-bubble {
-    transition-duration: 0.01ms;
-  }
 }
 
 .text-link {

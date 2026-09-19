@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="../assets/typeflow.css" />
     <link rel="stylesheet" href="../assets/docs.css" />
     <link rel="stylesheet" href="../assets/playground.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@staticcanvas/lume@0.37.1/src/lume.css"
+      integrity="sha384-ghKGicwwIk4X+GrRwmPhx/kOmT+8tj8vKQ6s03hOVvpgiMG9hv/ijac3l1iIE41V"
+      crossorigin="anonymous"
+    />
     <style>
       body {
         padding: 40px 20px 100px;
@@ -64,18 +70,9 @@
         <h2>1. Basic Typing & Erasing</h2>
         <div class="stage-box" id="test-stage-1"></div>
         <div class="button-bar">
-          <span class="tf-tooltip">
-            <button type="button" class="button button-primary" id="btn-t1-type" aria-describedby="tt-t1-type">Type</button>
-            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t1-type">Runs TypeFlow.type() with speed: 30</span>
-          </span>
-          <span class="tf-tooltip">
-            <button type="button" class="button button-secondary" id="btn-t1-erase" aria-describedby="tt-t1-erase">Erase (Start)</button>
-            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t1-erase">Runs TypeFlow.erase() with eraseStyle: 'start'</span>
-          </span>
-          <span class="tf-tooltip">
-            <button type="button" class="button button-danger" id="btn-t1-stop" aria-describedby="tt-t1-stop">Stop</button>
-            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t1-stop">Stops the currently running controller via .stop()</span>
-          </span>
+          <button type="button" class="button button-primary" id="btn-t1-type" data-lume="Runs TypeFlow.type() with speed: 30">Type</button>
+          <button type="button" class="button button-secondary" id="btn-t1-erase" data-lume="Runs TypeFlow.erase() with eraseStyle: 'start'">Erase (Start)</button>
+          <button type="button" class="button button-danger" id="btn-t1-stop" data-lume="Stops the currently running controller via .stop()">Stop</button>
         </div>
       </section>
 
@@ -83,14 +80,13 @@
         <h2>2. Sequence Runner</h2>
         <div class="stage-box" id="test-stage-2"></div>
         <div class="button-bar">
-          <span class="tf-tooltip">
-            <button type="button" class="button button-primary" id="btn-t2-seq" aria-describedby="tt-t2-seq">Run Sequence</button>
-            <span class="tf-tooltip-bubble" role="tooltip" id="tt-t2-seq">Chains seq.type &rarr; seq.pause(600) &rarr; seq.erase(fade) &rarr; seq.type via TypeFlow.sequence()</span>
-          </span>
+          <button type="button" class="button button-primary" id="btn-t2-seq" data-lume="Chains seq.type → seq.pause(600) → seq.erase(fade) → seq.type via TypeFlow.sequence()">Run Sequence</button>
         </div>
       </section>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@staticcanvas/lume@0.37.1/dist/lume.js" integrity="sha384-gRSt7CLnYU4bR6/dNQyEGXjCIgNC+ODnY+G3Rvjl3nmq++zAI7UUy7EewXJT5LBk" crossorigin="anonymous"></script>
+    <script src="../assets/lume-init.js"></script>
     <script type="module">
       import { TypeFlow, seq } from './libs/typeflow.esm.js';
 
