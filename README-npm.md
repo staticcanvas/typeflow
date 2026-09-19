@@ -1,4 +1,4 @@
-<img src="https://gitlab.com/staticcanvas/typeflow/-/raw/develop/branding/typeflow-logo.svg" width="64" height="64" alt="TypeFlow logo" />
+![TypeFlow Banner](https://r2os.staticcanvas.me/logos/typeflow/dist/webp/typeflow-logo-64x64.webp)
 
 # **@staticcanvas/typeflow**
 
@@ -194,15 +194,15 @@ TypeFlow.isTyping(target): boolean
 
 ## Development & NPM Scripts
 
-| Script                      | Command                                                                | Description                                                 |
-| :-------------------------- | :--------------------------------------------------------------------- | :---------------------------------------------------------- |
-| **`npm run dev`**           | `vite`                                                                 | Starts local Vite development server.                       |
-| **`npm run build`**         | `vite build`                                                           | Compiles production ESM, CJS, and UMD bundles into `dist/`. |
-| **`npm test`**              | `vitest run`                                                           | Runs the full unit test suite.                              |
-| **`npm run benchmark`**     | `node --expose-gc scripts/run-benchmark.mjs`                           | Runs repeated 10k, 50k, 100k, and concurrency benchmarks.  |
-| **`npm run benchmark:md`**  | `node --expose-gc scripts/run-benchmark.mjs --markdown`                | Generates a Markdown benchmark table.                      |
-| **`npm run benchmark:json`**| `node --expose-gc scripts/run-benchmark.mjs --json`                    | Generates machine-readable benchmark data.                 |
-| **`npm run check:quality`** | `npm run validate:docs-data && npm run build && npm run check:size && npm test` | Runs deterministic release checks.              |
+| Script                       | Command                                                                         | Description                                                 |
+| :--------------------------- | :------------------------------------------------------------------------------ | :---------------------------------------------------------- |
+| **`npm run dev`**            | `vite`                                                                          | Starts local Vite development server.                       |
+| **`npm run build`**          | `vite build`                                                                    | Compiles production ESM, CJS, and UMD bundles into `dist/`. |
+| **`npm test`**               | `vitest run`                                                                    | Runs the full unit test suite.                              |
+| **`npm run benchmark`**      | `node --expose-gc scripts/run-benchmark.mjs`                                    | Runs repeated 10k, 50k, 100k, and concurrency benchmarks.   |
+| **`npm run benchmark:md`**   | `node --expose-gc scripts/run-benchmark.mjs --markdown`                         | Generates a Markdown benchmark table.                       |
+| **`npm run benchmark:json`** | `node --expose-gc scripts/run-benchmark.mjs --json`                             | Generates machine-readable benchmark data.                  |
+| **`npm run check:quality`**  | `npm run validate:docs-data && npm run build && npm run check:size && npm test` | Runs deterministic release checks.                          |
 
 ---
 
