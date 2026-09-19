@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the optional schema-v1 Web Audio preset registry with immutable built-ins, validation, compatibility aliases, scoped interruption cleanup, declarations, documentation, and teardown tests.
 - Add the explicitly opt-in experimental parallel companion; its API is not yet stable.
 
+### Fixed
+
+- Preserve `<ul>`, `<ol>`, and `<li>` in HTML mode by adding them to the default sanitizer allowlist; they were previously unwrapped, leaving only their text content (#1).
+
 ### Migration
 
 - Existing core methods and built-in audio names remain compatible. See the 0.28 migration guide for additive style values and opt-in extension imports.

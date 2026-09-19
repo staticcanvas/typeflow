@@ -125,7 +125,7 @@ export interface TypeFlowConfig {
 | `cursorBlink` | `boolean` | `true` | Enables post-completion cursor blinking effect. |
 | `html` | `boolean` | `false` | When `true`, parses input string as structured HTML markup. |
 | `mode` | `"replace" \| "append"` | `"replace"` | `"replace"` clears element first; `"append"` preserves initial child nodes. |
-| `allowedTags` | `string[]` | `['b', 'strong', 'i', 'em', 'mark', 'span', 'small', 'sub', 'sup', 'u', 'br', 'a', 'code']` | Allowed HTML tags for sanitization. |
+| `allowedTags` | `string[]` | `['b', 'strong', 'i', 'em', 'mark', 'span', 'small', 'sub', 'sup', 'u', 'br', 'a', 'code', 'ul', 'ol', 'li']` | Allowed HTML tags for sanitization. |
 | `allowedAttributes` | `Record<string, string[]>` | Defaults for `a`, `span`, `mark` | Map of tag names to allowed attribute arrays. |
 | `sanitizer` | `(html: string) => string` | `undefined` | Custom HTML sanitization function. |
 | `respectReducedMotion` | `boolean` | `true` | Skips animation if user OS has `prefers-reduced-motion: reduce`. |

@@ -241,6 +241,22 @@ describe('TypeFlow Comprehensive Test Suite', () => {
       expect(container.hasAttribute('aria-busy')).toBe(false);
     });
 
+    it('preserves list structure in HTML mode (#1)', async () => {
+      const source = '<ol><li><a href="/a">A</a></li><li><span>B</span><ul><li>C</li></ul></li></ol>';
+      const controller = TypeFlow.type(container, source, {
+        html: true,
+        speed: 1,
+        respectReducedMotion: false,
+        cursor: '',
+      });
+      const result = await controller.promise;
+      expect(result.completed).toBe(true);
+      expect(container.querySelectorAll('ol').length).toBe(1);
+      expect(container.querySelectorAll('ul').length).toBe(1);
+      expect(container.querySelectorAll('li').length).toBe(3);
+      expect(container.innerHTML).toBe(source);
+    });
+
     it('removes transient wrappers and accessibility state when interrupted', async () => {
       const interrupted = vi.fn();
       const controller = TypeFlow.type(container, '<a href="/next">Interrupt safely</a>', {

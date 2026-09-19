@@ -131,6 +131,9 @@ const DEFAULT_ALLOWED_TAGS = new Set([
   'br',
   'a',
   'code',
+  'ul',
+  'ol',
+  'li',
 ]);
 
 const DEFAULT_ALLOWED_ATTRS = {
