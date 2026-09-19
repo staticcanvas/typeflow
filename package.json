@@ -1,6 +1,6 @@
 {
   "name": "@staticcanvas/typeflow",
-  "version": "0.34.2",
+  "version": "0.34.3",
   "description": "Typeflow library.",
   "type": "module",
   "main": "./dist/typeflow.cjs",
