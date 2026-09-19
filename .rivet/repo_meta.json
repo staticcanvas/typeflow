@@ -5,11 +5,11 @@
   "project": {
     "description": "TypeFlow is a lightweight, interruptible, framework-agnostic typewriter animation library designed for modern web applications and static sites.",
     "topics": [
-      "core",
+      "javascript",
+      "vanillaJS",
       "reveal",
       "erase",
       "sequence",
-      "html",
       "accessibility",
       "performance",
       "audio",
@@ -23,17 +23,7 @@
       "astro",
       "web-components",
       "typescript",
-      "tests",
-      "build",
-      "release",
-      "docs",
-      "playground",
-      "ui",
-      "branding",
-      "security",
-      "tooling",
-      "ci",
-      "maintenance"
+      "playground"
     ]
   },
   "labels": [
